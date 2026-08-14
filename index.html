@@ -1004,9 +1004,13 @@ reveal();
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    // abanico arriba, centrado
+    // abanico arriba, centrado, con el mismo halo sutil que el código
     const fanW = 120, fanH = fanImg.height * (fanW / fanImg.width);
+    ctx.save();
+    ctx.shadowColor = 'rgba(242,242,242,0.55)';
+    ctx.shadowBlur = 18;
     ctx.drawImage(fanImg, (W - fanW) / 2, 84, fanW, fanH);
+    ctx.restore();
 
     // bloque de texto
     const cx = W / 2;
@@ -1015,7 +1019,7 @@ reveal();
     const taglineLines = ['es tu puerta de entrada...', 'para ser parte de nuestra sekta'];
 
     const blockH = labelH + gapLabelCode + codeH + gapCodeTagline + taglineLines.length * taglineLineH;
-    let y = H - 260 - blockH;
+    let y = H - 220 - blockH;
 
     drawTracked(ctx, 'mi código sektario', cx, y, '500 27px "IBM Plex Mono"', 'rgb(147,168,172)', 4);
     y += labelH + gapLabelCode;
@@ -1051,9 +1055,10 @@ reveal();
     try {
       const blob = await buildShareImage(currentProfile, data);
       const file = new File([blob], `sekito-${data.name}.png`, { type: 'image/png' });
+      const shareText = 'usa este certificado para mandarnos un dm a https://ig.me/m/sekito.gde y se te abren las puertas de la sekta';
 
       if (navigator.canShare && navigator.canShare({ files: [file] })){
-        await navigator.share({ files: [file] });
+        await navigator.share({ files: [file], text: shareText });
       } else if (navigator.clipboard && window.ClipboardItem){
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         feedback('imagen copiada');
