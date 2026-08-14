@@ -1055,7 +1055,7 @@ reveal();
     try {
       const blob = await buildShareImage(currentProfile, data);
       const file = new File([blob], `sekito-${data.name}.png`, { type: 'image/png' });
-      const shareText = 'usa este certificado para mandarnos un dm a https://ig.me/m/sekito.gde y se te abren las puertas de la sekta';
+      const shareText = '_usa este certificado para que se te abran las puertas del sékito.. manda dm a https://instagram.com/sekito.gde_';
 
       if (navigator.canShare && navigator.canShare({ files: [file] })){
         await navigator.share({ files: [file], text: shareText });
