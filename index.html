@@ -226,6 +226,24 @@
   @keyframes flash{ 50%{ filter:invert(1); } }
 
   .chevron{ color:var(--gray); font-size:15px; transition:color .2s ease; }
+
+  /* mientras se consulta el código contra la base */
+  .code-row.consultando #code-input{ opacity:.45; }
+  .code-row.consultando .chevron{ animation:chevronWait .9s ease-in-out infinite; }
+  @keyframes chevronWait{ 0%,100%{ opacity:.3; } 50%{ opacity:1; } }
+
+  /* aviso sobrio cuando el portal no puede consultar (no es "código inválido") */
+  .gate-aviso{
+    margin-top:20px;
+    text-align:center;
+    font-size:9px;
+    letter-spacing:.08em;
+    color:var(--gray);
+    height:12px;
+    opacity:0;
+    transition:opacity .3s ease;
+  }
+  .gate-aviso.show{ opacity:1; }
   .code-row .chevron{
     position:absolute;
     left:calc(50% - 95px);
@@ -833,6 +851,7 @@
           <button type="submit" class="enter-btn" aria-label="enviar código">→</button>
         </div>
       </form>
+      <div class="gate-aviso" id="gateAviso"></div>
     </div>
   </section>
 
@@ -864,7 +883,7 @@
 
     <div class="member-footer rv-d" id="plainFooter">
       <span id="levelText">sékito · nivel 01</span>
-      <span>invitado por: —</span>
+      <span id="invitedByText">invitado por: —</span>
     </div>
     <div class="lineage rv-d" id="lineageBadge" hidden>
       <svg class="seed-glyph" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1048,18 +1067,22 @@
 
 <script>
 /* =====================================================================
-   PROTOTIPO — validación 100% en el cliente, solo para probar la UX.
-   Códigos de prueba (no distingue mayúsculas): AURINAYA · MAU · NAYA
-   MAU tiene contenido personalizado (carrusel de fotos). Los otros dos
-   caen en la vista genérica con QR + registro placeholder.
+   Los códigos ya no viven acá: los valida Supabase.
 
-   Para producción esto se reemplaza por una llamada real:
-   const res = await fetch('/api/validar-codigo', { method:'POST', body: JSON.stringify({codigo}) });
-   y el backend (Supabase, por ejemplo) responde si es válido + el
-   contenido de ESE miembro puntual, sin exponer el resto de la base.
+   El portal llama a la función validar_codigo() de la base, que devuelve
+   los datos de ESE miembro y nada más. Las tablas tienen RLS activo sin
+   políticas, así que esta clave pública no puede leer ni escribir nada
+   directamente: no hay forma de listar miembros, teléfonos ni mails.
+   Por eso la clave puede estar acá a la vista.
+
+   Para dar de alta, suspender o revocar un código no hace falta tocar
+   este archivo: se hace desde Supabase. Quien no tenga pantalla propia
+   en CUSTOM_SCREENS cae en la vista genérica.
    ===================================================================== */
 
-const VALID_CODES = new Set(['AURINAYA', 'MAU', 'NAYA', 'LUCHI', 'MAIA', 'FLOR']);
+const SUPABASE_URL = 'https://imhbhkknpgtwmwzflqlk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_7KAttE0ISGm_BQHswIH3hg_NCQWelFs';
+const CONSULTA_TIMEOUT = 8000;
 
 const fanWrap = document.getElementById('fanWrap');
 const promptBlock = document.getElementById('promptBlock');
@@ -1085,6 +1108,11 @@ const qrImg = document.getElementById('qrImg');
 const levelText = document.getElementById('levelText');
 const plainFooter = document.getElementById('plainFooter');
 const lineageBadge = document.getElementById('lineageBadge');
+const invitedByText = document.getElementById('invitedByText');
+const gateAviso = document.getElementById('gateAviso');
+
+// datos del miembro que entró, tal como los devolvió la base
+let miembroActual = null;
 
 // pantallas personalizadas: código -> screen. el resto cae en la vista genérica
 const CUSTOM_SCREENS = {
@@ -1094,10 +1122,6 @@ const CUSTOM_SCREENS = {
   MAIA: () => memberMaiaScreen,
   FLOR: () => memberFlorScreen,
 };
-
-// fundadores del sékito: semilla cero. el resto queda en nivel 01
-// hasta que armemos el sistema de linaje real (quién invitó a quién)
-const FOUNDERS = new Set(['MAU', 'NAYA']);
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1126,19 +1150,76 @@ function reveal(){
   }, { once: true });
 }
 
-codeForm.addEventListener('submit', (e) => {
+/* le pregunta a la base si el código existe y está activo.
+   devuelve { ok } en false solo si no se pudo consultar (red caída, timeout,
+   error del servidor); eso NO es lo mismo que un código inválido. */
+async function consultarCodigo(codigo){
+  const ctrl = new AbortController();
+  const corte = setTimeout(() => ctrl.abort(), CONSULTA_TIMEOUT);
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/validar_codigo', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_codigo: codigo }),
+      signal: ctrl.signal,
+    });
+    if (!res.ok) throw new Error('respuesta ' + res.status);
+    const filas = await res.json();
+    return { ok: true, miembro: filas[0] || null };
+  } catch (err) {
+    return { ok: false, miembro: null };
+  } finally {
+    clearTimeout(corte);
+  }
+}
+
+let consultando = false;
+
+codeForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (consultando) return; // que dos enter seguidos no disparen dos consultas
   const raw = codeInput.value.trim().toUpperCase();
   if (!raw) return;
 
-  if (VALID_CODES.has(raw)){
-    grant(raw);
+  consultando = true;
+  codeRow.classList.add('consultando');
+  codeInput.disabled = true;
+  ocultarAviso();
+
+  const { ok, miembro } = await consultarCodigo(raw);
+
+  consultando = false;
+  codeRow.classList.remove('consultando');
+  codeInput.disabled = false;
+
+  if (!ok){
+    sinConexion();          // el portal no pudo preguntar
+  } else if (miembro){
+    grant(raw, miembro);
   } else {
-    deny();
+    deny();                 // preguntó y el código no vale
   }
 });
 
+/* no se pudo consultar: a propósito NO usa el glitch de código inválido,
+   para que se entienda que el problema es la conexión y no el código */
+function sinConexion(){
+  codeRow.classList.remove('deny','flash'); // que no quede el rastro de un intento fallido previo
+  gateAviso.textContent = 'el portal no responde.. probá de nuevo';
+  gateAviso.classList.add('show');
+  codeInput.focus();
+}
+
+function ocultarAviso(){
+  gateAviso.classList.remove('show');
+}
+
 function deny(){
+  ocultarAviso();
   codeRow.classList.remove('deny','flash');
   void codeRow.offsetWidth; // reiniciar animación
   codeRow.classList.add('deny','flash');
@@ -1165,7 +1246,9 @@ function deny(){
   }, 45);
 }
 
-function grant(code){
+function grant(code, miembro){
+  miembroActual = miembro;
+  ocultarAviso();
   gateScreen.classList.remove('active');
 
   // la historia va primero para todos; el perfil queda debajo
@@ -1178,13 +1261,15 @@ function grant(code){
     chipCode.textContent = code;
     qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&bgcolor=0D0D0D&color=F2F2F2&data=${encodeURIComponent('sekito.com/acceso/' + code)}`;
 
-    if (FOUNDERS.has(code)){
+    // semilla cero o nivel 01: lo dice la base, no una lista de acá
+    if (miembro.es_fundador){
       plainFooter.hidden = true;
       lineageBadge.hidden = false;
     } else {
       plainFooter.hidden = false;
       lineageBadge.hidden = true;
       levelText.textContent = 'sékito · nivel 01';
+      invitedByText.textContent = 'invitado por: ' + (miembro.invitado_por_nombre || '—');
     }
 
     memberScreen.classList.add('active');
@@ -1192,6 +1277,8 @@ function grant(code){
 }
 
 function resetToGate(){
+  miembroActual = null;
+  ocultarAviso();
   historiaScreen.classList.remove('active');
   scrollToTop();
   memberScreen.classList.remove('active');
@@ -1215,15 +1302,7 @@ reveal();
 
 /* ---------- código de invitación sektario ---------- */
 (function inviteCode(){
-  // códigos inventados por ahora — más adelante esto lo genera el backend real
-  const INVITE_DATA = {
-    MAU:   { code: 'SK·MAU·ØØØ·GDE', name: 'mau' },
-    NAYA:  { code: 'SK·NYA·ØØØ·GDE', name: 'naya' },
-    LUCHI: { code: 'SK·LUP·XXV·GDE', name: 'luchi' },
-    MAIA:  { code: 'SK·MAI·XVI·GDE', name: 'maia' },
-    FLOR:  { code: 'SK·FLR·ØØØ·GDE', name: 'flor' },
-  };
-
+  // el código sektario sale de miembroActual, o sea de la base
   const inviteScreen = document.getElementById('invite-screen');
   const inviteCodeText = document.getElementById('inviteCodeText');
   const exitInvite = document.getElementById('exitInvite');
@@ -1235,13 +1314,12 @@ reveal();
 
   document.querySelectorAll('.invite-trigger').forEach(btn => {
     btn.addEventListener('click', () => {
-      const profile = btn.dataset.profile;
-      const data = INVITE_DATA[profile];
-      if (!data) return;
+      if (!miembroActual || !miembroActual.codigo_sektario) return;
 
-      currentProfile = profile;
+      // data-profile sigue sirviendo para saber de qué pantalla sacar la foto
+      currentProfile = btn.dataset.profile;
       cameFromScreen = btn.closest('.member-screen');
-      inviteCodeText.textContent = data.code;
+      inviteCodeText.textContent = miembroActual.codigo_sektario;
 
       cameFromScreen.classList.remove('active');
       historiaScreen.classList.remove('active'); // si no, el código quedaría un viewport más abajo
@@ -1387,8 +1465,8 @@ reveal();
   }
 
   shareCodeBtn.addEventListener('click', async () => {
-    const data = INVITE_DATA[currentProfile];
-    if (!data) return;
+    if (!miembroActual || !miembroActual.codigo_sektario) return;
+    const data = { code: miembroActual.codigo_sektario, name: miembroActual.nombre_sektario };
 
     const originalLabel = shareCodeBtn.textContent;
     shareCodeBtn.textContent = 'generando...';
