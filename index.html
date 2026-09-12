@@ -8,7 +8,7 @@
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
   :root{
     --black:#0D0D0D;
@@ -35,8 +35,9 @@
     font-family:'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
     min-height:100vh;
     display:flex;
-    align-items:flex-start;
-    justify-content:center;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
     position:relative;
   }
 
@@ -523,6 +524,246 @@
   }
   .dot.active{ background:var(--white); transform:scale(1.3); }
 
+  /* ---------- la historia del sékito ----------
+     sección compartida: se activa junto con cualquier perfil, a sangre,
+     un viewport de alto. el perfil queda debajo, se llega scrolleando.
+     dos fotos a pantalla completa; colapso se revela arriba-derecha de una
+     costura diagonal (esquina sup. izq. → esquina inf. der.), y sobre la
+     costura una banda negra fina con bordes quemados. */
+  .historia{
+    position:relative;
+    width:100%;
+    min-height:100vh;
+    min-height:100svh;
+    overflow:hidden;
+    z-index:1;
+    background:var(--black);
+    /* foco de cada foto (object-position), ajustable por imagen */
+    --focus-seki:100% 40%;
+    --focus-colapso:85% 45%;
+    /* geometría de la costura: "to top right" pone el corte exactamente en la
+       diagonal sup-izq → inf-der. --burn-shift la corre en perpendicular. */
+    --burn-dir:to top right;
+    --burn-shift:0px;
+    --burn-core:2.5px;  /* mitad del ancho del negro pleno */
+    --burn-char:6px;    /* carbón a cada lado */
+    --burn-ember:4px;   /* rescoldo a cada lado */
+    /* distancia entre la diagonal y el texto de las ternas (cubre banda + ondulación) */
+    --seam-gap:26px;
+  }
+  @media (max-width:767px){
+    .historia{ --focus-colapso:50% 45%; } /* corrida a la derecha: el haz grande queda en el borde */
+    .hist-seki img{ transform:scale(1.1) translateY(-40px); } /* zoom leve para poder subirla */
+  }
+  @media (min-width:768px){
+    .historia{ --burn-core:7px; --burn-char:10px; --burn-ember:6px; --seam-gap:46px; }
+  }
+  .hist-photo{
+    position:absolute; inset:0;
+  }
+  .hist-photo img{
+    display:block;
+    width:100%; height:100%;
+    object-fit:cover;
+    transform-origin:center;
+  }
+  .hist-seki{ z-index:1; }
+  .hist-seki img{ object-position:var(--focus-seki); }
+  .hist-colapso{
+    z-index:2;
+    /* se ve solo del lado colapso de la costura; el borde recto queda tapado por el negro */
+    -webkit-mask-image:linear-gradient(var(--burn-dir), transparent calc(50% + var(--burn-shift)), #000 calc(50% + var(--burn-shift)));
+            mask-image:linear-gradient(var(--burn-dir), transparent calc(50% + var(--burn-shift)), #000 calc(50% + var(--burn-shift)));
+  }
+  .hist-colapso img{ object-position:var(--focus-colapso); }
+  /* velo: más oscuro arriba y abajo, donde va el texto */
+  .hist-photo::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(180deg,
+      rgba(13,13,13,.70) 0%,
+      rgba(13,13,13,.38) 30%,
+      rgba(13,13,13,.38) 62%,
+      rgba(13,13,13,.76) 88%,
+      rgba(13,13,13,.94) 100%);
+  }
+  /* la banda quemada: seki → rescoldo bordo → carbón → negro → carbón → rescoldo mostaza → colapso.
+     el degradé da la banda, el filtro svg #burn le rompe los bordes. */
+  .hist-burn{
+    position:absolute;
+    inset:-12%;
+    z-index:3;
+    pointer-events:none;
+    filter:url(#burn);
+    background:linear-gradient(var(--burn-dir),
+      rgba(160,20,50,0)     calc(50% + var(--burn-shift) - var(--burn-core) - var(--burn-char) - var(--burn-ember) - 10px),
+      rgba(160,20,50,.08)   calc(50% + var(--burn-shift) - var(--burn-core) - var(--burn-char) - var(--burn-ember)),
+      rgba(178,18,58,.3)    calc(50% + var(--burn-shift) - var(--burn-core) - var(--burn-char) - 2px),
+      rgba(38,6,14,.9)      calc(50% + var(--burn-shift) - var(--burn-core) - var(--burn-char)),
+      rgba(16,4,8,.98)      calc(50% + var(--burn-shift) - var(--burn-core) - 3px),
+      var(--black)          calc(50% + var(--burn-shift) - var(--burn-core)),
+      var(--black)          calc(50% + var(--burn-shift) + var(--burn-core)),
+      rgba(13,7,3,.98)      calc(50% + var(--burn-shift) + var(--burn-core) + 3px),
+      rgba(34,16,7,.9)      calc(50% + var(--burn-shift) + var(--burn-core) + var(--burn-char)),
+      rgba(217,161,30,.22)  calc(50% + var(--burn-shift) + var(--burn-core) + var(--burn-char) + 2px),
+      rgba(255,150,50,.07)  calc(50% + var(--burn-shift) + var(--burn-core) + var(--burn-char) + var(--burn-ember)),
+      rgba(255,140,40,0)    calc(50% + var(--burn-shift) + var(--burn-core) + var(--burn-char) + var(--burn-ember) + 10px));
+  }
+
+  /* ---------- texto de la historia ----------
+     todo se ancla a las ternas del medio: el párrafo 1 termina a --para-gap
+     por encima del primer renglón, el párrafo 3 arranca a --para-gap por
+     debajo del último. el cierre queda abajo de todo, aparte. */
+  .hist-text{
+    position:absolute; inset:0;
+    z-index:4;
+    color:var(--white);
+    font-style:italic;
+    --side:24px;
+    --mid-first:46.5%;  /* renglón 1 de las ternas (mismo valor que --p en el html) */
+    --mid-last:52.5%;   /* renglón 3 */
+    --para-gap:9.5svh;
+  }
+  @media (min-width:768px){
+    .hist-text{ --side:64px; }
+  }
+  /* la legibilidad de los párrafos 1 y 3 la dan dos cosas sutiles: una sombra
+     oscura pegada a las letras, y una mancha quemada POR RENGLÓN (no un óvalo
+     detrás del bloque), así el fondo sigue la forma real del párrafo */
+  .hist-top span, .hist-close span, .hist-row span{ position:relative; }
+  .hist-top span::before, .hist-close span::before{
+    content:"";
+    position:absolute;
+    inset:-.3em -.75em;
+    z-index:-1;
+    filter:url(#burnSoft);
+    background:radial-gradient(ellipse 56% 110% at 50% 52%,
+      rgba(13,13,13,.5) 0%,
+      rgba(13,13,13,.4) 44%,
+      rgba(28,12,5,.22) 70%,
+      rgba(13,13,13,0) 100%);
+  }
+  /* halo suave detrás de cada línea de las ternas */
+  .hist-row span::before{
+    content:"";
+    position:absolute;
+    z-index:-1;
+    border-radius:50%;
+    background:radial-gradient(ellipse at center,
+      rgba(13,13,13,.62) 0%,
+      rgba(13,13,13,.38) 45%,
+      rgba(13,13,13,0) 72%);
+  }
+  .hist-row span::before{ inset:-10px -18px; }
+  .hist-top, .hist-close{
+    position:absolute;
+    left:var(--side); right:var(--side);
+    margin:0;
+    text-align:center;
+    font-size:clamp(14px,3.75vw,20px);
+    line-height:1.9;
+    text-shadow:0 0 4px rgba(13,13,13,.95), 0 0 10px rgba(13,13,13,.8),
+                0 0 20px rgba(13,13,13,.55), 0 1px 2px rgba(0,0,0,.85);
+  }
+  .hist-top{ bottom:calc(100% - var(--mid-first) + var(--para-gap)); }
+  .hist-close{ top:calc(var(--mid-last) + var(--para-gap)); }
+
+  /* abanico arriba, centrado. base f2f2f2; los flashes violentos al bordo de
+     seki y al amarillo de colapso los agenda el js (fanFlicker), porque css
+     siempre repetiría el mismo ciclo y acá se buscan ráfagas impredecibles.
+     el fade de entrada anima solo opacity para no pisar el transform inline. */
+  .hist-fan{
+    --fan-w:56px;
+    position:absolute;
+    top:7svh;
+    left:50%;
+    margin-left:calc(var(--fan-w) / -2); /* centrado por margen, no por transform */
+    width:var(--fan-w);
+    aspect-ratio:1400/910;
+    mask-image:var(--fan-mask); -webkit-mask-image:var(--fan-mask);
+    mask-size:contain; -webkit-mask-size:contain;
+    mask-repeat:no-repeat; -webkit-mask-repeat:no-repeat;
+    mask-position:center; -webkit-mask-position:center;
+    background:var(--white);
+  }
+  .historia.active .hist-fan{ animation:fanIn 1.8s ease both; }
+  @keyframes fanIn{ from{opacity:0;} to{opacity:1;} }
+
+  /* ternas espejadas: cada renglón es un punto (top:P%, left:P%) que por
+     construcción cae sobre la diagonal; seki termina a la izquierda del punto,
+     colapso arranca a la derecha. --p se define por renglón en el html. */
+  .hist-mid{ position:absolute; inset:0; pointer-events:none; }
+  .hist-row{
+    position:absolute;
+    top:var(--p); left:var(--p);
+    width:0; height:0;
+    font-size:clamp(12.5px,3.45vw,21px);
+    line-height:1.25;
+  }
+  .hist-row span{
+    position:absolute; top:0;
+    transform:translateY(-50%);
+    white-space:nowrap;
+  }
+  /* seki: base, apenas más pesada, con un halo bordo */
+  .hist-seki-line{
+    right:var(--seam-gap);
+    font-weight:500;
+    color:var(--white);
+    text-shadow:0 0 14px rgba(128,0,32,.95), 0 1px 2px rgba(0,0,0,.6);
+  }
+  /* colapso: mostaza, más liviana, más abierta */
+  .hist-colapso-line{
+    left:var(--seam-gap);
+    font-weight:400;
+    letter-spacing:.04em;
+    color:var(--amarillo);
+    text-shadow:0 1px 2px rgba(0,0,0,.8);
+  }
+
+  /* cierre, abajo de todo */
+  .hist-bottom{
+    position:absolute;
+    left:var(--side); right:var(--side);
+    bottom:7svh;
+    text-align:center;
+  }
+  .hist-cta{
+    margin:0;
+    font-size:clamp(11.5px,3vw,13.5px);
+    letter-spacing:.12em;
+    color:rgba(var(--white-rgb),.8);
+    text-shadow:0 1px 3px rgba(0,0,0,.75);
+  }
+  /* chevron que late hacia abajo: sugiere seguir scrolleando */
+  .hist-chevron{
+    display:block;
+    width:1em; height:1em;
+    margin:14px auto 0;
+    font-style:normal;
+    font-size:15px;
+    line-height:1;
+    color:rgba(var(--white-rgb),.7);
+    opacity:0;
+    transform:rotate(90deg);
+  }
+  /* fade propio (con la rotación adentro, si no el fade genérico la pisa) y después late */
+  .historia.active .hist-chevron{ animation:chevronIn 1.8s ease both 2.5s, chevronBob 2.4s ease-in-out infinite 4.3s; }
+  @keyframes chevronIn{ from{opacity:0; transform:rotate(90deg) translateX(-4px);} to{opacity:.7; transform:rotate(90deg);} }
+  @keyframes chevronBob{
+    0%,100%{ transform:rotate(90deg) translateX(0); opacity:.7; }
+    50%{ transform:rotate(90deg) translateX(5px); opacity:1; }
+  }
+
+  /* el texto aparece con un fade lento, escalonado apenas */
+  .hist-fade{ opacity:0; }
+  .historia.active .hist-fade{ animation:histFade 1.8s ease both; }
+  .historia.active .hist-top{ animation-delay:.2s; }
+  .historia.active .hist-mid{ animation-delay:.7s; }
+  .historia.active .hist-close{ animation-delay:1.2s; }
+  .historia.active .hist-cta{ animation-delay:1.9s; }
+  @keyframes histFade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
   }
@@ -535,6 +776,44 @@
 <button class="sound-toggle" id="soundToggle" aria-label="activar sonido" aria-pressed="false">
   <span class="sound-dot"></span>
 </button>
+
+<!-- filtro para la textura chamuscada de la costura de la historia -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="burn" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.011 0.032" numOctaves="4" seed="11" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="30" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="burnSoft" x="-20%" y="-60%" width="140%" height="220%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.055 0.14" numOctaves="3" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<!-- ===================== LA HISTORIA DEL SÉKITO ===================== -->
+<!-- se muestra para todos los perfiles al entrar; el perfil queda debajo -->
+<section id="historia" class="screen historia" aria-label="la historia del sékito">
+  <div class="hist-photo hist-seki"><img src="images/ssexta_contexto_1.jpg" alt=""></div>
+  <div class="hist-photo hist-colapso"><img src="images/colapso_contexto_1.jpg" alt=""></div>
+  <div class="hist-burn"></div>
+
+  <div class="hist-text">
+    <div class="hist-fan" aria-hidden="true"></div>
+    <p class="hist-top hist-fade"><span>nadie sabe cuándo se acaba el mundo,</span><br><span>a veces existe..</span><br><span>a veces se vuelve a acabar</span><br><span>la sekta decidió:</span><br><span>un rito para cada mundo</span></p>
+
+    <div class="hist-mid hist-fade">
+      <div class="hist-row" style="--p:46.5%"><span class="hist-seki-line">acá está todo</span><span class="hist-colapso-line">afuera, nada</span></div>
+      <div class="hist-row" style="--p:49.5%"><span class="hist-seki-line">provocá</span><span class="hist-colapso-line">resistí</span></div>
+      <div class="hist-row" style="--p:52.5%"><span class="hist-seki-line">deseá</span><span class="hist-colapso-line">ensuciate</span></div>
+    </div>
+
+    <p class="hist-close hist-fade"><span>lxs devotxs quedamos adentro,</span><br><span>somos el sékito</span><br><span>que sigue celebrando,</span><br><span>con mundo, o sin...</span></p>
+
+    <div class="hist-bottom">
+      <p class="hist-cta hist-fade">el portal está abierto...</p>
+      <span class="hist-chevron" aria-hidden="true">&gt;</span>
+    </div>
+  </div>
+</section>
 
 <div class="stage">
 
@@ -788,6 +1067,7 @@ const codeForm = document.getElementById('codeForm');
 const codeRow = document.getElementById('codeRow');
 const codeInput = document.getElementById('code-input');
 const gateScreen = document.getElementById('gate');
+const historiaScreen = document.getElementById('historia');
 const memberScreen = document.getElementById('member');
 const memberMauScreen = document.getElementById('member-mau');
 const memberLuchiScreen = document.getElementById('member-luchi');
@@ -820,6 +1100,14 @@ const CUSTOM_SCREENS = {
 const FOUNDERS = new Set(['MAU', 'NAYA']);
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// el scroll de la página lo maneja body (por el overflow-x:hidden de html/body),
+// así que para volver arriba hay que resetear los dos
+function scrollToTop(){
+  window.scrollTo(0, 0);
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
+}
 
 function reveal(){
   if (reduced){
@@ -880,6 +1168,10 @@ function deny(){
 function grant(code){
   gateScreen.classList.remove('active');
 
+  // la historia va primero para todos; el perfil queda debajo
+  historiaScreen.classList.add('active');
+  scrollToTop();
+
   if (CUSTOM_SCREENS[code]){
     CUSTOM_SCREENS[code]().classList.add('active');
   } else {
@@ -900,6 +1192,8 @@ function grant(code){
 }
 
 function resetToGate(){
+  historiaScreen.classList.remove('active');
+  scrollToTop();
   memberScreen.classList.remove('active');
   memberMauScreen.classList.remove('active');
   memberLuchiScreen.classList.remove('active');
@@ -950,13 +1244,19 @@ reveal();
       inviteCodeText.textContent = data.code;
 
       cameFromScreen.classList.remove('active');
+      historiaScreen.classList.remove('active'); // si no, el código quedaría un viewport más abajo
       inviteScreen.classList.add('active');
+      scrollToTop();
     });
   });
 
   exitInvite.addEventListener('click', () => {
     inviteScreen.classList.remove('active');
-    if (cameFromScreen) cameFromScreen.classList.add('active');
+    historiaScreen.classList.add('active');
+    if (cameFromScreen){
+      cameFromScreen.classList.add('active');
+      cameFromScreen.scrollIntoView({ block: 'start' }); // volver al perfil, no al principio de la historia
+    }
   });
 
   function feedback(msg){
@@ -1142,6 +1442,72 @@ reveal();
       dots.forEach((d, idx) => d.classList.toggle('active', idx === i));
     }, { passive:true });
   });
+})();
+
+/* ---------- abanico de la historia: ráfagas violentas e impredecibles ----------
+   css siempre repite el mismo ciclo, así que el parpadeo se agenda por js:
+   varía cuándo arranca cada ráfaga, cuántos flashes tiene y de qué tipo es
+   cada uno (apagón / color / base). sin deformación, solo un salto de 2-4px. */
+(function fanFlicker(){
+  const fan = document.querySelector('.hist-fan');
+  const historia = document.getElementById('historia');
+  if (!fan || !historia || reduced) return;
+
+  const COLORS = ['var(--bordo)', 'var(--amarillo)'];
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const pending = [];
+
+  function rest(){
+    fan.style.background = '';  // vuelve al f2f2f2 del css
+    fan.style.transform = '';
+  }
+
+  function burst(){
+    // ráfaga: entre 8 y 18 eventos encadenados, cada uno de 20 a 45ms.
+    // se arma la secuencia completa antes, para no encadenar tres apagones.
+    const n = Math.round(rand(8, 18));
+    const seq = [];
+    let blackRun = 0;
+    for (let k = 0; k < n; k++){
+      const roll = Math.random();
+      let kind;
+      if (roll < .36 && blackRun < 2) kind = 'off';
+      else if (roll < .48) kind = 'base';
+      else kind = 'color';
+      blackRun = kind === 'off' ? blackRun + 1 : 0;
+      seq.push({ kind, dur: rand(20, 45) });
+    }
+
+    let t = 0;
+    seq.forEach(ev => {
+      t += ev.dur;
+      pending.push(setTimeout(() => {
+        if (ev.kind === 'off'){
+          fan.style.background = 'transparent';
+          fan.style.transform = '';
+        } else if (ev.kind === 'base'){
+          rest();
+        } else {
+          fan.style.background = pick(COLORS);
+          fan.style.transform =
+            'translate(' + rand(-4, 4).toFixed(1) + 'px,' + rand(-4, 4).toFixed(1) + 'px)';
+        }
+      }, t));
+    });
+
+    pending.push(setTimeout(() => { rest(); schedule(); }, t + rand(30, 90)));
+  }
+
+  function schedule(){
+    // calma variable entre ráfagas; si la historia no está a la vista, espera
+    pending.push(setTimeout(() => {
+      if (!historia.classList.contains('active')){ schedule(); return; }
+      burst();
+    }, rand(1500, 3600)));
+  }
+
+  schedule();
 })();
 
 /* ---------- sonido binaural, 7Hz, opt-in ---------- */
