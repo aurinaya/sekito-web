@@ -306,74 +306,6 @@
   }
   .hero-logo path{ fill:var(--white); }
 
-  .identity-line{
-    display:flex;
-    align-items:baseline;
-    justify-content:center;
-    gap:9px;
-    margin-bottom:32px;
-  }
-  .identity-line .chevron{ color:var(--gray); font-size:14px; }
-  .identity-line .identity-code{
-    font-size:14px; letter-spacing:.2em; color:var(--white);
-  }
-
-  /* ---------- semilla / linaje ---------- */
-  .lineage{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    border-top:1px solid rgba(var(--gray-rgb),.25);
-    padding-top:16px;
-    margin-top:4px;
-  }
-  .seed-glyph{ width:26px; height:26px; color:var(--gray); flex-shrink:0; }
-  .lineage-text{ display:flex; flex-direction:column; gap:3px; }
-  .lineage-level{ font-size:10px; letter-spacing:.18em; color:var(--white); }
-  .lineage-note{ font-size:9px; letter-spacing:.04em; color:var(--gray); }
-
-  .section-title{
-    font-size:10px; letter-spacing:.16em; color:var(--gray);
-    margin-bottom:12px;
-  }
-
-  .qr-block{
-    display:flex; flex-direction:column; align-items:center;
-    border:1px solid rgba(var(--gray-rgb),.3);
-    padding:20px; margin-bottom:30px;
-  }
-  .qr-block img{
-    width:150px; height:150px;
-    background:var(--black);
-    margin-bottom:12px;
-  }
-  .qr-caption{ font-size:10px; letter-spacing:.1em; color:var(--gray); }
-
-  .photo-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:8px;
-    margin-bottom:30px;
-  }
-  .photo-cell{
-    aspect-ratio:1;
-    background:
-      repeating-linear-gradient(135deg,
-        rgba(var(--gray-rgb),.14) 0 2px,
-        transparent 2px 8px);
-    border:1px solid rgba(var(--gray-rgb),.25);
-    display:flex; align-items:flex-end;
-    padding:5px;
-  }
-  .photo-cell span{ font-size:8px; color:var(--gray); letter-spacing:.03em; }
-
-  .member-footer{
-    border-top:1px solid rgba(var(--gray-rgb),.25);
-    padding-top:14px;
-    display:flex; justify-content:space-between;
-    font-size:10px; color:rgba(var(--gray-rgb),.7); letter-spacing:.05em;
-  }
-
   /* ---------- member view MAU (personalizada) ---------- */
   .mau-heading{
     text-align:center;
@@ -390,6 +322,17 @@
     color:var(--gray);
     margin-bottom:10px;
   }
+  /* el nombre sektario, chico, debajo del nombre de pila */
+  .member-sektario{
+    text-align:center;
+    font-size:11px;
+    letter-spacing:.22em;
+    padding-left:.22em;      /* compensa el tracking para que quede centrado */
+    color:var(--gray);
+    margin:-10px 0 16px;
+  }
+  .member-sektario:empty{ display:none; }
+
   .mau-logo{
     display:block;
     width:62%;
@@ -782,6 +725,134 @@
   .historia.active .hist-cta{ animation-delay:1.9s; }
   @keyframes histFade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
 
+  /* ---------- bienvenida: texto + formulario de primer ingreso ---------- */
+  .bv-intro{
+    font-size:12.5px;
+    line-height:1.85;
+    color:rgba(var(--white-rgb),.9);
+    margin:0 0 34px;
+  }
+  .bv-intro p{ margin:0 0 14px; }
+  .bv-intro p:last-child{ margin-bottom:0; }
+  .bv-titulo{
+    font-size:10px;
+    letter-spacing:.16em;
+    color:var(--gray);
+    text-transform:uppercase;
+    border-top:1px solid rgba(var(--gray-rgb),.25);
+    padding-top:18px;
+    margin-bottom:22px;
+  }
+
+  .bv-campo{ margin-bottom:20px; }
+  .bv-campo label{
+    display:block;
+    font-size:9px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gray);
+    margin-bottom:6px;
+  }
+  .bv-campo input,
+  .bv-campo textarea{
+    display:block;
+    width:100%;
+    background:none;
+    border:none;
+    border-bottom:1px solid rgba(var(--gray-rgb),.35);
+    border-radius:0;                 /* ios le pone bordes redondeados solo */
+    color:var(--white);
+    font-family:inherit;
+    font-size:15px;                  /* menos de 16 y ios hace zoom al enfocar */
+    padding:7px 0;
+    outline:none;
+    transition:border-color .2s ease;
+  }
+  .bv-campo textarea{ resize:vertical; min-height:52px; line-height:1.5; }
+  .bv-campo input:focus,
+  .bv-campo textarea:focus{ border-bottom-color:var(--white); }
+  .bv-campo.falta input,
+  .bv-campo.falta textarea{ border-bottom-color:var(--bordo); }
+  .bv-opcional{ font-size:8px; letter-spacing:.1em; color:rgba(var(--gray-rgb),.65); }
+
+  /* buscador de "¿quién te trajo?" */
+  .bv-busca{ position:relative; }
+  .bv-resultados{
+    position:absolute;
+    top:100%; left:0; right:0;
+    z-index:6;
+    background:var(--black);
+    border:1px solid rgba(var(--gray-rgb),.3);
+    max-height:190px;
+    overflow-y:auto;
+  }
+  .bv-resultados:empty{ display:none; }
+  .bv-op{
+    padding:9px 11px;
+    cursor:pointer;
+    font-size:12px;
+    color:var(--white);
+    border-bottom:1px solid rgba(var(--gray-rgb),.14);
+  }
+  .bv-op:last-child{ border-bottom:none; }
+  .bv-op:hover{ background:rgba(var(--white-rgb),.06); }
+  .bv-op span{
+    display:block;
+    font-size:9px;
+    letter-spacing:.1em;
+    color:var(--gray);
+    margin-top:2px;
+  }
+  .bv-op.bv-fisura{ border-top:1px solid rgba(var(--gray-rgb),.3); }
+  .bv-elegido{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:10px;
+    border-bottom:1px solid rgba(var(--gray-rgb),.35);
+    padding:7px 0;
+    font-size:15px;
+  }
+  .bv-cambiar{
+    background:none; border:none; padding:0;
+    color:var(--gray);
+    font-family:inherit;
+    font-size:9px;
+    letter-spacing:.1em;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .bv-cambiar:hover{ color:var(--white); }
+
+  .bv-enviar{
+    display:block;
+    width:100%;
+    margin-top:30px;
+    padding:14px 0;
+    border:1px solid rgba(var(--gray-rgb),.5);
+    background:none;
+    color:var(--white);
+    font-family:inherit;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .bv-enviar:hover{ border-color:var(--white); background:rgba(var(--white-rgb),.04); }
+  .bv-enviar[disabled]{ opacity:.5; cursor:default; }
+  .bv-aviso{
+    margin-top:14px;
+    text-align:center;
+    font-size:9px;
+    letter-spacing:.08em;
+    color:var(--gray);
+    min-height:12px;
+    opacity:0;
+    transition:opacity .3s ease;
+  }
+  .bv-aviso.show{ opacity:1; }
+
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
   }
@@ -855,50 +926,78 @@
     </div>
   </section>
 
+  <!-- ===================== BIENVENIDA (primer ingreso) ===================== -->
+  <!-- la ve cualquiera la primera vez que entra con un código válido -->
+  <section id="bienvenida" class="screen">
+    <div class="bv-intro">
+      <p>Bienvenidx al portal del sékito. Acá se crean nuestros ritos.</p>
+      <p>Cada uno pensado por amigxs, para amigxs, con la misma dedicación con la que se cuida algo que importa: el detalle, la energía, el pulso de la noche.</p>
+      <p>Existen dos mundos. Uno es sensual, provocativo, todavía posible... el otro ya se acabó, y en su ruina también celebramos.</p>
+      <p>La sekta tiene un rito para cada uno. Vos ya estás adentro. Lo que sigue, lo construimos juntxs.</p>
+    </div>
+
+    <div class="bv-titulo">para terminar de entrar</div>
+
+    <form id="bvForm" autocomplete="on" novalidate>
+      <div class="bv-campo" id="bvCampoNombre">
+        <label for="bvNombre">nombre</label>
+        <input id="bvNombre" name="given-name" type="text" autocomplete="given-name" autocapitalize="words" enterkeyhint="next">
+      </div>
+
+      <div class="bv-campo" id="bvCampoApellido">
+        <label for="bvApellido">apellido</label>
+        <input id="bvApellido" name="family-name" type="text" autocomplete="family-name" autocapitalize="words" enterkeyhint="next">
+      </div>
+
+      <div class="bv-campo" id="bvCampoEmail">
+        <label for="bvEmail">mail</label>
+        <input id="bvEmail" name="email" type="email" autocomplete="email" autocapitalize="off" spellcheck="false" enterkeyhint="next">
+      </div>
+
+      <div class="bv-campo" id="bvCampoTel">
+        <label for="bvTel">teléfono</label>
+        <input id="bvTel" name="tel" type="tel" autocomplete="tel" enterkeyhint="next">
+      </div>
+
+      <div class="bv-campo bv-busca" id="bvCampoTrajo">
+        <label for="bvTrajo">¿quién te trajo al sékito?</label>
+        <input id="bvTrajo" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="buscá por nombre" enterkeyhint="search">
+        <div class="bv-elegido" id="bvElegido" hidden>
+          <span id="bvElegidoNombre"></span>
+          <button type="button" class="bv-cambiar" id="bvCambiar">cambiar</button>
+        </div>
+        <div class="bv-resultados" id="bvResultados"></div>
+      </div>
+
+      <div class="bv-campo">
+        <label for="bvComo">¿cómo llegaste? <span class="bv-opcional">(opcional)</span></label>
+        <textarea id="bvComo" rows="2" autocapitalize="sentences"></textarea>
+      </div>
+
+      <button type="submit" class="bv-enviar" id="bvEnviar">entrar al sékito</button>
+      <div class="bv-aviso" id="bvAviso"></div>
+    </form>
+  </section>
+
   <!-- ===================== MEMBER VIEW (genérica) ===================== -->
   <section id="member" class="screen member-screen">
     <div class="top-row rv-a">
       <button class="exit-link" id="exitBtn">salir</button>
     </div>
 
-    <svg class="hero-logo rv-a" viewBox="0 0 1357.15 401.28" xmlns="http://www.w3.org/2000/svg"><path d="M185.23,369.64c-7.38,8.1-16.04,14.33-25.97,18.68-9.94,4.34-20.51,7.2-31.72,8.55-11.22,1.35-22.71,1.27-34.49-.23-11.78-1.5-23.28-3.98-34.49-7.42-11.22-3.45-21.86-7.72-31.94-12.83-10.08-5.1-18.95-10.64-26.61-16.65l10.65-46.35c1.7,10.8,6.1,20.78,13.2,29.92,7.09,9.16,15.61,17.1,25.55,23.85,9.93,6.75,21,12.08,33.21,15.97,12.2,3.9,24.41,5.85,36.62,5.85s23.85-2.03,34.92-6.08,20.72-10.72,28.96-20.03c5.96-6.9,10.07-14.55,12.35-22.95,2.27-8.39,1.84-17.1-1.28-26.1-4.54-13.2-11.5-23.85-20.87-31.95-9.37-8.1-20.01-14.85-31.94-20.25-11.92-5.4-24.48-10.2-37.68-14.4-13.2-4.2-25.76-9.15-37.68-14.85-11.92-5.7-22.57-12.83-31.94-21.38-9.37-8.55-16.18-20.03-20.44-34.43-4.26-14.1-4.76-27.97-1.49-41.62,3.26-13.65,9.58-25.42,18.95-35.32,9.08-9.6,21.14-16.57,36.19-20.93,15.04-4.35,30.73-6.14,47.05-5.4,16.32.75,32.15,3.98,47.48,9.68,15.33,5.7,27.96,13.65,37.9,23.85l-11.07,43.2c-1.14-9.6-3.98-18.6-8.52-27-3.98-7.2-9.65-14.47-17.03-21.83-7.38-7.35-17.46-12.82-30.23-16.42-11.07-3.3-21.93-4.8-32.57-4.5-10.65.3-20.65,1.95-30.02,4.95-9.37,3-17.67,7.13-24.91,12.38-7.24,5.25-12.85,11.18-16.82,17.78-3.98,6.6-6.03,13.8-6.17,21.6-.15,7.8,2.2,15.6,7.03,23.4,5.96,9.9,14.26,18.15,24.91,24.75,10.65,6.6,22.21,12.53,34.7,17.77,12.49,5.25,25.4,10.28,38.75,15.08,13.34,4.8,25.76,10.57,37.26,17.32,11.5,6.75,21.5,14.85,30.02,24.3,8.52,9.45,14.33,21.38,17.46,35.78,2.83,13.2,1.84,26.18-2.98,38.92-4.83,12.76-12.92,24.53-24.27,35.33Z"/><path d="M419.85,75.34v27.45c-1.7-2.7-4.68-5.32-8.94-7.88-4.26-2.55-9.65-4.73-16.18-6.52-6.53-1.8-13.99-3.3-22.36-4.5-8.38-1.2-17.39-1.8-27.04-1.8h-58.34v109.8c5.67-4.2,12.2-6.15,19.59-5.85,7.38.3,15.61,1.8,24.7,4.5,4.26,1.2,9.37,2.02,15.33,2.48,5.96.45,11.71.22,17.25-.68,5.54-.9,10.57-2.62,15.12-5.17,4.54-2.55,7.52-6.08,8.94-10.58-.57,10.2-2.84,17.93-6.81,23.18-3.98,5.25-8.94,8.55-14.9,9.9-5.96,1.35-12.5,1.12-19.59-.67-7.1-1.8-13.91-4.79-20.44-9-3.69-2.1-7.81-3.83-12.35-5.18-4.54-1.35-8.8-1.87-12.77-1.57-3.98.3-7.31,1.65-10.01,4.05-2.7,2.41-4.04,6.15-4.04,11.25v175.5h58.34c9.65,0,18.66-.6,27.04-1.8,8.37-1.2,15.82-2.7,22.36-4.5,6.53-1.8,11.92-3.97,16.18-6.53,4.26-2.54,7.24-5.17,8.94-7.88v27.45h-158.83V75.34h158.83Z"/><path d="M483.72,75.34h25.97v235.35c2.27-8.7,5.18-16.72,8.73-24.07,3.55-7.35,8.16-13.28,13.84-17.78h-.43c15.04-11.4,30.72-25.27,47.05-41.62,16.32-16.35,30.73-34.42,43.22-54.22,9.08-15,16.53-30.67,22.36-47.03,5.82-16.35,8.73-33.22,8.73-50.62h6.81c0,18.3-2.98,35.93-8.94,52.88-5.96,16.95-13.77,33.23-23.42,48.83-10.51,16.8-22.36,32.25-35.56,46.35-13.2,14.1-26.33,26.7-39.39,37.8.57-.29,1.7-.45,3.41-.45,9.65,0,18.8,3.45,27.46,10.35,8.66,6.9,16.89,15.46,24.7,25.65,7.8,10.2,15.33,21.15,22.57,32.85,7.24,11.7,14.26,22.35,21.08,31.95,6.81,9.6,13.34,17.33,19.59,23.17,6.24,5.85,12.49,7.88,18.74,6.08-6.25,6.3-12.92,9.75-20.01,10.35-7.1.6-13.99-.83-20.65-4.27-6.67-3.45-12.85-8.4-18.52-14.85-5.68-6.45-9.94-13.42-12.77-20.92-3.41-8.4-6.53-18.07-9.37-29.03-2.84-10.95-6.46-21.15-10.86-30.6-4.41-9.45-9.87-17.47-16.39-24.07-6.53-6.6-15.05-9.9-25.55-9.9-7.1,0-13.35,1.96-18.74,5.85l-1.7.9c-5.96,4.8-10.72,11.47-14.26,20.03-3.55,8.55-6.17,17.85-7.88,27.9-1.7,10.05-2.77,20.25-3.19,30.6-.43,10.35-.64,19.58-.64,27.68v10.35h-25.97V75.34Z"/><path d="M737.5,75.34h25.97v315.45h-25.97V75.34Z"/><path d="M1036.42,75.34v27.45c-1.7-2.7-4.68-5.32-8.94-7.88-4.26-2.55-9.65-4.73-16.18-6.52-6.53-1.8-13.99-3.3-22.36-4.5-8.38-1.2-17.39-1.8-27.04-1.8h-17.03v308.7h-25.97V82.09h-17.03c-19.31,0-35.77,2.1-49.39,6.3-13.63,4.2-22,9-25.12,14.4v-27.45h209.07Z"/><path d="M1072.19,315.64c-10.51-19.2-16.89-39.38-19.16-60.53-2.28-21.15-.85-41.7,4.26-61.65,5.11-19.95,13.63-38.47,25.55-55.57,11.92-17.1,27.11-31.2,45.56-42.3,18.16-11.1,37.26-17.92,57.27-20.47,20.01-2.54,39.45-1.12,58.34,4.28,18.88,5.4,36.41,14.48,52.59,27.22,16.18,12.75,29.52,28.73,40.03,47.92,10.5,19.5,16.96,39.83,19.38,60.98,2.41,21.15,1.06,41.7-4.05,61.65-5.11,19.95-13.7,38.48-25.76,55.58-12.07,17.1-27.19,31.2-45.35,42.3-18.46,11.1-37.68,17.85-57.7,20.25-20.01,2.4-39.46.9-58.34-4.5-18.88-5.4-36.41-14.4-52.59-27-16.18-12.6-29.53-28.65-40.03-48.15ZM1311.92,169.39c-8.8-16.2-20.09-30.75-33.85-43.65-13.77-12.9-28.74-22.79-44.92-29.7-16.18-6.9-33.07-10.27-50.67-10.12-17.6.16-34.64,5.33-51.1,15.52-16.75,10.2-29.59,23.25-38.54,39.15-8.94,15.9-14.55,33-16.82,51.3-2.28,18.3-1.56,36.98,2.13,56.02,3.69,19.05,9.93,36.67,18.74,52.88,8.8,16.2,20.08,30.75,33.85,43.65,13.77,12.9,28.74,22.88,44.92,29.93,16.18,7.05,33,10.43,50.46,10.12,17.46-.3,34.56-5.55,51.31-15.75,16.46-10.2,29.23-23.25,38.32-39.15,9.08-15.9,14.76-33,17.03-51.3,2.27-18.3,1.56-36.97-2.13-56.02-3.69-19.05-9.94-36.68-18.74-52.88ZM1207.89,189.81c1.31,8.33,2.96,15.17,4.93,20.49,1.97,5.33,3.94,9.55,5.91,12.68,1.97,3.12,3.67,5.27,5.09,6.42,1.42,1.16,2.24,1.74,2.46,1.74-.22.23-1.1.99-2.63,2.26-1.54,1.28-3.23,3.47-5.09,6.6-1.86,3.13-3.78,7.35-5.75,12.68-1.97,5.33-3.62,12.04-4.93,20.14-1.31-8.33-3.01-15.16-5.09-20.49-2.08-5.32-4.11-9.55-6.08-12.68-1.97-3.13-3.73-5.32-5.26-6.6-1.54-1.27-2.41-1.91-2.63-1.91.22-.23,1.15-.98,2.79-2.26,1.64-1.27,3.45-3.41,5.42-6.42,1.97-3.01,3.94-7.17,5.92-12.5,1.97-5.32,3.61-12.04,4.93-20.14ZM369.03,0c-3.99,6.11-6.9,11.45-8.72,16.01-1.83,4.56-3.01,8.41-3.56,11.56-.55,3.15-.7,5.51-.46,7.08.24,1.57.43,2.42.57,2.54-.28.02-1.28,0-3-.08-1.72-.07-4.09.35-7.1,1.28-3.01.92-6.69,2.52-11.04,4.8-4.36,2.27-9.3,5.63-14.85,10.06,3.99-6.11,6.86-11.47,8.62-16.1,1.75-4.62,2.91-8.51,3.45-11.66.55-3.15.7-5.58.46-7.28-.25-1.7-.44-2.63-.58-2.75.27-.02,1.31.04,3.1.17,1.79.14,4.19-.19,7.21-.98,3.01-.78,6.69-2.31,11.05-4.59,4.35-2.27,9.3-5.62,14.85-10.06Z"/></svg>
+    <div class="mau-heading rv-a" id="memberNombre">—</div>
+    <div class="member-sektario rv-a" id="memberSektario"></div>
+    <div class="mau-sub rv-a">tu lugar en el</div>
+    <svg class="mau-logo rv-a" viewBox="0 0 1357.15 401.28" xmlns="http://www.w3.org/2000/svg"><path d="M185.23,369.64c-7.38,8.1-16.04,14.33-25.97,18.68-9.94,4.34-20.51,7.2-31.72,8.55-11.22,1.35-22.71,1.27-34.49-.23-11.78-1.5-23.28-3.98-34.49-7.42-11.22-3.45-21.86-7.72-31.94-12.83-10.08-5.1-18.95-10.64-26.61-16.65l10.65-46.35c1.7,10.8,6.1,20.78,13.2,29.92,7.09,9.16,15.61,17.1,25.55,23.85,9.93,6.75,21,12.08,33.21,15.97,12.2,3.9,24.41,5.85,36.62,5.85s23.85-2.03,34.92-6.08,20.72-10.72,28.96-20.03c5.96-6.9,10.07-14.55,12.35-22.95,2.27-8.39,1.84-17.1-1.28-26.1-4.54-13.2-11.5-23.85-20.87-31.95-9.37-8.1-20.01-14.85-31.94-20.25-11.92-5.4-24.48-10.2-37.68-14.4-13.2-4.2-25.76-9.15-37.68-14.85-11.92-5.7-22.57-12.83-31.94-21.38-9.37-8.55-16.18-20.03-20.44-34.43-4.26-14.1-4.76-27.97-1.49-41.62,3.26-13.65,9.58-25.42,18.95-35.32,9.08-9.6,21.14-16.57,36.19-20.93,15.04-4.35,30.73-6.14,47.05-5.4,16.32.75,32.15,3.98,47.48,9.68,15.33,5.7,27.96,13.65,37.9,23.85l-11.07,43.2c-1.14-9.6-3.98-18.6-8.52-27-3.98-7.2-9.65-14.47-17.03-21.83-7.38-7.35-17.46-12.82-30.23-16.42-11.07-3.3-21.93-4.8-32.57-4.5-10.65.3-20.65,1.95-30.02,4.95-9.37,3-17.67,7.13-24.91,12.38-7.24,5.25-12.85,11.18-16.82,17.78-3.98,6.6-6.03,13.8-6.17,21.6-.15,7.8,2.2,15.6,7.03,23.4,5.96,9.9,14.26,18.15,24.91,24.75,10.65,6.6,22.21,12.53,34.7,17.77,12.49,5.25,25.4,10.28,38.75,15.08,13.34,4.8,25.76,10.57,37.26,17.32,11.5,6.75,21.5,14.85,30.02,24.3,8.52,9.45,14.33,21.38,17.46,35.78,2.83,13.2,1.84,26.18-2.98,38.92-4.83,12.76-12.92,24.53-24.27,35.33Z"/><path d="M419.85,75.34v27.45c-1.7-2.7-4.68-5.32-8.94-7.88-4.26-2.55-9.65-4.73-16.18-6.52-6.53-1.8-13.99-3.3-22.36-4.5-8.38-1.2-17.39-1.8-27.04-1.8h-58.34v109.8c5.67-4.2,12.2-6.15,19.59-5.85,7.38.3,15.61,1.8,24.7,4.5,4.26,1.2,9.37,2.02,15.33,2.48,5.96.45,11.71.22,17.25-.68,5.54-.9,10.57-2.62,15.12-5.17,4.54-2.55,7.52-6.08,8.94-10.58-.57,10.2-2.84,17.93-6.81,23.18-3.98,5.25-8.94,8.55-14.9,9.9-5.96,1.35-12.5,1.12-19.59-.67-7.1-1.8-13.91-4.79-20.44-9-3.69-2.1-7.81-3.83-12.35-5.18-4.54-1.35-8.8-1.87-12.77-1.57-3.98.3-7.31,1.65-10.01,4.05-2.7,2.41-4.04,6.15-4.04,11.25v175.5h58.34c9.65,0,18.66-.6,27.04-1.8,8.37-1.2,15.82-2.7,22.36-4.5,6.53-1.8,11.92-3.97,16.18-6.53,4.26-2.54,7.24-5.17,8.94-7.88v27.45h-158.83V75.34h158.83Z"/><path d="M483.72,75.34h25.97v235.35c2.27-8.7,5.18-16.72,8.73-24.07,3.55-7.35,8.16-13.28,13.84-17.78h-.43c15.04-11.4,30.72-25.27,47.05-41.62,16.32-16.35,30.73-34.42,43.22-54.22,9.08-15,16.53-30.67,22.36-47.03,5.82-16.35,8.73-33.22,8.73-50.62h6.81c0,18.3-2.98,35.93-8.94,52.88-5.96,16.95-13.77,33.23-23.42,48.83-10.51,16.8-22.36,32.25-35.56,46.35-13.2,14.1-26.33,26.7-39.39,37.8.57-.29,1.7-.45,3.41-.45,9.65,0,18.8,3.45,27.46,10.35,8.66,6.9,16.89,15.46,24.7,25.65,7.8,10.2,15.33,21.15,22.57,32.85,7.24,11.7,14.26,22.35,21.08,31.95,6.81,9.6,13.34,17.33,19.59,23.17,6.24,5.85,12.49,7.88,18.74,6.08-6.25,6.3-12.92,9.75-20.01,10.35-7.1.6-13.99-.83-20.65-4.27-6.67-3.45-12.85-8.4-18.52-14.85-5.68-6.45-9.94-13.42-12.77-20.92-3.41-8.4-6.53-18.07-9.37-29.03-2.84-10.95-6.46-21.15-10.86-30.6-4.41-9.45-9.87-17.47-16.39-24.07-6.53-6.6-15.05-9.9-25.55-9.9-7.1,0-13.35,1.96-18.74,5.85l-1.7.9c-5.96,4.8-10.72,11.47-14.26,20.03-3.55,8.55-6.17,17.85-7.88,27.9-1.7,10.05-2.77,20.25-3.19,30.6-.43,10.35-.64,19.58-.64,27.68v10.35h-25.97V75.34Z"/><path d="M737.5,75.34h25.97v315.45h-25.97V75.34Z"/><path d="M1036.42,75.34v27.45c-1.7-2.7-4.68-5.32-8.94-7.88-4.26-2.55-9.65-4.73-16.18-6.52-6.53-1.8-13.99-3.3-22.36-4.5-8.38-1.2-17.39-1.8-27.04-1.8h-17.03v308.7h-25.97V82.09h-17.03c-19.31,0-35.77,2.1-49.39,6.3-13.63,4.2-22,9-25.12,14.4v-27.45h209.07Z"/><path d="M1072.19,315.64c-10.51-19.2-16.89-39.38-19.16-60.53-2.28-21.15-.85-41.7,4.26-61.65,5.11-19.95,13.63-38.47,25.55-55.57,11.92-17.1,27.11-31.2,45.56-42.3,18.16-11.1,37.26-17.92,57.27-20.47,20.01-2.54,39.45-1.12,58.34,4.28,18.88,5.4,36.41,14.48,52.59,27.22,16.18,12.75,29.52,28.73,40.03,47.92,10.5,19.5,16.96,39.83,19.38,60.98,2.41,21.15,1.06,41.7-4.05,61.65-5.11,19.95-13.7,38.48-25.76,55.58-12.07,17.1-27.19,31.2-45.35,42.3-18.46,11.1-37.68,17.85-57.7,20.25-20.01,2.4-39.46.9-58.34-4.5-18.88-5.4-36.41-14.4-52.59-27-16.18-12.6-29.53-28.65-40.03-48.15ZM1311.92,169.39c-8.8-16.2-20.09-30.75-33.85-43.65-13.77-12.9-28.74-22.79-44.92-29.7-16.18-6.9-33.07-10.27-50.67-10.12-17.6.16-34.64,5.33-51.1,15.52-16.75,10.2-29.59,23.25-38.54,39.15-8.94,15.9-14.55,33-16.82,51.3-2.28,18.3-1.56,36.98,2.13,56.02,3.69,19.05,9.93,36.67,18.74,52.88,8.8,16.2,20.08,30.75,33.85,43.65,13.77,12.9,28.74,22.88,44.92,29.93,16.18,7.05,33,10.43,50.46,10.12,17.46-.3,34.56-5.55,51.31-15.75,16.46-10.2,29.23-23.25,38.32-39.15,9.08-15.9,14.76-33,17.03-51.3,2.27-18.3,1.56-36.97-2.13-56.02-3.69-19.05-9.94-36.68-18.74-52.88ZM1207.89,189.81c1.31,8.33,2.96,15.17,4.93,20.49,1.97,5.33,3.94,9.55,5.91,12.68,1.97,3.12,3.67,5.27,5.09,6.42,1.42,1.16,2.24,1.74,2.46,1.74-.22.23-1.1.99-2.63,2.26-1.54,1.28-3.23,3.47-5.09,6.6-1.86,3.13-3.78,7.35-5.75,12.68-1.97,5.33-3.62,12.04-4.93,20.14-1.31-8.33-3.01-15.16-5.09-20.49-2.08-5.32-4.11-9.55-6.08-12.68-1.97-3.13-3.73-5.32-5.26-6.6-1.54-1.27-2.41-1.91-2.63-1.91.22-.23,1.15-.98,2.79-2.26,1.64-1.27,3.45-3.41,5.42-6.42,1.97-3.01,3.94-7.17,5.92-12.5,1.97-5.32,3.61-12.04,4.93-20.14ZM369.03,0c-3.99,6.11-6.9,11.45-8.72,16.01-1.83,4.56-3.01,8.41-3.56,11.56-.55,3.15-.7,5.51-.46,7.08.24,1.57.43,2.42.57,2.54-.28.02-1.28,0-3-.08-1.72-.07-4.09.35-7.1,1.28-3.01.92-6.69,2.52-11.04,4.8-4.36,2.27-9.3,5.63-14.85,10.06,3.99-6.11,6.86-11.47,8.62-16.1,1.75-4.62,2.91-8.51,3.45-11.66.55-3.15.7-5.58.46-7.28-.25-1.7-.44-2.63-.58-2.75.27-.02,1.31.04,3.1.17,1.79.14,4.19-.19,7.21-.98,3.01-.78,6.69-2.31,11.05-4.59,4.35-2.27,9.3-5.62,14.85-10.06Z"/></svg>
 
-    <div class="identity-line rv-a">
-      <span class="chevron">&gt;</span>
-      <span class="identity-code" id="chipCode">—</span>
-    </div>
+    <!-- sin carrusel: quien no tiene pantalla propia todavía no tiene fotos -->
 
-    <div class="section-title rv-b">TU ACCESO — PRÓXIMA FIESTA</div>
-    <div class="qr-block rv-b">
-      <img id="qrImg" src="" alt="QR de acceso">
-      <div class="qr-caption">escaneá en la entrada</div>
+    <div class="building rv-d">
+      <div class="building-dots"><span></span><span></span><span></span></div>
+      <div class="building-text">la sekta se está construyendo</div>
     </div>
-
-    <div class="section-title rv-c">REGISTRO</div>
-    <div class="photo-grid rv-c">
-      <div class="photo-cell"><span>IMG_0231</span></div>
-      <div class="photo-cell"><span>IMG_0247</span></div>
-      <div class="photo-cell"><span>IMG_0259</span></div>
-    </div>
-
-    <div class="member-footer rv-d" id="plainFooter">
-      <span id="levelText">sékito · nivel 01</span>
-      <span id="invitedByText">invitado por: —</span>
-    </div>
-    <div class="lineage rv-d" id="lineageBadge" hidden>
-      <svg class="seed-glyph" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="20" cy="20" r="3" fill="currentColor"/>
-        <path d="M20 20 L20 6" stroke="currentColor" stroke-linecap="round"/>
-        <path d="M20 20 L12 2" stroke="currentColor" stroke-linecap="round"/>
-        <path d="M20 20 L28 2" stroke="currentColor" stroke-linecap="round"/>
-        <path d="M20 20 L20 34" stroke="currentColor" stroke-linecap="round"/>
-        <path d="M20 20 L10 34" stroke="currentColor" stroke-linecap="round"/>
-        <path d="M20 20 L30 34" stroke="currentColor" stroke-linecap="round"/>
-      </svg>
-      <div class="lineage-text">
-        <span class="lineage-level">SEMILLA CERO</span>
-        <span class="lineage-note">el árbol crece con lo que siembres</span>
-      </div>
+    <div class="invite-section rv-d">
+      <button class="invite-trigger">compartir tu código sektario</button>
     </div>
   </section>
 
@@ -1103,16 +1202,14 @@ const exitBtnLuchi = document.getElementById('exitBtnLuchi');
 const exitBtnNaya = document.getElementById('exitBtnNaya');
 const exitBtnMaia = document.getElementById('exitBtnMaia');
 const exitBtnFlor = document.getElementById('exitBtnFlor');
-const chipCode = document.getElementById('chipCode');
-const qrImg = document.getElementById('qrImg');
-const levelText = document.getElementById('levelText');
-const plainFooter = document.getElementById('plainFooter');
-const lineageBadge = document.getElementById('lineageBadge');
-const invitedByText = document.getElementById('invitedByText');
+const memberNombre = document.getElementById('memberNombre');
+const memberSektario = document.getElementById('memberSektario');
 const gateAviso = document.getElementById('gateAviso');
 
 // datos del miembro que entró, tal como los devolvió la base
 let miembroActual = null;
+// el código con el que entró: lo necesitan el buscador y el registro
+let codigoActual = null;
 
 // pantallas personalizadas: se indexan por el campo "pantalla" que devuelve la
 // base, NO por el código de acceso. el código es privado y este archivo es
@@ -1153,31 +1250,42 @@ function reveal(){
   }, { once: true });
 }
 
-/* le pregunta a la base si el código existe y está activo.
-   devuelve { ok } en false solo si no se pudo consultar (red caída, timeout,
-   error del servidor); eso NO es lo mismo que un código inválido. */
-async function consultarCodigo(codigo){
+/* una sola puerta para hablar con la base: todas las funciones se llaman igual */
+async function llamarRPC(funcion, cuerpo){
   const ctrl = new AbortController();
   const corte = setTimeout(() => ctrl.abort(), CONSULTA_TIMEOUT);
   try {
-    const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/validar_codigo', {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + funcion, {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': 'Bearer ' + SUPABASE_KEY,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ p_codigo: codigo }),
+      body: JSON.stringify(cuerpo),
       signal: ctrl.signal,
     });
-    if (!res.ok) throw new Error('respuesta ' + res.status);
-    const filas = await res.json();
-    return { ok: true, miembro: filas[0] || null };
+    const datos = await res.json().catch(() => null);
+    if (!res.ok){
+      // la base manda el motivo en "message": sirve para distinguir un dato
+      // mal cargado de una caída de red
+      return { ok: false, motivo: (datos && datos.message) || ('http ' + res.status) };
+    }
+    return { ok: true, datos };
   } catch (err) {
-    return { ok: false, miembro: null };
+    return { ok: false, motivo: 'sin_conexion' };
   } finally {
     clearTimeout(corte);
   }
+}
+
+/* le pregunta a la base si el código existe y está activo.
+   devuelve { ok } en false solo si no se pudo consultar (red caída, timeout,
+   error del servidor); eso NO es lo mismo que un código inválido. */
+async function consultarCodigo(codigo){
+  const r = await llamarRPC('validar_codigo', { p_codigo: codigo });
+  if (!r.ok) return { ok: false, miembro: null };
+  return { ok: true, miembro: (r.datos && r.datos[0]) || null };
 }
 
 let consultando = false;
@@ -1202,6 +1310,7 @@ codeForm.addEventListener('submit', async (e) => {
   if (!ok){
     sinConexion();          // el portal no pudo preguntar
   } else if (miembro){
+    codigoActual = raw;
     grant(miembro);
   } else {
     deny();                 // preguntó y el código no vale
@@ -1253,8 +1362,22 @@ function grant(miembro){
   miembroActual = miembro;
   ocultarAviso();
   gateScreen.classList.remove('active');
+  scrollToTop();
 
-  // la historia va primero para todos; el perfil queda debajo
+  // la primera vez, antes de todo, el formulario de bienvenida
+  if (!miembro.registro_completo){
+    if (window.__prepararBienvenida) window.__prepararBienvenida();
+    document.getElementById('bienvenida').classList.add('active');
+    return;
+  }
+
+  entrarAlSitio(miembro);
+}
+
+/* la historia va primero para todos; el perfil queda debajo */
+function entrarAlSitio(miembro){
+  miembroActual = miembro;
+  document.getElementById('bienvenida').classList.remove('active');
   historiaScreen.classList.add('active');
   scrollToTop();
 
@@ -1263,30 +1386,19 @@ function grant(miembro){
   if (pantalla && CUSTOM_SCREENS[pantalla]){
     CUSTOM_SCREENS[pantalla]().classList.add('active');
   } else {
-    // en pantalla y en el QR va el nombre sektario, que es público.
-    // el código de acceso no: es la credencial, y el QR se escanea en la
-    // puerta a la vista de todos.
-    chipCode.textContent = miembro.nombre_sektario;
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&bgcolor=0D0D0D&color=F2F2F2&data=${encodeURIComponent('sekito.com/acceso/' + miembro.nombre_sektario)}`;
-
-    // semilla cero o nivel 01: lo dice la base, no una lista de acá
-    if (miembro.es_fundador){
-      plainFooter.hidden = true;
-      lineageBadge.hidden = false;
-    } else {
-      plainFooter.hidden = false;
-      lineageBadge.hidden = true;
-      levelText.textContent = 'sékito · nivel 01';
-      invitedByText.textContent = 'invitado por: ' + (miembro.invitado_por_nombre || '—');
-    }
-
+    // misma estructura que las pantallas propias, sin fotos: el nombre de pila
+    // grande y el nombre sektario debajo
+    memberNombre.textContent = (miembro.nombre_real || miembro.nombre_sektario || '—').toUpperCase();
+    memberSektario.textContent = miembro.nombre_real ? (miembro.nombre_sektario || '') : '';
     memberScreen.classList.add('active');
   }
 }
 
 function resetToGate(){
   miembroActual = null;
+  codigoActual = null;
   ocultarAviso();
+  document.getElementById('bienvenida').classList.remove('active');
   historiaScreen.classList.remove('active');
   scrollToTop();
   memberScreen.classList.remove('active');
@@ -1307,6 +1419,200 @@ exitBtnMaia.addEventListener('click', resetToGate);
 exitBtnFlor.addEventListener('click', resetToGate);
 
 reveal();
+
+/* ---------- formulario de bienvenida (primer ingreso) ---------- */
+(function bienvenida(){
+  const form      = document.getElementById('bvForm');
+  const enviar    = document.getElementById('bvEnviar');
+  const aviso     = document.getElementById('bvAviso');
+  const buscaInp  = document.getElementById('bvTrajo');
+  const resultados= document.getElementById('bvResultados');
+  const elegido   = document.getElementById('bvElegido');
+  const elegidoNom= document.getElementById('bvElegidoNombre');
+  const cambiar   = document.getElementById('bvCambiar');
+  const campoTrajo= document.getElementById('bvCampoTrajo');
+
+  const campos = {
+    nombre:   document.getElementById('bvNombre'),
+    apellido: document.getElementById('bvApellido'),
+    email:    document.getElementById('bvEmail'),
+    telefono: document.getElementById('bvTel'),
+    como:     document.getElementById('bvComo'),
+  };
+
+  let trajoId = null;     // uuid del miembro elegido
+  let fisura  = null;     // {id, nombre} — la opción "no me trajo nadie"
+  let debounce = null;
+  let enviando = false;
+  // la base tarda entre 0,4 y 5 segundos según el momento. sin esto, si
+  // escribís "ma" y después "mau", la respuesta de "ma" puede llegar última
+  // y pisar los resultados correctos. solo se pinta la búsqueda más reciente.
+  let ultimaBusqueda = 0;
+
+  function decir(msg){
+    aviso.textContent = msg;
+    aviso.classList.toggle('show', !!msg);
+  }
+
+  function marcarFalta(el, falta){
+    const campo = el.closest('.bv-campo');
+    if (campo) campo.classList.toggle('falta', falta);
+  }
+
+  function comoSeLlama(m){
+    const real = [m.nombre_real, m.apellido].filter(Boolean).join(' ');
+    return real || m.nombre_sektario || '—';
+  }
+
+  // --- buscador -------------------------------------------------------------
+  function cerrarLista(){ resultados.innerHTML = ''; }
+
+  function elegir(id, nombre){
+    trajoId = id;
+    elegidoNom.textContent = nombre;
+    elegido.hidden = false;
+    buscaInp.hidden = true;
+    cerrarLista();
+    marcarFalta(buscaInp, false);
+  }
+
+  cambiar.addEventListener('click', () => {
+    trajoId = null;
+    elegido.hidden = true;
+    buscaInp.hidden = false;
+    buscaInp.value = '';
+    buscaInp.focus();
+  });
+
+  function pintar(lista){
+    resultados.innerHTML = '';
+    // FISURA va fijada abajo: si además viniera en los resultados de búsqueda
+    // (buscar "fis" la encuentra) aparecería dos veces
+    lista.filter(m => !fisura || m.id !== fisura.id).forEach(m => {
+      const op = document.createElement('div');
+      op.className = 'bv-op';
+      op.textContent = comoSeLlama(m);
+      if (m.nombre_sektario && m.nombre_real){
+        const s = document.createElement('span');
+        s.textContent = m.nombre_sektario;
+        op.appendChild(s);
+      }
+      op.addEventListener('click', () => elegir(m.id, comoSeLlama(m)));
+      resultados.appendChild(op);
+    });
+    // FISURA siempre al final: si dependiera de la búsqueda, nadie la
+    // encontraría sin saber de antemano que existe
+    if (fisura){
+      const op = document.createElement('div');
+      op.className = 'bv-op bv-fisura';
+      op.textContent = 'no me trajo nadie en particular';
+      const s = document.createElement('span');
+      s.textContent = fisura.nombre;
+      op.appendChild(s);
+      op.addEventListener('click', () => elegir(fisura.id, fisura.nombre));
+      resultados.appendChild(op);
+    }
+  }
+
+  buscaInp.addEventListener('input', () => {
+    clearTimeout(debounce);
+    const q = buscaInp.value.trim();
+    if (q.length < 3){ cerrarLista(); if (fisura) pintar([]); return; }
+    // espera a que deje de tipear: una consulta por letra sería un desperdicio
+    const miTurno = ++ultimaBusqueda;
+    debounce = setTimeout(async () => {
+      const r = await llamarRPC('buscar_miembros', { p_codigo: codigoActual, p_query: q });
+      if (miTurno !== ultimaBusqueda) return;   // llegó tarde: ya hay una búsqueda más nueva
+      pintar((r.ok && Array.isArray(r.datos)) ? r.datos : []);
+    }, 250);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!campoTrajo.contains(e.target)) cerrarLista();
+  });
+
+  // --- al abrirse la pantalla ----------------------------------------------
+  async function preparar(){
+    trajoId = null;
+    elegido.hidden = true;
+    buscaInp.hidden = false;
+    buscaInp.value = '';
+    cerrarLista();
+    decir('');
+    Object.values(campos).forEach(el => { el.value = ''; marcarFalta(el, false); });
+
+    // a los fundadores no los trajo nadie
+    campoTrajo.hidden = !!(miembroActual && miembroActual.es_fundador);
+
+    // busca a FISURA una sola vez, para poder fijarla en la lista
+    if (!fisura && !campoTrajo.hidden){
+      const r = await llamarRPC('buscar_miembros', { p_codigo: codigoActual, p_query: 'fisura' });
+      const f = r.ok && Array.isArray(r.datos) ? r.datos[0] : null;
+      if (f) fisura = { id: f.id, nombre: f.nombre_sektario };
+    }
+  }
+  window.__prepararBienvenida = preparar;
+
+  // --- envío ----------------------------------------------------------------
+  const MENSAJES = {
+    codigo_invalido:      'el código dejó de ser válido',
+    registro_ya_completo: 'este código ya se registró',
+    faltan_datos:         'faltan datos obligatorios',
+    falta_invitado_por:   'elegí quién te trajo',
+    sin_conexion:         'el portal no responde.. probá de nuevo',
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (enviando) return;
+
+    // validación en el navegador, para no ir y volver por algo evidente
+    let falta = false;
+    ['nombre','apellido','email','telefono'].forEach(k => {
+      const vacio = campos[k].value.trim() === '';
+      marcarFalta(campos[k], vacio);
+      if (vacio) falta = true;
+    });
+    const mail = campos.email.value.trim();
+    const mailMal = mail !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail);
+    if (mailMal){ marcarFalta(campos.email, true); }
+    if (!campoTrajo.hidden && !trajoId){ marcarFalta(buscaInp, true); falta = true; }
+
+    if (falta){ decir('completá los campos marcados'); return; }
+    if (mailMal){ decir('revisá el mail'); return; }
+
+    enviando = true;
+    enviar.disabled = true;
+    const textoOriginal = enviar.textContent;
+    enviar.textContent = 'entrando...';
+    decir('');
+
+    const r = await llamarRPC('completar_registro', {
+      p_codigo:        codigoActual,
+      p_nombre:        campos.nombre.value,
+      p_apellido:      campos.apellido.value,
+      p_email:         campos.email.value,
+      p_telefono:      campos.telefono.value,
+      p_invitado_por:  trajoId,
+      p_como_llegaste: campos.como.value,
+    });
+
+    enviando = false;
+    enviar.disabled = false;
+    enviar.textContent = textoOriginal;
+
+    if (!r.ok){
+      const clave = Object.keys(MENSAJES).find(k => String(r.motivo).includes(k));
+      decir(MENSAJES[clave] || 'no se pudo guardar.. probá de nuevo');
+      return;
+    }
+
+    const miembro = Array.isArray(r.datos) ? r.datos[0] : null;
+    if (!miembro){ decir('no se pudo guardar.. probá de nuevo'); return; }
+
+    entrarAlSitio(miembro);
+  });
+})();
 
 /* ---------- código de invitación sektario ---------- */
 (function inviteCode(){
@@ -1410,8 +1716,11 @@ reveal();
 
     await document.fonts.ready;
 
+    // quien no tiene pantalla propia no tiene fotos: el certificado sale sobre
+    // negro, con el abanico y el código. no es un caso de error.
+    const foto = getMainPhoto(profile);
     const [bgImg, fanImg, wordmarkImg] = await Promise.all([
-      loadImage(getMainPhoto(profile)),
+      foto ? loadImage(foto) : Promise.resolve(null),
       loadImage(getFanDataUri()),
       loadImage('images/sekito-wordmark.svg'),
     ]);
@@ -1419,7 +1728,7 @@ reveal();
     // fondo: foto principal, recortada tipo "cover"
     ctx.fillStyle = '#0D0D0D';
     ctx.fillRect(0, 0, W, H);
-    drawCover(ctx, bgImg, 0, 0, W, H, 0.5, 0.32);
+    if (bgImg) drawCover(ctx, bgImg, 0, 0, W, H, 0.5, 0.32);
 
     // oscurecer parejo + degradé (más oscuro arriba y abajo, más claro al medio)
     ctx.fillStyle = 'rgba(13,13,13,0.36)';

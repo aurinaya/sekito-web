@@ -10,6 +10,12 @@
 -- "on conflict do nothing"). No hace falta ninguna clave secreta: el SQL
 -- Editor ya corre con permisos de administrador.
 --
+-- ORDEN DE APLICACIÓN
+--   Este archivo crea la estructura base. Después hay que correr
+--   migracion-bienvenida.sql, que agrega las columnas y las funciones del
+--   formulario de bienvenida. Las funciones nuevas viven solo en ese archivo
+--   para no tener dos copias que se desincronicen.
+--
 -- IMPORTANTE — seguridad
 --   Todas las tablas quedan con RLS activo y SIN políticas de acceso, o sea
 --   que la clave pública del sitio (anon / publishable) NO puede leer ni
@@ -41,17 +47,19 @@ create table if not exists public.miembros (
   id               uuid primary key default gen_random_uuid(),
   codigo_acceso    text not null unique
                      check (codigo_acceso = upper(codigo_acceso)),
-  nombre_sektario  text not null,
+  nombre_sektario  text,                  -- se genera al registrarse, ver migracion-bienvenida.sql
   codigo_sektario  text unique,
   nombre_real      text,
+  apellido         text,
   telefono         text,
   email            text,
+  como_llegaste    text,
   pantalla         text,
   invitado_por     uuid references public.miembros(id) on delete set null,
   es_fundador      boolean not null default false,
   fecha_ingreso    timestamptz not null default now(),
   estado_codigo    text not null default 'activo'
-                     check (estado_codigo in ('activo', 'suspendido', 'revocado')),
+                     check (estado_codigo in ('activo', 'suspendido', 'revocado', 'simbolico')),
   creado_en        timestamptz not null default now()
 );
 
@@ -76,8 +84,11 @@ create table if not exists public.fiestas (
   id         uuid primary key default gen_random_uuid(),
   nombre     text not null,
   fecha      timestamptz not null,
+  lugar      text,
   creado_en  timestamptz not null default now()
 );
+
+create unique index if not exists fiestas_nombre_key on public.fiestas (nombre);
 
 create index if not exists fiestas_fecha_idx on public.fiestas (fecha desc);
 
