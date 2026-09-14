@@ -1114,13 +1114,16 @@ const gateAviso = document.getElementById('gateAviso');
 // datos del miembro que entró, tal como los devolvió la base
 let miembroActual = null;
 
-// pantallas personalizadas: código -> screen. el resto cae en la vista genérica
+// pantallas personalizadas: se indexan por el campo "pantalla" que devuelve la
+// base, NO por el código de acceso. el código es privado y este archivo es
+// público; además así cambiar un código o un número de miembro no rompe ningún
+// perfil. quien no tenga pantalla cae en la vista genérica.
 const CUSTOM_SCREENS = {
-  MAU: () => memberMauScreen,
-  LUCHI: () => memberLuchiScreen,
-  NAYA: () => memberNayaScreen,
-  MAIA: () => memberMaiaScreen,
-  FLOR: () => memberFlorScreen,
+  mau:   () => memberMauScreen,
+  luchi: () => memberLuchiScreen,
+  naya:  () => memberNayaScreen,
+  maia:  () => memberMaiaScreen,
+  flor:  () => memberFlorScreen,
 };
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1199,7 +1202,7 @@ codeForm.addEventListener('submit', async (e) => {
   if (!ok){
     sinConexion();          // el portal no pudo preguntar
   } else if (miembro){
-    grant(raw, miembro);
+    grant(miembro);
   } else {
     deny();                 // preguntó y el código no vale
   }
@@ -1246,7 +1249,7 @@ function deny(){
   }, 45);
 }
 
-function grant(code, miembro){
+function grant(miembro){
   miembroActual = miembro;
   ocultarAviso();
   gateScreen.classList.remove('active');
@@ -1255,11 +1258,16 @@ function grant(code, miembro){
   historiaScreen.classList.add('active');
   scrollToTop();
 
-  if (CUSTOM_SCREENS[code]){
-    CUSTOM_SCREENS[code]().classList.add('active');
+  const pantalla = miembro.pantalla;
+
+  if (pantalla && CUSTOM_SCREENS[pantalla]){
+    CUSTOM_SCREENS[pantalla]().classList.add('active');
   } else {
-    chipCode.textContent = code;
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&bgcolor=0D0D0D&color=F2F2F2&data=${encodeURIComponent('sekito.com/acceso/' + code)}`;
+    // en pantalla y en el QR va el nombre sektario, que es público.
+    // el código de acceso no: es la credencial, y el QR se escanea en la
+    // puerta a la vista de todos.
+    chipCode.textContent = miembro.nombre_sektario;
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&bgcolor=0D0D0D&color=F2F2F2&data=${encodeURIComponent('sekito.com/acceso/' + miembro.nombre_sektario)}`;
 
     // semilla cero o nivel 01: lo dice la base, no una lista de acá
     if (miembro.es_fundador){
@@ -1314,12 +1322,12 @@ reveal();
 
   document.querySelectorAll('.invite-trigger').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (!miembroActual || !miembroActual.codigo_sektario) return;
+      if (!miembroActual || !miembroActual.nombre_sektario) return;
 
-      // data-profile sigue sirviendo para saber de qué pantalla sacar la foto
-      currentProfile = btn.dataset.profile;
+      // "pantalla" también dice de dónde sacar la foto para el certificado
+      currentProfile = miembroActual.pantalla;
       cameFromScreen = btn.closest('.member-screen');
-      inviteCodeText.textContent = miembroActual.codigo_sektario;
+      inviteCodeText.textContent = miembroActual.nombre_sektario;
 
       cameFromScreen.classList.remove('active');
       historiaScreen.classList.remove('active'); // si no, el código quedaría un viewport más abajo
@@ -1353,6 +1361,7 @@ reveal();
   }
 
   function getMainPhoto(profile){
+    if (!profile) return null;
     const screen = document.getElementById('member-' + profile.toLowerCase());
     const img = screen && screen.querySelector('.carousel-slide img');
     return img ? img.src : null;
@@ -1465,8 +1474,12 @@ reveal();
   }
 
   shareCodeBtn.addEventListener('click', async () => {
-    if (!miembroActual || !miembroActual.codigo_sektario) return;
-    const data = { code: miembroActual.codigo_sektario, name: miembroActual.nombre_sektario };
+    if (!miembroActual || !miembroActual.nombre_sektario) return;
+    // MAU·000 -> mau-000, para que sirva de nombre de archivo
+    const data = {
+      code: miembroActual.nombre_sektario,
+      name: miembroActual.nombre_sektario.replace(/·/g, '-').toLowerCase(),
+    };
 
     const originalLabel = shareCodeBtn.textContent;
     shareCodeBtn.textContent = 'generando...';

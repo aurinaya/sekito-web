@@ -26,8 +26,13 @@
 -- ----------------------------------------------------------------------------
 -- codigo_acceso: lo que se escribe en el portal. Se guarda siempre en
 --   mayúsculas para que no puedan existir 'mau' y 'MAU' como dos miembros.
--- codigo_sektario: el código que el miembro comparte (SK·MAU·ØØØ·GDE). Hoy en
---   el sitio es fijo y uno por persona, por eso vive acá y no en invitaciones.
+-- codigo_sektario: EN DESUSO. Era el código que el miembro compartía, con el
+--   envoltorio SK·…·GDE. Se unificó en nombre_sektario, que ahora es el único
+--   identificador público. La columna sigue existiendo hasta que se confirme
+--   que nada la usa; después se borra.
+-- pantalla: qué perfil propio le toca en el sitio (mau, naya, flor...). Separa
+--   la identidad visual del código de acceso, así se puede cambiar un código o
+--   un número de miembro sin romper ningún perfil. Vacío = vista genérica.
 -- es_fundador: "semilla cero". Son exactamente tres: MAU, NAYA y FLOR, que
 --   comparten el número de miembro ØØØ y se distinguen por las iniciales.
 --   Es un campo propio y NO se deduce de invitado_por: LUCHI y MAIA tienen el
@@ -41,6 +46,7 @@ create table if not exists public.miembros (
   nombre_real      text,
   telefono         text,
   email            text,
+  pantalla         text,
   invitado_por     uuid references public.miembros(id) on delete set null,
   es_fundador      boolean not null default false,
   fecha_ingreso    timestamptz not null default now(),
@@ -50,10 +56,17 @@ create table if not exists public.miembros (
 );
 
 comment on column public.miembros.codigo_acceso   is 'Lo que se escribe en el portal. Siempre en mayúsculas.';
-comment on column public.miembros.codigo_sektario is 'El código que la persona comparte para invitar (SK·XXX·GDE).';
+comment on column public.miembros.codigo_sektario is 'EN DESUSO: se unificó en nombre_sektario.';
+comment on column public.miembros.pantalla        is 'Pantalla propia en el sitio. Vacío = vista genérica.';
 comment on column public.miembros.es_fundador     is 'Semilla cero: no fue invitada por nadie.';
 
 create index if not exists miembros_invitado_por_idx on public.miembros (invitado_por);
+
+-- el nombre sektario identifica públicamente a cada miembro: tiene que ser único.
+-- es la garantía real contra colisiones al sortear números de miembro, porque
+-- aguanta dos altas simultáneas (un "fijate si existe y después insertá" no).
+create unique index if not exists miembros_nombre_sektario_key
+  on public.miembros (nombre_sektario);
 
 
 -- ----------------------------------------------------------------------------
@@ -166,7 +179,7 @@ alter table public.entradas     enable row level security;
 create or replace function public.validar_codigo(p_codigo text)
 returns table (
   nombre_sektario      text,
-  codigo_sektario      text,
+  pantalla             text,
   fecha_ingreso        timestamptz,
   es_fundador          boolean,
   invitado_por_nombre  text
@@ -177,7 +190,7 @@ set search_path = public
 as $$
   select
     m.nombre_sektario,
-    m.codigo_sektario,
+    m.pantalla,
     m.fecha_ingreso,
     m.es_fundador,
     quien.nombre_sektario as invitado_por_nombre
@@ -193,27 +206,31 @@ grant execute on function public.validar_codigo(text) to anon, authenticated;
 
 
 -- ============================================================================
--- Los miembros que ya existen en el sitio
+-- Los miembros NO se cargan desde acá
 -- ============================================================================
--- Los tres fundadores (MAU, NAYA, FLOR) comparten el número ØØØ, como ya lo
--- reflejaban sus códigos sektarios.
-insert into public.miembros
-  (codigo_acceso, nombre_sektario, codigo_sektario, es_fundador)
-values
-  ('MAU',   'mau',   'SK·MAU·ØØØ·GDE', true),
-  ('NAYA',  'naya',  'SK·NYA·ØØØ·GDE', true),
-  ('FLOR',  'flor',  'SK·FLR·ØØØ·GDE', true),
-  ('LUCHI', 'luchi', 'SK·LUP·XXV·GDE', false),
-  ('MAIA',  'maia',  'SK·MAI·XVI·GDE', false)
-on conflict (codigo_acceso) do nothing;
-
--- AURINAYA era un código de prueba: fuera.
-delete from public.miembros where codigo_acceso = 'AURINAYA';
+-- Este repo es público. Los códigos de acceso son privados, así que no se
+-- versionan: se cargan aparte, con un script que no entra al repositorio.
+-- Lo que queda acá es la estructura; los datos reales viven solo en la base.
+--
+-- La forma es esta (valores de ejemplo, no son códigos reales):
+--
+--   insert into public.miembros
+--     (codigo_acceso, nombre_sektario, pantalla, es_fundador)
+--   values
+--     ('XXX000', 'CNS·000', 'unapantalla', true)
+--   on conflict (codigo_acceso) do nothing;
+--
+-- codigo_acceso:   privado, 3 letras + 3 números al azar, sin relación con el
+--                  nombre. Se sortea con un generador criptográfico, y el
+--                  alfabeto excluye I y O porque se confunden con 1 y 0.
+-- nombre_sektario: público, consonantes del nombre real + número de miembro.
+--                  El número se sortea entre 001 y 999; el 000 está reservado
+--                  a los fundadores, así nadie que entre después lo aparenta.
 
 
 -- ============================================================================
 -- Verificación (opcional): corré estas tres líneas después, una por una
 -- ============================================================================
--- select * from public.validar_codigo('mau');       -- 1 fila, es_fundador = true
+-- select * from public.validar_codigo('CODIGO');    -- 1 fila si el código existe
 -- select * from public.validar_codigo('NOEXISTE');  -- 0 filas
--- select count(*) from public.miembros;             -- 5
+-- select codigo_acceso, nombre_sektario, pantalla from public.miembros;
