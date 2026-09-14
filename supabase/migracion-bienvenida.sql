@@ -183,6 +183,9 @@ as $$
               and c.estado_codigo = 'activo'
          )
      and length(btrim(coalesce(p_query, ''))) >= 3
+     -- solo miembros vigentes y FISURA: un código suspendido o revocado no
+     -- tiene por qué seguir ofreciéndose como "quién te trajo"
+     and m.estado_codigo in ('activo', 'simbolico')
      and (
            m.nombre_sektario ilike '%' || btrim(p_query) || '%'
         or m.nombre_real     ilike '%' || btrim(p_query) || '%'
