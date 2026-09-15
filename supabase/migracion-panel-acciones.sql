@@ -78,9 +78,14 @@ begin
   values (v_cod, nullif(btrim(coalesce(p_nota, '')), ''), p_invitado_por, 'activo')
   returning miembros.id into v_nuevo;
 
+  -- en el registro va el nombre del invitador, no su identificador: el registro
+  -- se lee, y un uuid no se lee
   insert into public.admin_acciones (admin_id, accion, miembro_id, detalle)
   values (v_admin, 'crear_miembro', v_nuevo,
-          jsonb_build_object('codigo_acceso', v_cod, 'invitado_por', p_invitado_por));
+          jsonb_build_object(
+            'codigo_acceso', v_cod,
+            'invitado_por', (select coalesce(q.nombre_sektario, q.codigo_acceso)
+                               from public.miembros q where q.id = p_invitado_por)));
 
   return query select v_nuevo, v_cod;
 end;
@@ -190,7 +195,10 @@ begin
             'email',    case when nullif(btrim(coalesce(p_email, '')), '')    is not null then 'cambiado' end,
             'telefono', case when nullif(btrim(coalesce(p_telefono, '')), '') is not null then 'cambiado' end,
             'nota',     nullif(btrim(coalesce(p_nota, '')), ''),
-            'invitador', case when p_cambiar_invitador then coalesce(p_invitado_por::text, 'sin invitador') end
+            'invitador', case when p_cambiar_invitador then coalesce(
+                            (select coalesce(q.nombre_sektario, q.codigo_acceso)
+                               from public.miembros q where q.id = p_invitado_por),
+                            'sin invitador') end
           )));
 
   return query select p_miembro_id;
