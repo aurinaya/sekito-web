@@ -190,8 +190,8 @@ td.apretado{white-space:normal; min-width:150px}
         <table>
           <thead><tr>
             <th>sektario</th><th>código</th><th>nombre</th><th>contacto</th>
-            <th>quién lo trajo</th><th>cómo llegó</th><th>nota</th>
-            <th>estado</th><th>ingreso</th><th></th>
+            <th>quién lo trajo</th><th>nota</th><th>estado</th><th>ingreso</th>
+            <th>cómo llegó</th><th></th>
           </tr></thead>
           <tbody id="filasMiembros"></tbody>
         </table>
@@ -457,12 +457,13 @@ function pintarMiembros(){
       '<td>' + nombre + '</td>' +
       '<td class="apretado tenue">' + contacto + '</td>' +
       '<td class="tenue">' + esc(m.invitado_por_nombre || '—') + '</td>' +
-      // lo que escribió la propia persona al entrar, distinto de nuestra nota
-      '<td class="apretado dicho">' + esc(m.como_llegaste || '') + '</td>' +
       '<td class="apretado tenue">' + esc(m.nota_admin || '') + '</td>' +
       '<td><span class="pastilla e-' + esc(m.estado_codigo) + '">' +
           esc(m.estado_codigo) + '</span></td>' +
       '<td class="tenue">' + fecha(m.fecha_ingreso) + '</td>' +
+      // lo que escribió la propia persona, distinto de nuestra nota. Va al
+      // final porque es lo más largo: en el medio empujaba todo lo demás
+      '<td class="apretado dicho">' + esc(m.como_llegaste || '') + '</td>' +
       '<td>' + botones + '</td>' +
     '</tr>';
   }).join('');
