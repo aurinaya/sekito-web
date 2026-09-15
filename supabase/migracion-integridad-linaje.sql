@@ -123,10 +123,10 @@ create trigger miembros_sin_ciclos
 -- ============================================================================
 -- Verificación (las tres tienen que FALLAR)
 -- ============================================================================
--- delete from public.miembros where codigo_acceso = 'TEST001';
+-- delete from public.miembros where codigo_acceso = 'ALGUNCOD';
 --   -> "Los miembros no se borran"
 --
--- update public.miembros set invitado_por = id where codigo_acceso = 'TEST001';
+-- update public.miembros set invitado_por = id where codigo_acceso = 'ALGUNCOD';
 --   -> viola "miembros_no_autoinvitado"
 --
 -- Y con dos miembros A y B donde A invitó a B, poner B como invitador de A:

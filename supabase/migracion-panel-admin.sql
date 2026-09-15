@@ -71,7 +71,7 @@ alter table public.miembros add column if not exists nota_admin text;
 -- ----------------------------------------------------------------------------
 -- 4. normalizar el código escrito a mano
 -- ----------------------------------------------------------------------------
--- Se muestra como R6TT-27C3-KMXK-NMCV pero alguien lo va a pegar con espacios,
+-- Se muestra como XXXX-XXXX-XXXX-XXXX pero alguien lo va a pegar con espacios,
 -- en minúscula o sin guiones. Todo eso tiene que entrar igual.
 create or replace function public.normalizar_codigo_admin(p_codigo text)
 returns text

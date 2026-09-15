@@ -368,5 +368,5 @@ grant execute on function public.completar_registro(text, text, text, text, text
 --   from public.fiestas order by fecha;                    -> 11 fiestas
 --
 -- select * from public.validar_codigo('NOLOGIN');          -> 0 filas (FISURA no entra)
--- select * from public.validar_codigo('TGV725');           -> registro_completo = false
--- select * from public.buscar_miembros('TGV725', 'fis');   -> FISURA
+-- select * from public.validar_codigo('CODIGO');           -> registro_completo = false
+-- select * from public.buscar_miembros('CODIGO', 'fis');   -> FISURA
