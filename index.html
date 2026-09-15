@@ -446,6 +446,140 @@
   }
   .share-feedback.show{ opacity:1; }
 
+  /* ---------- mis ritos ---------- */
+  .ritos-trigger{
+    display:block;
+    margin:22px auto 0;
+    padding:11px 26px;
+    border:1px solid rgba(var(--gray-rgb),.4);
+    background:none;
+    color:var(--white);
+    font-family:inherit;
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .ritos-trigger:hover{ border-color:var(--white); background:rgba(var(--white-rgb),.04); }
+  .ritos-badge{
+    display:inline-block;
+    margin-left:9px;
+    padding:1px 6px;
+    border-radius:8px;
+    background:var(--amarillo);
+    color:var(--black);
+    font-size:9px;
+    letter-spacing:.04em;
+  }
+  .ritos-badge[hidden]{ display:none; }
+
+  .ritos-titulo{
+    text-align:center;
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--gray);
+    margin:64px 0 34px;
+  }
+  .ritos-seccion{
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gray);
+    border-top:1px solid rgba(var(--gray-rgb),.25);
+    padding-top:16px;
+    margin-bottom:18px;
+  }
+
+  /* los pedidos que me hicieron a mí */
+  .pedido{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px 14px;
+    padding:13px 0;
+    border-bottom:1px solid rgba(var(--gray-rgb),.14);
+    font-size:12.5px;
+  }
+  .pedido:last-child{ border-bottom:none; }
+  .pedido .quien{ color:var(--white); }
+  .pedido .donde{ color:var(--gray); flex:1 1 auto; }
+  .pedido .espera{ color:var(--gray); font-size:10.5px; flex:1 1 100%; }
+
+  /* cada fiesta */
+  .rito{
+    padding:16px 0;
+    border-bottom:1px solid rgba(var(--gray-rgb),.14);
+  }
+  .rito:last-child{ border-bottom:none; }
+  .rito-cab{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .rito-nombre{ font-size:13.5px; color:var(--white); }
+  .rito-fecha{ font-size:10.5px; color:var(--gray); letter-spacing:.05em; }
+  .rito-estado{
+    margin-left:auto;
+    font-size:9.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    padding:2px 8px;
+    border:1px solid currentColor;
+  }
+  .r-atestiguado{ color:var(--amarillo); }
+  .r-esperando{ color:var(--gray); }
+  .rito-testigos{
+    display:flex; flex-wrap:wrap; gap:8px 12px;
+    margin-top:11px; font-size:11px; color:var(--gray);
+  }
+  .testigo.dio-fe{ color:var(--white); }
+  .rito-acciones{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .rito-btn{
+    border:1px solid rgba(var(--gray-rgb),.4);
+    background:none; color:var(--white);
+    font-family:inherit; font-size:10px;
+    letter-spacing:.12em; text-transform:uppercase;
+    padding:7px 14px; cursor:pointer; text-decoration:none;
+    transition:border-color .2s ease;
+  }
+  .rito-btn:hover{ border-color:var(--white); }
+  .rito-btn[disabled]{ opacity:.4; cursor:default; }
+
+  /* elegir los dos testigos */
+  .declarar{ margin-top:14px; }
+  .declarar-label{ font-size:10.5px; color:var(--gray); margin-bottom:10px; }
+  .slots{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .slot{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px dashed rgba(var(--gray-rgb),.4);
+    padding:6px 12px; font-size:11px; color:var(--gray);
+  }
+  .slot.lleno{ border-style:solid; color:var(--white); }
+  .slot button{
+    background:none; border:none; color:var(--gray);
+    font-family:inherit; font-size:13px; line-height:1; cursor:pointer; padding:0;
+  }
+  .buscar-testigo{
+    width:100%;
+    background:none;
+    border:none;
+    border-bottom:1px solid rgba(var(--gray-rgb),.4);
+    color:var(--white);
+    font-family:inherit; font-size:12.5px;
+    padding:8px 0; outline:none;
+  }
+  .buscar-testigo:focus{ border-bottom-color:var(--white); }
+  .testigo-op{
+    padding:9px 0;
+    border-bottom:1px solid rgba(var(--gray-rgb),.14);
+    font-size:12px; color:var(--white); cursor:pointer;
+  }
+  .testigo-op span{ display:block; font-size:10px; color:var(--gray); margin-top:2px; }
+  .testigo-op.no-puede span{ color:rgba(var(--gray-rgb),.7); }
+  .ritos-aviso{
+    text-align:center; font-size:11px; color:var(--bordo);
+    min-height:1.3em; margin-top:16px;
+  }
+  .ritos-cargando{ text-align:center; color:var(--gray); font-size:11.5px; padding:26px 0; }
+
   .invite-trigger-sub{
     text-align:center;
     font-size:9px;
@@ -1119,6 +1253,7 @@
     <div class="invite-section rv-d">
       <button class="invite-trigger">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
+      <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
     </div>
   </section>
 
@@ -1153,6 +1288,7 @@
     <div class="invite-section rv-d">
       <button class="invite-trigger" data-profile="MAU">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
+      <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
     </div>
   </section>
 
@@ -1184,6 +1320,7 @@
     <div class="invite-section rv-d">
       <button class="invite-trigger" data-profile="LUCHI">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
+      <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
     </div>
   </section>
 
@@ -1215,6 +1352,7 @@
     <div class="invite-section rv-d">
       <button class="invite-trigger" data-profile="NAYA">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
+      <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
     </div>
   </section>
 
@@ -1237,6 +1375,27 @@
     <button class="share-btn" id="copyLinkBtn">copiar link</button>
     <div class="share-feedback" id="shareFeedback"></div>
     <div class="invite-restantes" id="inviteRestantes"></div>
+  </section>
+
+  <!-- ===================== MIS RITOS ===================== -->
+  <section id="ritos-screen" class="screen">
+    <div class="top-row">
+      <button class="exit-link" id="exitRitos">volver</button>
+    </div>
+
+    <div class="ritos-titulo">mis ritos</div>
+
+    <div id="ritosPedidos" hidden>
+      <div class="ritos-seccion">te piden que des fe</div>
+      <div id="listaPedidos"></div>
+    </div>
+
+    <div id="ritosCuerpo">
+      <div class="ritos-seccion">las fiestas</div>
+      <div id="listaRitos"><div class="ritos-cargando">buscando...</div></div>
+    </div>
+
+    <div class="ritos-aviso" id="ritosAviso"></div>
   </section>
 
   <section id="member-maia" class="screen member-screen">
@@ -1267,6 +1426,7 @@
     <div class="invite-section rv-d">
       <button class="invite-trigger" data-profile="MAIA">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
+      <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
     </div>
   </section>
 
@@ -1298,6 +1458,7 @@
     <div class="invite-section rv-d">
       <button class="invite-trigger" data-profile="FLOR">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
+      <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
     </div>
   </section>
 
@@ -1327,6 +1488,7 @@
     <div class="invite-section rv-d">
       <button class="invite-trigger" data-profile="VALE">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
+      <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
     </div>
   </section>
 
@@ -1558,6 +1720,8 @@ function entrarAlSitio(miembro){
 
   const pantalla = miembro.pantalla;
 
+  if (window.__refrescarRitos) window.__refrescarRitos();
+
   if (pantalla && CUSTOM_SCREENS[pantalla]){
     // las pantallas propias tienen el nombre escrito en el html, pero el
     // nombre sektario sale de la base: se completa acá
@@ -1595,6 +1759,7 @@ function resetToGate(){
   document.getElementById('bienvenida').classList.remove('active');
   document.getElementById('codigo-nuevo').classList.remove('active');
   document.getElementById('invite-screen').classList.remove('active');
+  document.getElementById('ritos-screen').classList.remove('active');
   historiaScreen.classList.remove('active');
   scrollToTop();
   memberScreen.classList.remove('active');
@@ -2299,6 +2464,320 @@ reveal();
   entrar.addEventListener('click', () => {
     document.getElementById('codigo-nuevo').classList.remove('active');
     entrarAlSitio(miembroActual);
+  });
+})();
+
+/* ---------- mis ritos: declarar fiestas y dar fe ---------- */
+(function ritos(){
+  const pantalla   = document.getElementById('ritos-screen');
+  const salir      = document.getElementById('exitRitos');
+  const cajaPed    = document.getElementById('ritosPedidos');
+  const listaPed   = document.getElementById('listaPedidos');
+  const listaRitos = document.getElementById('listaRitos');
+  const aviso      = document.getElementById('ritosAviso');
+
+  let volverA   = null;
+  let ritos     = [];
+  let pedidos   = [];
+  let declarando = null;   // { fiestaId, elegidos:[{id,nombre}] }
+  let debounce   = null;
+  let turno      = 0;      // descarta respuestas viejas del buscador
+
+  const MOTIVOS = {
+    ya_declaraste_esta_fiesta: 'ya declaraste esta fiesta',
+    no_podes_ser_tu_testigo:   'no podés ser tu propio testigo',
+    testigos_repetidos:        'elegí dos personas distintas',
+    faltan_testigos:           'faltan testigos',
+    fiesta_futura:             'esa fiesta todavía no pasó',
+    todavia_no_podes:          'todavía no estás atestiguado en esa fiesta',
+    ese_testigo_ya_dio_fe:     'ese testigo ya dio fe',
+    ya_es_testigo:             'esa persona ya es testigo de este rito',
+    no_te_toca:                'ese pedido no es tuyo',
+    codigo_invalido:           'tu código ya no está activo',
+    sin_conexion:              'el portal no responde.. probá de nuevo',
+  };
+
+  function decir(motivo){
+    const clave = Object.keys(MOTIVOS).find(k => String(motivo).includes(k));
+    aviso.textContent = MOTIVOS[clave] || (motivo ? 'algo salió mal' : '');
+    if (aviso.textContent) setTimeout(() => { aviso.textContent = ''; }, 3200);
+  }
+
+  const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const fecha = f => new Date(f).toLocaleDateString('es-AR',
+    { day:'numeric', month:'short', year:'numeric' });
+
+  // sin artículo: "en Seki 4" y "en COLAPSO" funcionan los dos; "en la COLAPSO" no
+  function linkAviso(nombre){
+    const texto = 'me confirmás que estuve en ' + nombre + '? entrá a sekito.ar y validame 🙏';
+    return 'https://wa.me/?text=' + encodeURIComponent(texto);
+  }
+
+  // --- abrir y cerrar --------------------------------------------------------
+  document.querySelectorAll('.ritos-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!miembroActual || !codigoActual) return;
+      volverA = btn.closest('.member-screen');
+      volverA.classList.remove('active');
+      historiaScreen.classList.remove('active');
+      pantalla.classList.add('active');
+      scrollToTop();
+      cargar();
+    });
+  });
+
+  salir.addEventListener('click', () => {
+    declarando = null;
+    pantalla.classList.remove('active');
+    historiaScreen.classList.add('active');
+    if (volverA){
+      volverA.classList.add('active');
+      volverA.scrollIntoView({ block:'start' });
+    }
+  });
+
+  // --- datos -----------------------------------------------------------------
+  async function cargar(){
+    listaRitos.innerHTML = '<div class="ritos-cargando">buscando...</div>';
+    const [a, b] = await Promise.all([
+      llamarRPC('mis_ritos',   { p_codigo: codigoActual }),
+      llamarRPC('mis_pedidos', { p_codigo: codigoActual }),
+    ]);
+    if (!a.ok){
+      listaRitos.innerHTML = '<div class="ritos-cargando">' + esc(MOTIVOS.sin_conexion) + '</div>';
+      return;
+    }
+    ritos   = a.datos || [];
+    pedidos = (b.ok && b.datos) || [];
+    pintar();
+    actualizarBadge();
+  }
+
+  function actualizarBadge(){
+    // solo cuentan los que ya puedo contestar: mostrar un número sobre algo
+    // que todavía no se puede hacer es una promesa vacía
+    const puedo = pedidos.filter(x => x.puedo_ya).length;
+    document.querySelectorAll('.ritos-badge').forEach(b => {
+      b.textContent = puedo;
+      b.hidden = puedo === 0;
+    });
+  }
+  window.__refrescarRitos = async function(){
+    if (!codigoActual) return;
+    const r = await llamarRPC('mis_pedidos', { p_codigo: codigoActual });
+    pedidos = (r.ok && r.datos) || [];
+    actualizarBadge();
+  };
+
+  // --- dibujar ---------------------------------------------------------------
+  function pintar(){
+    // los pedidos
+    cajaPed.hidden = pedidos.length === 0;
+    listaPed.innerHTML = pedidos.map(p => {
+      const boton = p.puedo_ya
+        ? '<button class="rito-btn" data-fe="' + p.validacion_id + '">doy fe</button>'
+        : '';
+      const espera = p.puedo_ya ? ''
+        : '<div class="espera">vas a poder cuando estés atestiguado en ' + esc(p.fiesta) + '</div>';
+      return '<div class="pedido">' +
+               '<span class="quien">' + esc(p.quien) + '</span>' +
+               '<span class="donde">' + esc(p.fiesta) + '</span>' +
+               boton + espera +
+             '</div>';
+    }).join('');
+
+    // las fiestas
+    listaRitos.innerHTML = ritos.map(r => {
+      let dentro = '';
+
+      if (r.estado === 'esperando'){
+        const testigos = (r.testigos || []).map(t =>
+          '<span class="testigo' + (t.dio_fe ? ' dio-fe' : '') + '">' +
+            esc(t.nombre) + (t.dio_fe ? ' ✓' : ' · esperando') +
+          '</span>').join('');
+        dentro = '<div class="rito-testigos">' + testigos + '</div>' +
+                 '<div class="rito-acciones">' +
+                   '<a class="rito-btn" href="' + linkAviso(r.nombre) + '" target="_blank" rel="noopener">avisale</a>' +
+                   '<button class="rito-btn" data-cambiar="' + r.fiesta_id + '">cambiar testigo</button>' +
+                 '</div>';
+      } else if (r.estado === 'sin_declarar'){
+        dentro = (declarando && declarando.fiestaId === r.fiesta_id)
+          ? panelDeclarar()
+          : '<div class="rito-acciones">' +
+              '<button class="rito-btn" data-declarar="' + r.fiesta_id + '">estuve ahí</button>' +
+            '</div>';
+      }
+
+      const pastilla = r.estado === 'atestiguado'
+        ? '<span class="rito-estado r-atestiguado">atestiguado</span>'
+        : (r.estado === 'esperando'
+            ? '<span class="rito-estado r-esperando">esperando testigos</span>' : '');
+
+      return '<div class="rito" data-fiesta="' + r.fiesta_id + '">' +
+               '<div class="rito-cab">' +
+                 '<span class="rito-nombre">' + esc(r.nombre) + '</span>' +
+                 '<span class="rito-fecha">' + fecha(r.fecha) + '</span>' +
+                 pastilla +
+               '</div>' + dentro +
+             '</div>';
+    }).join('');
+
+    if (declarando){
+      const inp = listaRitos.querySelector('.buscar-testigo');
+      if (inp) inp.focus();
+    }
+  }
+
+  function panelDeclarar(){
+    const slots = [0, 1].map(i => {
+      const e = declarando.elegidos[i];
+      return e
+        ? '<span class="slot lleno">' + esc(e.nombre) +
+            '<button data-quitar="' + i + '" aria-label="quitar">×</button></span>'
+        : '<span class="slot">elegí un testigo</span>';
+    }).join('');
+
+    return '<div class="declarar">' +
+             '<div class="declarar-label">¿quiénes dan fe de que estuviste?</div>' +
+             '<div class="slots">' + slots + '</div>' +
+             (declarando.elegidos.length < 2
+               ? '<input class="buscar-testigo" placeholder="buscá por nombre" ' +
+                 'autocomplete="off" spellcheck="false">' +
+                 '<div id="opTestigos"></div>'
+               : '') +
+             '<div class="rito-acciones">' +
+               '<button class="rito-btn" data-confirmar="1"' +
+                 (declarando.elegidos.length === 2 ? '' : ' disabled') + '>declarar</button>' +
+               '<button class="rito-btn" data-cancelar="1">cancelar</button>' +
+             '</div>' +
+           '</div>';
+  }
+
+  // --- interacción -----------------------------------------------------------
+  listaRitos.addEventListener('click', async e => {
+    const declarar = e.target.closest('[data-declarar]');
+    if (declarar){
+      declarando = { fiestaId: declarar.dataset.declarar, elegidos: [] };
+      pintar();
+      return;
+    }
+    if (e.target.closest('[data-cancelar]')){ declarando = null; pintar(); return; }
+
+    const quitar = e.target.closest('[data-quitar]');
+    if (quitar){
+      declarando.elegidos.splice(+quitar.dataset.quitar, 1);
+      pintar();
+      return;
+    }
+
+    if (e.target.closest('[data-confirmar]')){
+      const b = e.target.closest('[data-confirmar]');
+      b.disabled = true;
+      const r = await llamarRPC('declarar_rito', {
+        p_codigo:   codigoActual,
+        p_fiesta:   declarando.fiestaId,
+        p_testigo1: declarando.elegidos[0].id,
+        p_testigo2: declarando.elegidos[1].id,
+      });
+      if (!r.ok){ decir(r.motivo); b.disabled = false; return; }
+      declarando = null;
+      cargar();
+      return;
+    }
+
+    const cambiar = e.target.closest('[data-cambiar]');
+    if (cambiar){
+      const rito = ritos.find(x => x.fiesta_id === cambiar.dataset.cambiar);
+      const libre = (rito.testigos || []).filter(t => !t.dio_fe);
+      if (!libre.length){ decir('ese_testigo_ya_dio_fe'); return; }
+      // se saca al que no contestó y se vuelve a elegir
+      declarando = { fiestaId: rito.fiesta_id, elegidos: [], cambiandoA: libre[0] };
+      decir('');
+      pintarCambio(rito, libre[0]);
+      return;
+    }
+  });
+
+  // elegir a alguien de los resultados
+  listaRitos.addEventListener('click', e => {
+    const op = e.target.closest('[data-testigo]');
+    if (!op || !declarando) return;
+    const id = op.dataset.testigo, nombre = op.dataset.nombre;
+    if (declarando.elegidos.some(x => x.id === id)) return;
+
+    if (declarando.cambiandoA){
+      hacerCambio(id);
+      return;
+    }
+    declarando.elegidos.push({ id, nombre });
+    pintar();
+  });
+
+  // buscador
+  listaRitos.addEventListener('input', e => {
+    if (!e.target.classList.contains('buscar-testigo')) return;
+    const q = e.target.value.trim();
+    const caja = listaRitos.querySelector('#opTestigos');
+    clearTimeout(debounce);
+    if (q.length < 3){ if (caja) caja.innerHTML = ''; return; }
+
+    const mio = ++turno;
+    debounce = setTimeout(async () => {
+      const r = await llamarRPC('buscar_testigos', {
+        p_codigo: codigoActual,
+        p_fiesta: declarando.fiestaId,
+        p_query:  q,
+      });
+      if (mio !== turno) return;          // llegó tarde
+      const caja2 = listaRitos.querySelector('#opTestigos');
+      if (!caja2) return;
+      const lista = (r.ok && r.datos) || [];
+      caja2.innerHTML = lista.map(t =>
+        '<div class="testigo-op' + (t.puede_ya ? '' : ' no-puede') + '" ' +
+             'data-testigo="' + t.id + '" data-nombre="' + esc(t.nombre) + '">' +
+          esc(t.nombre) + (t.nombre_real ? ' · ' + esc(t.nombre_real) : '') +
+          '<span>' + (t.puede_ya ? 'puede dar fe' : 'todavía no está atestiguado acá') + '</span>' +
+        '</div>').join('') || '<div class="ritos-cargando">nadie con ese nombre</div>';
+    }, 250);
+  });
+
+  function pintarCambio(rito, saliente){
+    const fila = listaRitos.querySelector('[data-fiesta="' + rito.fiesta_id + '"]');
+    if (!fila) return;
+    const viejo = fila.querySelector('.rito-acciones');
+    if (viejo) viejo.remove();
+    const caja = document.createElement('div');
+    caja.className = 'declarar';
+    caja.innerHTML = '<div class="declarar-label">¿quién reemplaza a ' + esc(saliente.nombre) + '?</div>' +
+      '<input class="buscar-testigo" placeholder="buscá por nombre" autocomplete="off" spellcheck="false">' +
+      '<div id="opTestigos"></div>' +
+      '<div class="rito-acciones"><button class="rito-btn" data-cancelar="1">cancelar</button></div>';
+    fila.appendChild(caja);
+    caja.querySelector('.buscar-testigo').focus();
+  }
+
+  async function hacerCambio(nuevoId){
+    const saliente = declarando.cambiandoA;
+    const r = await llamarRPC('cambiar_testigo', {
+      p_codigo:     codigoActual,
+      p_validacion: saliente.validacion_id,
+      p_nuevo:      nuevoId,
+    });
+    declarando = null;
+    if (!r.ok){ decir(r.motivo); pintar(); return; }
+    cargar();
+  }
+
+  // dar fe
+  listaPed.addEventListener('click', async e => {
+    const b = e.target.closest('[data-fe]');
+    if (!b) return;
+    b.disabled = true;
+    const r = await llamarRPC('dar_fe', { p_codigo: codigoActual, p_validacion: b.dataset.fe });
+    if (!r.ok){ decir(r.motivo); b.disabled = false; return; }
+    cargar();
   });
 })();
 

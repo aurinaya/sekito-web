@@ -58,6 +58,29 @@ Efecto secundario: esa dirección responde 404 antes de redirigir, así que
 WhatsApp e Instagram no le arman la tarjetita de vista previa. Para la persona
 que lo toca es invisible.
 
+## Los ritos
+
+Cada miembro declara a qué fiestas vino y nombra **dos testigos**. Cuando los
+dos dan fe, ese rito queda **atestiguado**. Está en el perfil, botón
+*mis ritos*.
+
+**Solo puede dar fe quien ya está atestiguado en esa misma fiesta.** Se puede
+nombrar a alguien que todavía no lo está: el pedido espera a que esa persona se
+atestigüe y recién ahí puede contestar.
+
+**Los tres fundadores arrancan atestiguados en las 10 fiestas ya pasadas.** Sin
+esa siembra el sistema no arranca: si para dar fe hay que estar atestiguado y
+nadie lo está, la puerta queda cerrada con la llave adentro. Desde ellos la red
+se expande sola.
+
+**LA SEKTA** también puede ser testigo; de esa mitad dan fe los admins, en la
+pestaña *validaciones* del panel.
+
+No existe rechazar. Quien no quiere dar fe simplemente no contesta, y el que
+pidió puede cambiar de testigo. El botón *avisale* abre WhatsApp con el mensaje
+escrito — sin el número de teléfono, para que el sitio no reparta los contactos
+de la gente entre sí.
+
 ## La base de datos
 
 Vive en Supabase. Las seis tablas están cerradas con RLS y sin políticas: con

@@ -71,6 +71,12 @@ nav button{
   color:var(--gray); padding:8px 12px; cursor:pointer; letter-spacing:.08em;
 }
 nav button[aria-selected="true"]{color:var(--white); border-bottom-color:var(--amarillo)}
+/* el contador solo aparece si hay algo esperando */
+#contaVal{
+  display:none; margin-left:7px; padding:1px 6px; border-radius:8px;
+  background:var(--amarillo); color:var(--black); font-size:10px;
+}
+#contaVal.hay{display:inline-block}
 main{padding:20px; flex:1}
 .vista{display:none}
 .vista.activa{display:block}
@@ -175,6 +181,7 @@ td.apretado{white-space:normal; min-width:150px}
   <nav role="tablist">
     <button role="tab" data-vista="miembros" aria-selected="true">miembros</button>
     <button role="tab" data-vista="sinusar" aria-selected="false">códigos sin usar</button>
+    <button role="tab" data-vista="validaciones" aria-selected="false">validaciones<span id="contaVal"></span></button>
     <button role="tab" data-vista="linaje" aria-selected="false">linaje</button>
     <button role="tab" data-vista="registro" aria-selected="false">registro</button>
   </nav>
@@ -211,6 +218,21 @@ td.apretado{white-space:normal; min-width:150px}
             <th>creado</th><th>estado</th><th></th>
           </tr></thead>
           <tbody id="filasSinUsar"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="vista" id="v-validaciones">
+      <p class="tenue" style="margin-top:0">
+        Ritos que pusieron a <strong>LA SEKTA</strong> como testigo. Al dar fe,
+        si el otro testigo ya contestó, el rito queda atestiguado.
+      </p>
+      <div class="tabla-scroll">
+        <table>
+          <thead><tr>
+            <th>quién</th><th>nombre</th><th>fiesta</th><th>cuándo fue</th><th>lo pidió</th><th></th>
+          </tr></thead>
+          <tbody id="filasValidaciones"></tbody>
         </table>
       </div>
     </div>
@@ -415,6 +437,7 @@ async function cargarTodo(){
   pintarSinUsar();
   llenarInvitadores();
   cargarLinaje();
+  cargarValidaciones();
   cargarRegistro();
 }
 
@@ -519,6 +542,46 @@ async function cargarLinaje(){
            '<span class="tenue">' + quien + '</span>' + cuantos + estado + '</li>';
   }).join('');
 }
+
+async function cargarValidaciones(){
+  const r = await rpc('admin_pedidos_sekta', { p_codigo: CODIGO });
+  const cuerpo = $('#filasValidaciones');
+  const conta = $('#contaVal');
+
+  if (!r.ok){
+    cuerpo.innerHTML = '<tr><td colspan="6" class="vacio">' + esc(enCastellano(r.motivo)) + '</td></tr>';
+    return;
+  }
+  const lista = r.datos || [];
+  conta.textContent = lista.length;
+  conta.classList.toggle('hay', lista.length > 0);
+
+  if (!lista.length){
+    cuerpo.innerHTML = '<tr><td colspan="6" class="vacio">no hay nada esperando</td></tr>';
+    return;
+  }
+
+  cuerpo.innerHTML = lista.map(v =>
+    '<tr>' +
+      '<td class="mono-codigo">' + esc(v.quien) + '</td>' +
+      '<td>' + esc(v.quien_real || '') + '</td>' +
+      '<td>' + esc(v.fiesta) + '</td>' +
+      '<td class="tenue">' + fecha(v.fecha) + '</td>' +
+      '<td class="tenue">' + fecha(v.pedido_en) + '</td>' +
+      '<td><div class="acciones">' +
+        '<button data-darfe="' + v.validacion_id + '">dar fe</button>' +
+      '</div></td>' +
+    '</tr>').join('');
+}
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-darfe]');
+  if (!b) return;
+  b.disabled = true;
+  const r = await rpc('admin_dar_fe_sekta', { p_codigo: CODIGO, p_validacion: b.dataset.darfe });
+  if (!r.ok){ alert(enCastellano(r.motivo)); b.disabled = false; return; }
+  cargarTodo();
+});
 
 async function cargarRegistro(){
   const r = await rpc('admin_acciones_recientes', { p_codigo: CODIGO, p_limite: 200 });
