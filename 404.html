@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SÉKITO</title>
+<link rel="icon" href="/favicon.ico">
+<style>html,body{margin:0;height:100%;background:#0D0D0D}</style>
+<script>
+/* GitHub Pages sirve este archivo para toda dirección que no existe. Es la
+   única forma de que un sitio estático entienda /i/CODIGO: acá leemos el
+   código y lo pasamos a la página real, que sí sabe qué hacer con él.
+
+   Va replace() y no href: así el "volver" del navegador no trae de vuelta a
+   esta pantalla intermedia. */
+(function () {
+  var m = location.pathname.match(/^\/i\/([A-Za-z0-9]{6,32})\/?$/);
+  location.replace(m ? '/?i=' + encodeURIComponent(m[1]) : '/');
+})();
+</script>
+</head>
+<body></body>
+</html>

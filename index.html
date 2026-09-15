@@ -446,6 +446,80 @@
   }
   .share-feedback.show{ opacity:1; }
 
+  .invite-trigger-sub{
+    text-align:center;
+    font-size:9px;
+    letter-spacing:.1em;
+    color:var(--gray);
+    margin-top:10px;
+  }
+
+  /* texto para el que invita: mismo tono que el de bienvenida */
+  .inv-intro{
+    font-size:12.5px;
+    line-height:1.85;
+    color:rgba(var(--white-rgb),.9);
+    margin:56px 0 38px;
+  }
+  .inv-intro p{ margin:0 0 14px; }
+  .inv-intro p:last-child{ margin-bottom:0; }
+  .invite-link{
+    text-align:center;
+    font-size:13px;
+    letter-spacing:.06em;
+    color:var(--white);
+    word-break:break-all;
+    margin-bottom:14px;
+    min-height:1.2em;
+  }
+  .invite-restantes{
+    text-align:center;
+    font-size:9px;
+    letter-spacing:.08em;
+    color:var(--gray);
+    margin-top:26px;
+  }
+  .share-btn + .share-btn{ margin-top:12px; }
+  .share-btn[disabled]{ opacity:.45; cursor:default; }
+
+  /* ---------- el código nuevo, mostrado una sola vez ---------- */
+  .cn-titulo{
+    text-align:center;
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--gray);
+    margin-top:72px;
+    margin-bottom:40px;
+  }
+  .cn-codigo{
+    text-align:center;
+    font-size:34px;
+    letter-spacing:.22em;
+    padding-left:.22em; /* centrado óptico: el espaciado sobra a la derecha */
+    color:var(--white);
+    margin-bottom:34px;
+  }
+  .cn-aviso{
+    font-size:12px;
+    line-height:1.8;
+    color:rgba(var(--white-rgb),.9);
+    margin-bottom:34px;
+  }
+  .cn-aviso p{ margin:0 0 12px; }
+  .cn-aviso p:last-child{ margin-bottom:0; }
+  .cn-aviso strong{ color:var(--white); font-weight:500; }
+
+  /* a quién le debemos la entrada, arriba del formulario */
+  .bv-referente{
+    font-size:12.5px;
+    line-height:1.7;
+    color:var(--white);
+    border-left:2px solid rgba(var(--gray-rgb),.5);
+    padding-left:14px;
+    margin:0 0 30px;
+  }
+
   .carousel-wrap{
     width:100%;
     aspect-ratio:2/3;
@@ -964,6 +1038,8 @@
       <p>La sekta tiene un rito para cada uno. Vos ya estás adentro. Lo que sigue, lo construimos juntxs.</p>
     </div>
 
+    <div class="bv-referente" id="bvReferente" hidden></div>
+
     <div class="bv-titulo">para terminar de entrar</div>
 
     <form id="bvForm" autocomplete="on" novalidate>
@@ -1007,6 +1083,22 @@
     </form>
   </section>
 
+  <!-- ===================== EL CÓDIGO NUEVO (una sola vez) ===================== -->
+  <section id="codigo-nuevo" class="screen">
+    <div class="cn-titulo">ya sos del sékito</div>
+    <div class="invite-label">tu código de acceso</div>
+    <div class="cn-codigo" id="cnCodigo">—</div>
+
+    <div class="cn-aviso">
+      <p>Guardalo. Es tuyo y es privado: con él vas a entrar al portal cada vez.</p>
+      <p><strong>No se vuelve a mostrar.</strong> Sacale una captura de pantalla ahora.</p>
+    </div>
+
+    <button class="share-btn" id="cnCopiar">copiar código</button>
+    <div class="share-feedback" id="cnFeedback"></div>
+    <button class="share-btn" id="cnEntrar">entrar al sékito</button>
+  </section>
+
   <!-- ===================== MEMBER VIEW (genérica) ===================== -->
   <section id="member" class="screen member-screen">
     <div class="top-row rv-a">
@@ -1025,7 +1117,8 @@
       <div class="building-text">la sekta se está construyendo</div>
     </div>
     <div class="invite-section rv-d">
-      <button class="invite-trigger">compartir tu código sektario</button>
+      <button class="invite-trigger">invitar al sékito</button>
+      <div class="invite-trigger-sub">usalo con cuidado</div>
     </div>
   </section>
 
@@ -1058,7 +1151,8 @@
       <div class="building-text">la sekta se está construyendo</div>
     </div>
     <div class="invite-section rv-d">
-      <button class="invite-trigger" data-profile="MAU">compartir tu código sektario</button>
+      <button class="invite-trigger" data-profile="MAU">invitar al sékito</button>
+      <div class="invite-trigger-sub">usalo con cuidado</div>
     </div>
   </section>
 
@@ -1088,7 +1182,8 @@
       <div class="building-text">la sekta se está construyendo</div>
     </div>
     <div class="invite-section rv-d">
-      <button class="invite-trigger" data-profile="LUCHI">compartir tu código sektario</button>
+      <button class="invite-trigger" data-profile="LUCHI">invitar al sékito</button>
+      <div class="invite-trigger-sub">usalo con cuidado</div>
     </div>
   </section>
 
@@ -1118,7 +1213,8 @@
       <div class="building-text">la sekta se está construyendo</div>
     </div>
     <div class="invite-section rv-d">
-      <button class="invite-trigger" data-profile="NAYA">compartir tu código sektario</button>
+      <button class="invite-trigger" data-profile="NAYA">invitar al sékito</button>
+      <div class="invite-trigger-sub">usalo con cuidado</div>
     </div>
   </section>
 
@@ -1127,12 +1223,20 @@
       <button class="exit-link" id="exitInvite">volver</button>
     </div>
 
-    <div class="invite-label">tu código sektario</div>
-    <div class="invite-code" id="inviteCodeText">—</div>
-    <div class="invite-sub">compartilo con cuidado...</div>
+    <div class="inv-intro">
+      <p>Invitar es un rito. Quien entre por tu mano entra bajo tu nombre, y así queda escrito en el árbol del sékito.</p>
+      <p>Para seguir cuidando lo que construimos entre todxs, pensá si esa persona suma a la noche que querés vivir.</p>
+      <p>No se trata de llenar una fiesta. Se trata de elegir con quién.</p>
+    </div>
+
+    <div class="invite-label">tu link de invitación</div>
+    <div class="invite-link" id="inviteLinkText">—</div>
+    <div class="invite-sub" id="inviteVence"></div>
 
     <button class="share-btn" id="shareCodeBtn">compartir</button>
+    <button class="share-btn" id="copyLinkBtn">copiar link</button>
     <div class="share-feedback" id="shareFeedback"></div>
+    <div class="invite-restantes" id="inviteRestantes"></div>
   </section>
 
   <section id="member-maia" class="screen member-screen">
@@ -1161,7 +1265,8 @@
       <div class="building-text">la sekta se está construyendo</div>
     </div>
     <div class="invite-section rv-d">
-      <button class="invite-trigger" data-profile="MAIA">compartir tu código sektario</button>
+      <button class="invite-trigger" data-profile="MAIA">invitar al sékito</button>
+      <div class="invite-trigger-sub">usalo con cuidado</div>
     </div>
   </section>
 
@@ -1191,7 +1296,8 @@
       <div class="building-text">la sekta se está construyendo</div>
     </div>
     <div class="invite-section rv-d">
-      <button class="invite-trigger" data-profile="FLOR">compartir tu código sektario</button>
+      <button class="invite-trigger" data-profile="FLOR">invitar al sékito</button>
+      <div class="invite-trigger-sub">usalo con cuidado</div>
     </div>
   </section>
 
@@ -1243,6 +1349,10 @@ const gateAviso = document.getElementById('gateAviso');
 let miembroActual = null;
 // el código con el que entró: lo necesitan el buscador y el registro
 let codigoActual = null;
+
+// si llegó por un link de invitación: { codigo, referente }. El que entra así
+// no tiene todavía ningún código de miembro — lo recibe al final.
+let invitacionActual = null;
 
 // pantallas personalizadas: se indexan por el campo "pantalla" que devuelve la
 // base, NO por el código de acceso. el código es privado y este archivo es
@@ -1432,11 +1542,27 @@ function entrarAlSitio(miembro){
   }
 }
 
+/* el código recién creado se muestra una sola vez: después de esta pantalla el
+   sitio no lo vuelve a mostrar nunca. Si se pierde, está en el panel. */
+function mostrarCodigoNuevo(miembro){
+  miembroActual = miembro;
+  // queda como código activo de la sesión, así puede invitar él también
+  codigoActual = miembro.codigo_acceso;
+
+  document.getElementById('bienvenida').classList.remove('active');
+  document.getElementById('cnCodigo').textContent = miembro.codigo_acceso;
+  document.getElementById('codigo-nuevo').classList.add('active');
+  scrollToTop();
+}
+
 function resetToGate(){
   miembroActual = null;
   codigoActual = null;
+  invitacionActual = null;
   ocultarAviso();
   document.getElementById('bienvenida').classList.remove('active');
+  document.getElementById('codigo-nuevo').classList.remove('active');
+  document.getElementById('invite-screen').classList.remove('active');
   historiaScreen.classList.remove('active');
   scrollToTop();
   memberScreen.classList.remove('active');
@@ -1579,8 +1705,16 @@ reveal();
     decir('');
     Object.values(campos).forEach(el => { el.value = ''; marcarFalta(el, false); });
 
-    // a los fundadores no los trajo nadie
-    campoTrajo.hidden = !!(miembroActual && miembroActual.es_fundador);
+    // quien llega por un link ya tiene referente: la invitación dice quién lo
+    // trajo, y no es algo que pueda elegir. A los fundadores no los trajo nadie.
+    const porInvitacion = !!invitacionActual;
+    campoTrajo.hidden = porInvitacion || !!(miembroActual && miembroActual.es_fundador);
+
+    const refe = document.getElementById('bvReferente');
+    refe.hidden = !porInvitacion;
+    if (porInvitacion){
+      refe.textContent = invitacionActual.referente + ' es tu guía hacia el sékito.';
+    }
 
     // busca a FISURA una sola vez, para poder fijarla en la lista
     if (!fisura && !campoTrajo.hidden){
@@ -1597,6 +1731,9 @@ reveal();
     registro_ya_completo: 'este código ya se registró',
     faltan_datos:         'faltan datos obligatorios',
     falta_invitado_por:   'elegí quién te trajo',
+    invitacion_no_existe: 'esta invitación no existe',
+    invitacion_ya_usada:  'esta invitación ya fue usada',
+    invitacion_vencida:   'esta invitación venció',
     sin_conexion:         'el portal no responde.. probá de nuevo',
   };
 
@@ -1625,15 +1762,27 @@ reveal();
     enviar.textContent = 'entrando...';
     decir('');
 
-    const r = await llamarRPC('completar_registro', {
-      p_codigo:        codigoActual,
-      p_nombre:        campos.nombre.value,
-      p_apellido:      campos.apellido.value,
-      p_email:         campos.email.value,
-      p_telefono:      campos.telefono.value,
-      p_invitado_por:  trajoId,
-      p_como_llegaste: campos.como.value,
-    });
+    // dos formas de llegar acá: con un código de miembro que ya existe, o con
+    // un link de invitación. En el segundo caso el miembro todavía no existe:
+    // lo crea la base y devuelve su código recién nacido.
+    const r = invitacionActual
+      ? await llamarRPC('registrar_con_invitacion', {
+          p_invitacion:    invitacionActual.codigo,
+          p_nombre:        campos.nombre.value,
+          p_apellido:      campos.apellido.value,
+          p_email:         campos.email.value,
+          p_telefono:      campos.telefono.value,
+          p_como_llegaste: campos.como.value,
+        })
+      : await llamarRPC('completar_registro', {
+          p_codigo:        codigoActual,
+          p_nombre:        campos.nombre.value,
+          p_apellido:      campos.apellido.value,
+          p_email:         campos.email.value,
+          p_telefono:      campos.telefono.value,
+          p_invitado_por:  trajoId,
+          p_como_llegaste: campos.como.value,
+        });
 
     enviando = false;
     enviar.disabled = false;
@@ -1648,6 +1797,13 @@ reveal();
     const miembro = Array.isArray(r.datos) ? r.datos[0] : null;
     if (!miembro){ decir('no se pudo guardar.. probá de nuevo'); return; }
 
+    if (invitacionActual){
+      // el código recién creado se muestra una sola vez, antes de entrar
+      invitacionActual = null;
+      mostrarCodigoNuevo(miembro);
+      return;
+    }
+
     entrarAlSitio(miembro);
   });
 })();
@@ -1656,28 +1812,89 @@ reveal();
 (function inviteCode(){
   // el código sektario sale de miembroActual, o sea de la base
   const inviteScreen = document.getElementById('invite-screen');
-  const inviteCodeText = document.getElementById('inviteCodeText');
+  const inviteLinkText = document.getElementById('inviteLinkText');
+  const inviteVence = document.getElementById('inviteVence');
+  const inviteRestantes = document.getElementById('inviteRestantes');
   const exitInvite = document.getElementById('exitInvite');
   const shareCodeBtn = document.getElementById('shareCodeBtn');
+  const copyLinkBtn = document.getElementById('copyLinkBtn');
   const shareFeedback = document.getElementById('shareFeedback');
+
+  const TOPE_ABIERTAS = 5;
 
   let cameFromScreen = null;
   let currentProfile = null;
+  let linkActual = null;
+
+  const MOTIVOS_INVITAR = {
+    codigo_invalido:     'tu código ya no está activo',
+    demasiadas_abiertas: 'ya tenés ' + TOPE_ABIERTAS + ' invitaciones dando vueltas.. esperá a que las usen',
+    no_se_pudo_generar:  'no se pudo generar.. probá de nuevo',
+    sin_conexion:        'el portal no responde.. probá de nuevo',
+  };
+
+  function fecha(iso){
+    return new Date(iso).toLocaleDateString('es-AR', { day:'numeric', month:'long' });
+  }
+
+  function habilitar(si){
+    shareCodeBtn.disabled = !si;
+    copyLinkBtn.disabled = !si;
+  }
 
   document.querySelectorAll('.invite-trigger').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (!miembroActual || !miembroActual.nombre_sektario) return;
+    btn.addEventListener('click', async () => {
+      if (!miembroActual || !codigoActual) return;
 
-      // "pantalla" también dice de dónde sacar la foto para el certificado
+      // "pantalla" también dice de dónde sacar la foto para la imagen
       currentProfile = miembroActual.pantalla;
       cameFromScreen = btn.closest('.member-screen');
-      inviteCodeText.textContent = miembroActual.nombre_sektario;
+
+      linkActual = null;
+      inviteLinkText.textContent = 'generando...';
+      inviteVence.textContent = '';
+      inviteRestantes.textContent = '';
+      habilitar(false);
 
       cameFromScreen.classList.remove('active');
-      historiaScreen.classList.remove('active'); // si no, el código quedaría un viewport más abajo
+      historiaScreen.classList.remove('active'); // si no, quedaría un viewport más abajo
       inviteScreen.classList.add('active');
       scrollToTop();
+
+      const r = await llamarRPC('crear_invitacion', { p_codigo: codigoActual });
+
+      if (!r.ok || !Array.isArray(r.datos) || !r.datos.length){
+        const clave = Object.keys(MOTIVOS_INVITAR).find(k => String(r.motivo).includes(k));
+        inviteLinkText.textContent = '—';
+        inviteVence.textContent = MOTIVOS_INVITAR[clave] || 'no se pudo generar.. probá de nuevo';
+        return;
+      }
+
+      const inv = r.datos[0];
+      linkActual = location.origin + '/i/' + inv.codigo;
+      inviteLinkText.textContent = linkActual.replace(/^https?:\/\//, '');
+      inviteVence.textContent = 'vence el ' + fecha(inv.vence_en);
+      habilitar(true);
+
+      const abiertas = await llamarRPC('mis_invitaciones', { p_codigo: codigoActual });
+      if (abiertas.ok && Array.isArray(abiertas.datos)){
+        const quedan = TOPE_ABIERTAS - abiertas.datos.length;
+        inviteRestantes.textContent = quedan === 1
+          ? 'te queda 1 invitación más'
+          : 'te quedan ' + quedan + ' invitaciones más';
+      }
     });
+  });
+
+  copyLinkBtn.addEventListener('click', async () => {
+    if (!linkActual) return;
+    try {
+      await navigator.clipboard.writeText(linkActual);
+      feedback('link copiado');
+    } catch (err) {
+      // sin permiso de portapapeles: que al menos lo pueda seleccionar
+      prompt('copiá el link:', linkActual);
+    }
   });
 
   exitInvite.addEventListener('click', () => {
@@ -1789,29 +2006,31 @@ reveal();
     ctx.restore();
 
     // bloque de texto
+    //
+    // el código de invitación NO va en la imagen a propósito: una captura
+    // reenviada sería la invitación entera, y además nadie va a tipear doce
+    // caracteres mirando una foto. El link viaja en el mensaje.
     const cx = W / 2;
-    const labelH = 27, codeH = 60, taglineLineH = 58;
-    const gapLabelCode = 46, gapCodeTagline = 62;
-    const taglineLines = ['es tu puerta de entrada...', 'para ser parte de nuestra sekta'];
+    const codeH = 60, lineaH = 46, cierreH = 30;
+    const gapCodeLinea = 46, gapLineaCierre = 54;
+    const linea  = 'es tu guía hacia el sékito';
+    const cierre = 'entrá y confirmá tu invitación';
 
-    const blockH = labelH + gapLabelCode + codeH + gapCodeTagline + taglineLines.length * taglineLineH;
+    const blockH = codeH + gapCodeLinea + lineaH + gapLineaCierre + cierreH;
     let y = H - 220 - blockH;
 
-    drawTracked(ctx, 'mi código sektario', cx, y, '500 27px "IBM Plex Mono"', 'rgb(147,168,172)', 4);
-    y += labelH + gapLabelCode;
-
-    // halo sutil detrás del código
+    // halo sutil detrás del nombre sektario
     ctx.save();
     ctx.shadowColor = 'rgba(242,242,242,0.55)';
     ctx.shadowBlur = 18;
     drawTracked(ctx, data.code, cx, y, '600 60px "IBM Plex Mono"', 'rgb(242,242,242)', 5);
     ctx.restore();
-    y += codeH + gapCodeTagline;
+    y += codeH + gapCodeLinea;
 
-    taglineLines.forEach(line => {
-      drawTracked(ctx, line, cx, y, '400 25px "IBM Plex Mono"', 'rgb(147,168,172)', 1);
-      y += taglineLineH;
-    });
+    drawTracked(ctx, linea, cx, y, '400 28px "IBM Plex Mono"', 'rgb(147,168,172)', 1);
+    y += lineaH + gapLineaCierre;
+
+    drawTracked(ctx, cierre, cx, y, '500 25px "IBM Plex Mono"', 'rgb(242,242,242)', 2);
 
     // logotipo SÉKITO abajo de todo
     const wmW = 208, wmH = wordmarkImg.height * (wmW / wordmarkImg.width);
@@ -1821,7 +2040,7 @@ reveal();
   }
 
   shareCodeBtn.addEventListener('click', async () => {
-    if (!miembroActual || !miembroActual.nombre_sektario) return;
+    if (!miembroActual || !miembroActual.nombre_sektario || !linkActual) return;
     // MAU·000 -> mau-000, para que sirva de nombre de archivo
     const data = {
       code: miembroActual.nombre_sektario,
@@ -1835,14 +2054,17 @@ reveal();
     try {
       const blob = await buildShareImage(currentProfile, data);
       const file = new File([blob], `sekito-${data.name}.png`, { type: 'image/png' });
-      const shareText = '_usa este certificado para que se te abran las puertas del sékito.. manda dm a https://instagram.com/sekito.gde_';
+      const shareText =
+        miembroActual.nombre_sektario + ' es tu guía hacia el sékito.\n\n' +
+        'entrá en ' + linkActual + ' y confirmá tu invitación.\n\n' +
+        'el link sirve una sola vez y vence en 7 días.';
 
       if (navigator.canShare && navigator.canShare({ files: [file] })){
         await navigator.share({ files: [file], text: shareText });
-      } else if (navigator.clipboard && window.ClipboardItem){
-        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-        feedback('imagen copiada');
       } else {
+        // sin compartir nativo: el link es lo imprescindible, la imagen es el
+        // adorno. Primero el texto al portapapeles, después la imagen al rollo.
+        try { await navigator.clipboard.writeText(shareText); } catch (e) {}
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -1851,7 +2073,7 @@ reveal();
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
-        feedback('imagen descargada');
+        feedback('texto copiado e imagen descargada');
       }
     } catch (err) {
       if (err && err.name !== 'AbortError') feedback('no se pudo compartir');
@@ -2015,6 +2237,68 @@ reveal();
   if (!reduced){
     setInterval(draw, 130);
   }
+})();
+
+/* ---------- la pantalla del código nuevo ---------- */
+(function pantallaCodigoNuevo(){
+  const codigo = document.getElementById('cnCodigo');
+  const copiar = document.getElementById('cnCopiar');
+  const entrar = document.getElementById('cnEntrar');
+  const aviso  = document.getElementById('cnFeedback');
+
+  function decir(msg){
+    aviso.textContent = msg;
+    aviso.classList.add('show');
+    setTimeout(() => aviso.classList.remove('show'), 2200);
+  }
+
+  copiar.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(codigo.textContent);
+      decir('código copiado');
+    } catch (err) {
+      // sin permiso de portapapeles: al menos que lo pueda seleccionar
+      prompt('copiá tu código:', codigo.textContent);
+    }
+  });
+
+  entrar.addEventListener('click', () => {
+    document.getElementById('codigo-nuevo').classList.remove('active');
+    entrarAlSitio(miembroActual);
+  });
+})();
+
+/* ---------- llegada por link de invitación (sekito.ar/i/CODIGO) ----------
+   404.html convierte /i/CODIGO en /?i=CODIGO; acá se recoge. */
+(async function porInvitacion(){
+  const codigo = (new URLSearchParams(location.search).get('i') || '').trim();
+  if (!codigo) return;
+
+  // sacarlo de la barra de direcciones: no tiene por qué quedar en el historial
+  // del navegador, ni viajar como "de dónde venís" al pedir una imagen
+  history.replaceState(null, '', location.pathname);
+
+  const r = await llamarRPC('validar_invitacion', { p_codigo: codigo });
+  const res = (r.ok && Array.isArray(r.datos)) ? r.datos[0] : null;
+
+  if (!res || res.motivo !== 'ok'){
+    const MOTIVOS = {
+      no_existe: 'esta invitación no existe',
+      ya_usada:  'esta invitación ya fue usada',
+      vencida:   'esta invitación venció',
+    };
+    // queda en el portón, con el motivo escrito: siempre puede entrar con un
+    // código propio si lo tiene
+    gateAviso.textContent = (res && MOTIVOS[res.motivo]) || 'el portal no responde.. probá de nuevo';
+    gateAviso.classList.add('show');
+    return;
+  }
+
+  invitacionActual = { codigo: codigo, referente: res.referente_nombre };
+  gateScreen.classList.remove('active');
+  if (window.__prepararBienvenida) await window.__prepararBienvenida();
+  document.getElementById('bienvenida').classList.add('active');
+  scrollToTop();
 })();
 </script>
 </body>

@@ -32,6 +32,32 @@ exportar todo a CSV.
 revoca (definitiva). La base lo impide directamente, no es una decisión de esta
 pantalla: borrarlo dejaría huérfanos a todos los que esa persona invitó.
 
+## Invitaciones entre miembros
+
+Cualquier miembro activo genera desde su perfil un link de un solo uso:
+
+```
+sekito.ar/i/CODIGO
+```
+
+El que lo recibe toca, cae en el formulario de bienvenida con su referente ya
+cargado, y al terminar recibe un código de acceso propio y permanente. **Ese
+código se muestra una sola vez**; si se pierde, está en el panel.
+
+Reglas: un solo uso, vence a los 7 días, hasta 5 abiertas por miembro.
+
+### Por qué existe 404.html
+
+GitHub Pages sirve archivos, no entiende direcciones inventadas: `/i/CODIGO`
+no es ninguna carpeta. Pero sirve `404.html` para toda dirección que no
+existe, así que ese archivo lee el código y redirige a `/?i=CODIGO`, que sí es
+una página real. **Si se borra 404.html, todos los links de invitación dejan
+de funcionar.**
+
+Efecto secundario: esa dirección responde 404 antes de redirigir, así que
+WhatsApp e Instagram no le arman la tarjetita de vista previa. Para la persona
+que lo toca es invisible.
+
 ## La base de datos
 
 Vive en Supabase. Las seis tablas están cerradas con RLS y sin políticas: con
