@@ -101,6 +101,10 @@ td.apretado{white-space:normal; min-width:150px}
 .e-revocado{color:var(--bordo)}
 .e-simbolico{color:#6b7a7d}
 .tenue{color:var(--gray)}
+/* lo que escribió la persona va en blanco: es su voz, no una anotación nuestra.
+   Más ancha que las otras de texto libre: algunos escriben párrafos enteros y
+   en 150px quedaban como un fideo vertical. */
+.dicho{color:var(--white); font-style:italic; min-width:260px}
 .mono-codigo{letter-spacing:.12em}
 .acciones{display:flex; gap:6px}
 .acciones button{
@@ -186,7 +190,8 @@ td.apretado{white-space:normal; min-width:150px}
         <table>
           <thead><tr>
             <th>sektario</th><th>código</th><th>nombre</th><th>contacto</th>
-            <th>quién lo trajo</th><th>nota</th><th>estado</th><th>ingreso</th><th></th>
+            <th>quién lo trajo</th><th>cómo llegó</th><th>nota</th>
+            <th>estado</th><th>ingreso</th><th></th>
           </tr></thead>
           <tbody id="filasMiembros"></tbody>
         </table>
@@ -398,11 +403,11 @@ document.querySelectorAll('nav button').forEach(b => {
 
 // ---------------------------------------------------------------- datos
 async function cargarTodo(){
-  $('#filasMiembros').innerHTML = '<tr><td colspan="9" class="cargando">cargando…</td></tr>';
+  $('#filasMiembros').innerHTML = '<tr><td colspan="10" class="cargando">cargando…</td></tr>';
   const r = await rpc('admin_listar_miembros', { p_codigo: CODIGO });
   if (!r.ok){
     $('#filasMiembros').innerHTML =
-      '<tr><td colspan="9" class="vacio">' + esc(enCastellano(r.motivo)) + '</td></tr>';
+      '<tr><td colspan="10" class="vacio">' + esc(enCastellano(r.motivo)) + '</td></tr>';
     return;
   }
   MIEMBROS = r.datos || [];
@@ -418,7 +423,7 @@ function filtrados(){
   if (!q) return MIEMBROS;
   return MIEMBROS.filter(m => [
     m.nombre_sektario, m.codigo_acceso, m.nombre_real, m.apellido,
-    m.email, m.telefono, m.nota_admin,
+    m.email, m.telefono, m.nota_admin, m.como_llegaste,
   ].some(v => v && String(v).toLowerCase().includes(q)));
 }
 
@@ -427,7 +432,7 @@ function pintarMiembros(){
   const cuerpo = $('#filasMiembros');
 
   if (!lista.length){
-    cuerpo.innerHTML = '<tr><td colspan="9" class="vacio">no hay nadie con eso</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="10" class="vacio">no hay nadie con eso</td></tr>';
     $('#conteoMiembros').textContent = '';
     return;
   }
@@ -452,6 +457,8 @@ function pintarMiembros(){
       '<td>' + nombre + '</td>' +
       '<td class="apretado tenue">' + contacto + '</td>' +
       '<td class="tenue">' + esc(m.invitado_por_nombre || '—') + '</td>' +
+      // lo que escribió la propia persona al entrar, distinto de nuestra nota
+      '<td class="apretado dicho">' + esc(m.como_llegaste || '') + '</td>' +
       '<td class="apretado tenue">' + esc(m.nota_admin || '') + '</td>' +
       '<td><span class="pastilla e-' + esc(m.estado_codigo) + '">' +
           esc(m.estado_codigo) + '</span></td>' +
