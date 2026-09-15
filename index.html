@@ -905,7 +905,7 @@
     color:var(--gray);
     margin-top:2px;
   }
-  .bv-op.bv-fisura{ border-top:1px solid rgba(var(--gray-rgb),.3); }
+  .bv-op.bv-sekta{ border-top:1px solid rgba(var(--gray-rgb),.3); }
   .bv-elegido{
     display:flex;
     justify-content:space-between;
@@ -1639,7 +1639,7 @@ reveal();
   };
 
   let trajoId = null;     // uuid del miembro elegido
-  let fisura  = null;     // {id, nombre} — la opción "no me trajo nadie"
+  let laSekta = null;     // {id, nombre} — la opción "no me trajo nadie"
   let debounce = null;
   let enviando = false;
   // la base tarda entre 0,4 y 5 segundos según el momento. sin esto, si
@@ -1684,9 +1684,9 @@ reveal();
 
   function pintar(lista){
     resultados.innerHTML = '';
-    // FISURA va fijada abajo: si además viniera en los resultados de búsqueda
+    // LA SEKTA va fijada abajo: si además viniera en los resultados de búsqueda
     // (buscar "fis" la encuentra) aparecería dos veces
-    lista.filter(m => !fisura || m.id !== fisura.id).forEach(m => {
+    lista.filter(m => !laSekta || m.id !== laSekta.id).forEach(m => {
       const op = document.createElement('div');
       op.className = 'bv-op';
       op.textContent = comoSeLlama(m);
@@ -1698,16 +1698,16 @@ reveal();
       op.addEventListener('click', () => elegir(m.id, comoSeLlama(m)));
       resultados.appendChild(op);
     });
-    // FISURA siempre al final: si dependiera de la búsqueda, nadie la
+    // LA SEKTA siempre al final: si dependiera de la búsqueda, nadie la
     // encontraría sin saber de antemano que existe
-    if (fisura){
+    if (laSekta){
       const op = document.createElement('div');
-      op.className = 'bv-op bv-fisura';
+      op.className = 'bv-op bv-sekta';
       op.textContent = 'no me trajo nadie en particular';
       const s = document.createElement('span');
-      s.textContent = fisura.nombre;
+      s.textContent = laSekta.nombre;
       op.appendChild(s);
-      op.addEventListener('click', () => elegir(fisura.id, fisura.nombre));
+      op.addEventListener('click', () => elegir(laSekta.id, laSekta.nombre));
       resultados.appendChild(op);
     }
   }
@@ -1715,7 +1715,7 @@ reveal();
   buscaInp.addEventListener('input', () => {
     clearTimeout(debounce);
     const q = buscaInp.value.trim();
-    if (q.length < 3){ cerrarLista(); if (fisura) pintar([]); return; }
+    if (q.length < 3){ cerrarLista(); if (laSekta) pintar([]); return; }
     // espera a que deje de tipear: una consulta por letra sería un desperdicio
     const miTurno = ++ultimaBusqueda;
     debounce = setTimeout(async () => {
@@ -1750,11 +1750,11 @@ reveal();
       refe.textContent = invitacionActual.referente + ' es tu guía hacia el sékito.';
     }
 
-    // busca a FISURA una sola vez, para poder fijarla en la lista
-    if (!fisura && !campoTrajo.hidden){
-      const r = await llamarRPC('buscar_miembros', { p_codigo: codigoActual, p_query: 'fisura' });
+    // busca a LA SEKTA una sola vez, para poder fijarla en la lista
+    if (!laSekta && !campoTrajo.hidden){
+      const r = await llamarRPC('buscar_miembros', { p_codigo: codigoActual, p_query: 'sekta' });
       const f = r.ok && Array.isArray(r.datos) ? r.datos[0] : null;
-      if (f) fisura = { id: f.id, nombre: f.nombre_sektario };
+      if (f) laSekta = { id: f.id, nombre: f.nombre_sektario };
     }
   }
   window.__prepararBienvenida = preparar;

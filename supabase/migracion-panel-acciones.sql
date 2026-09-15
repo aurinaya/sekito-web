@@ -122,7 +122,7 @@ begin
     raise exception 'Ese miembro no existe.';
   end if;
 
-  -- FISURA no es una persona, es la opción "no me trajo nadie en particular"
+  -- LA SEKTA no es una persona, es la opción "no me trajo nadie en particular"
   -- del formulario. Si se la desactiva, esa opción desaparece del buscador.
   if v_previo = 'simbolico' then
     raise exception 'Ese miembro es simbólico y no se le cambia el estado.';

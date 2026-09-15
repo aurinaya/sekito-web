@@ -442,7 +442,7 @@ function pintarMiembros(){
                      '<span class="tenue">—</span>';
     const nombre = [m.nombre_real, m.apellido].filter(Boolean).join(' ') ||
                    '<span class="tenue">sin registrar</span>';
-    // a los simbólicos (FISURA) no se les cambia el estado ni se los edita
+    // a los simbólicos (LA SEKTA) no se les cambia el estado ni se los edita
     const botones = m.estado_codigo === 'simbolico' ? '' :
       '<div class="acciones">' +
         '<button data-editar="' + m.id + '">editar</button>' +
@@ -559,7 +559,7 @@ document.addEventListener('click', async e => {
 
 // ---------------------------------------------------------------- crear
 function llenarInvitadores(){
-  // a FISURA sí se la puede elegir: es la opción "no lo trajo nadie en particular"
+  // a LA SEKTA sí se la puede elegir: es la opción "no lo trajo nadie en particular"
   const opciones = MIEMBROS
     .filter(m => m.estado_codigo === 'activo' || m.estado_codigo === 'simbolico')
     .map(m => '<option value="' + m.id + '">' + esc(m.nombre_sektario || m.codigo_acceso) +

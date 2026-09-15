@@ -23,7 +23,7 @@ comment on column public.miembros.como_llegaste is
 -- obligatorio: un miembro puede existir (con su código) antes de tener nombre
 alter table public.miembros alter column nombre_sektario drop not null;
 
--- un estado más: FISURA existe como opción de "quién te trajo" pero nunca
+-- un estado más: LA SEKTA existe como opción de "quién te trajo" pero nunca
 -- puede entrar. 'simbolico' en vez de 'revocado' porque no fue revocada:
 -- nunca fue una persona.
 alter table public.miembros drop constraint if exists miembros_estado_codigo_check;
@@ -55,13 +55,13 @@ on conflict (nombre) do nothing;
 
 
 -- ----------------------------------------------------------------------------
--- 3. FISURA
+-- 3. LA SEKTA
 -- ----------------------------------------------------------------------------
 -- Para quienes llegaron sin un referente puntual. Es la única "persona" que se
 -- carga desde el repo, porque no es una persona: no tiene datos reales y su
 -- código no sirve para entrar (estado 'simbolico', que validar_codigo filtra).
 insert into public.miembros (codigo_acceso, nombre_sektario, estado_codigo, es_fundador)
-values ('NOLOGIN', 'FISURA', 'simbolico', false)
+values ('NOLOGIN', 'LA SEKTA', 'simbolico', false)
 on conflict (codigo_acceso) do nothing;
 
 
@@ -183,7 +183,7 @@ as $$
               and c.estado_codigo = 'activo'
          )
      and length(btrim(coalesce(p_query, ''))) >= 3
-     -- solo miembros vigentes y FISURA: un código suspendido o revocado no
+     -- solo miembros vigentes y LA SEKTA: un código suspendido o revocado no
      -- tiene por qué seguir ofreciéndose como "quién te trajo"
      and m.estado_codigo in ('activo', 'simbolico')
      and (
@@ -367,6 +367,6 @@ grant execute on function public.completar_registro(text, text, text, text, text
 -- select nombre, to_char(fecha, 'DD/MM/YYYY') as fecha, lugar
 --   from public.fiestas order by fecha;                    -> 11 fiestas
 --
--- select * from public.validar_codigo('NOLOGIN');          -> 0 filas (FISURA no entra)
+-- select * from public.validar_codigo('NOLOGIN');          -> 0 filas (LA SEKTA no entra)
 -- select * from public.validar_codigo('CODIGO');           -> registro_completo = false
--- select * from public.buscar_miembros('CODIGO', 'fis');   -> FISURA
+-- select * from public.buscar_miembros('CODIGO', 'sek');   -> LA SEKTA
