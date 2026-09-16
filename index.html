@@ -42,6 +42,66 @@
   }
 
   /* ---------- textura de grano (ambiente, sutil) ---------- */
+  /* ---------- fondo general del perfil ----------
+     La foto va fija detrás de todo (z-index 0, debajo del .stage que es 1).
+     Aparece solo cuando hay un perfil abierto: en el portón y en la historia
+     estorbaría. El velo de arriba es lo que mantiene el texto legible. */
+  .fondo-perfil{
+    position:fixed; inset:0;
+    z-index:0;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity 1.2s ease;
+  }
+  body.en-perfil .fondo-perfil{ opacity:1; }
+  .fondo-perfil::before,
+  .fondo-perfil::after{ content:""; position:absolute; inset:0; }
+  .fondo-perfil::before{
+    background:url("images/fondo-general.jpg") center top / cover no-repeat;
+  }
+  .fondo-perfil::after{
+    background:
+      radial-gradient(ellipse 80% 55% at 50% 22%, rgba(13,13,13,.25), rgba(13,13,13,.86) 75%),
+      linear-gradient(to bottom, rgba(13,13,13,.55) 0%, rgba(13,13,13,.2) 30%, rgba(13,13,13,.8) 100%);
+  }
+
+  /* --- los tres tratamientos que hay que comparar --- */
+  body[data-fondo="bn"] .fondo-perfil::before{
+    filter:grayscale(1) contrast(1.08);
+    opacity:.20;
+  }
+  body[data-fondo="color"] .fondo-perfil::before{
+    filter:saturate(.45);
+    opacity:.24;
+  }
+  body[data-fondo="calido"] .fondo-perfil::before{
+    filter:grayscale(1) contrast(1.05);
+    opacity:.20;
+  }
+  /* el cálido es el blanco y negro con una veladura del amarillo del sitio */
+  body[data-fondo="calido"] .fondo-perfil::after{
+    background:
+      radial-gradient(ellipse 80% 55% at 50% 22%, rgba(217,161,30,.10), rgba(13,13,13,.86) 72%),
+      linear-gradient(to bottom, rgba(13,13,13,.55) 0%, rgba(13,13,13,.2) 30%, rgba(13,13,13,.8) 100%);
+  }
+  body[data-fondo="sin"] .fondo-perfil{ opacity:0 !important; }
+
+  /* --- el selector, TEMPORAL: se saca antes de publicar --- */
+  #probarFondo{
+    position:fixed; left:12px; bottom:12px; z-index:90;
+    display:flex; gap:6px;
+    background:rgba(13,13,13,.9);
+    border:1px solid rgba(var(--gray-rgb),.35);
+    padding:6px;
+  }
+  #probarFondo button{
+    background:none; border:1px solid transparent;
+    color:var(--gray); font-family:inherit; font-size:9px;
+    letter-spacing:.1em; text-transform:uppercase;
+    padding:5px 9px; cursor:pointer;
+  }
+  #probarFondo button[aria-pressed="true"]{ color:var(--white); border-color:var(--gray); }
+
   #grain{
     position:fixed; inset:0;
     width:100vw; height:100vh;
@@ -291,8 +351,8 @@
   }
   .mau-logo{
     display:block;
-    width:62%;
-    max-width:204px;
+    width:43%;           /* era 62%: un 30% menos */
+    max-width:143px;     /* era 204px */
     margin:0 auto 34px;
     height:auto;
   }
@@ -323,23 +383,33 @@
     font-size:9px; letter-spacing:.12em; color:var(--gray);
   }
 
+  /* la acción principal del perfil. Respira muy despacio —seis segundos—
+     y apenas se nota; lo suficiente para que el ojo vuelva ahí. */
   .invite-trigger{
     display:block;
     margin:0 auto;
-    padding:11px 20px;
-    border:1px solid rgba(var(--gray-rgb),.4);
-    background:none;
+    padding:13px 26px;
+    border:1px solid rgba(var(--white-rgb),.55);
+    background:rgba(var(--white-rgb),.03);
     color:var(--white);
     font-family:inherit;
-    font-size:10px;
-    letter-spacing:.14em;
+    font-size:10.5px;
+    letter-spacing:.16em;
     text-transform:uppercase;
     cursor:pointer;
     transition:border-color .2s ease, background .2s ease;
+    animation:invitaRespira 6s ease-in-out infinite;
+  }
+  @keyframes invitaRespira{
+    0%,100%{ box-shadow:0 0 0 0 rgba(var(--white-rgb),.14), inset 0 0 12px rgba(var(--white-rgb),.02); }
+    50%    { box-shadow:0 0 16px 1px rgba(var(--white-rgb),.11), inset 0 0 14px rgba(var(--white-rgb),.05); }
   }
   .invite-trigger:hover{
     border-color:var(--white);
-    background:rgba(var(--white-rgb),.04);
+    background:rgba(var(--white-rgb),.07);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .invite-trigger{ animation:none; box-shadow:0 0 14px rgba(var(--white-rgb),.1); }
   }
 
   /* ---------- pantalla de código de invitación ---------- */
@@ -679,10 +749,11 @@
 
   .invite-trigger-sub{
     text-align:center;
-    font-size:9px;
-    letter-spacing:.1em;
-    color:var(--gray);
-    margin-top:10px;
+    font-size:10px;
+    letter-spacing:.18em;
+    color:rgba(var(--white-rgb),.72);
+    font-style:italic;
+    margin-top:14px;
   }
 
   /* texto para el que invita: mismo tono que el de bienvenida */
@@ -1194,7 +1265,16 @@
 </head>
 <body>
 
+<div class="fondo-perfil" aria-hidden="true"></div>
 <canvas id="grain"></canvas>
+
+<!-- TEMPORAL: para comparar tratamientos del fondo. Se saca antes de publicar. -->
+<div id="probarFondo">
+  <button data-f="bn" aria-pressed="true">b/n</button>
+  <button data-f="color" aria-pressed="false">color</button>
+  <button data-f="calido" aria-pressed="false">cálido</button>
+  <button data-f="sin" aria-pressed="false">sin</button>
+</div>
 
 <!-- filtro para la textura chamuscada de la costura de la historia -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1969,6 +2049,7 @@ function entrarAlSitio(miembro){
 
   const pantalla = miembro.pantalla;
 
+  document.body.classList.add('en-perfil');
   if (window.__refrescarRitos) window.__refrescarRitos();
   if (window.__refrescarRama)  window.__refrescarRama();
 
@@ -1996,6 +2077,7 @@ function mostrarCodigoNuevo(miembro){
 }
 
 function resetToGate(){
+  document.body.classList.remove('en-perfil');
   miembroActual = null;
   codigoActual = null;
   invitacionActual = null;
@@ -3198,6 +3280,19 @@ reveal();
     const id = n.dataset.abrir;
     if (abiertos.has(id)) abiertos.delete(id); else abiertos.add(id);
     pintar(datos);
+  });
+})();
+
+/* ---------- TEMPORAL: comparador de fondos ---------- */
+(function probarFondo(){
+  const caja = document.getElementById('probarFondo');
+  document.body.dataset.fondo = 'bn';
+  caja.addEventListener('click', e => {
+    const b = e.target.closest('[data-f]');
+    if (!b) return;
+    document.body.dataset.fondo = b.dataset.f;
+    caja.querySelectorAll('button').forEach(o =>
+      o.setAttribute('aria-pressed', String(o === b)));
   });
 })();
 
