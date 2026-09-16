@@ -43,21 +43,32 @@
 
   /* ---------- textura de grano (ambiente, sutil) ---------- */
   /* ---------- fondo general del perfil ----------
-     La foto va fija detrás de todo (z-index 0, debajo del .stage que es 1).
-     Aparece solo cuando hay un perfil abierto: en el portón y en la historia
-     estorbaría. El velo de arriba es lo que mantiene el texto legible. */
+     La foto vive dentro de la sección del perfil y se recorta ahí, así que
+     scrollea con ella como las fotos de la historia y del carrusel. El velo de
+     encima es lo que mantiene el texto legible. */
+  /* vive DENTRO del perfil y se recorta ahí: antes era fija y quedaba flotando
+     en el medio mientras las otras secciones le pasaban por encima */
+  .member-screen{ position:relative; }
+  .member-screen > *:not(.fondo-perfil){ position:relative; z-index:1; }
   .fondo-perfil{
-    position:fixed; inset:0;
+    position:absolute;
+    top:0; left:50%;
+    transform:translateX(-50%);
+    width:100vw; height:100%;
     z-index:0;
+    overflow:hidden;
     pointer-events:none;
-    opacity:0;
-    transition:opacity 1.2s ease;
   }
-  body.en-perfil .fondo-perfil{ opacity:1; }
   .fondo-perfil::before,
   .fondo-perfil::after{ content:""; position:absolute; inset:0; }
   .fondo-perfil::before{
     background:url("images/fondo-general.jpg") center top / cover no-repeat;
+  }
+  /* el perfil es más alto que la pantalla: el degradé de abajo tiene que
+     apagar la foto antes de que termine la sección */
+  .fondo-perfil::before{
+    -webkit-mask-image:linear-gradient(to bottom, #000 0%, #000 62%, transparent 96%);
+    mask-image:linear-gradient(to bottom, #000 0%, #000 62%, transparent 96%);
   }
   /* el velo se abre en el medio —donde está el abanico— y solo aprieta en los
      bordes, que es donde no hay nada que mirar */
@@ -69,16 +80,16 @@
 
   /* --- los tres tratamientos que hay que comparar --- */
   body[data-fondo="bn"] .fondo-perfil::before{
-    filter:grayscale(1) contrast(1.15) brightness(1.02);
-    opacity:.46;
+    filter:grayscale(1) contrast(1.1) brightness(1);
+    opacity:.30;
   }
   body[data-fondo="color"] .fondo-perfil::before{
-    filter:saturate(.5) brightness(1);
-    opacity:.44;
+    filter:saturate(.45) brightness(.98);
+    opacity:.28;
   }
   body[data-fondo="calido"] .fondo-perfil::before{
-    filter:grayscale(1) contrast(1.12) brightness(1.02);
-    opacity:.46;
+    filter:grayscale(1) contrast(1.08) brightness(1);
+    opacity:.30;
   }
   /* el cálido es el blanco y negro con una veladura del amarillo del sitio */
   body[data-fondo="calido"] .fondo-perfil::after{
@@ -109,16 +120,32 @@
     width:100vw; height:100vh;
     z-index:40;
     pointer-events:none;
-    opacity:.05;
+    opacity:.025;   /* era .05 */
     mix-blend-mode:overlay;
     image-rendering:pixelated;
   }
+
+  /* ---------- enganche del scroll ----------
+     "proximity" y no "mandatory" a propósito: mientras arrastrás el dedo podés
+     quedar donde quieras, y al soltar se acomoda a la sección más cercana solo
+     si estás cerca. Con "mandatory" el perfil —que es más alto que la pantalla—
+     te pelearía el scroll para leerlo entero. */
+  /* va en body y no en html: el que scrollea es body (alto fijo y overflow
+     auto), html no se mueve. Puesto en html no hacía nada. */
+  body{
+    scroll-snap-type:y proximity;
+    scroll-padding-top:0;
+  }
+  .screen.active{ scroll-snap-align:start; }
 
   /* ---------- layout general ---------- */
   .stage{
     width:100%;
     max-width:380px;
-    padding:56px 24px 64px;
+    /* 150 abajo y no 64: el enganche del scroll frena unos 60px antes del
+       final, y ese margen tiene que caer en espacio vacío y no encima del
+       último bloque */
+    padding:56px 24px 150px;
     position:relative;
     z-index:1;
   }
@@ -1286,7 +1313,6 @@
 </head>
 <body>
 
-<div class="fondo-perfil" aria-hidden="true"></div>
 <canvas id="grain"></canvas>
 
 <!-- TEMPORAL: para comparar tratamientos del fondo. Se saca antes de publicar. -->
@@ -1430,6 +1456,7 @@
 
   <!-- ===================== MEMBER VIEW (genérica) ===================== -->
   <section id="member" class="screen member-screen">
+    <div class="fondo-perfil" aria-hidden="true"></div>
     <div class="top-row rv-a">
       <button class="exit-link" id="exitBtn">salir</button>
     </div>
@@ -1474,6 +1501,7 @@
 
   <!-- ===================== MEMBER VIEW (MAU) ===================== -->
   <section id="member-mau" class="screen member-screen">
+    <div class="fondo-perfil" aria-hidden="true"></div>
     <div class="top-row rv-a">
       <button class="exit-link" id="exitBtnMau">salir</button>
     </div>
@@ -1529,6 +1557,7 @@
   </section>
 
   <section id="member-luchi" class="screen member-screen">
+    <div class="fondo-perfil" aria-hidden="true"></div>
     <div class="top-row rv-a">
       <button class="exit-link" id="exitBtnLuchi">salir</button>
     </div>
@@ -1582,6 +1611,7 @@
   </section>
 
   <section id="member-naya" class="screen member-screen">
+    <div class="fondo-perfil" aria-hidden="true"></div>
     <div class="top-row rv-a">
       <button class="exit-link" id="exitBtnNaya">salir</button>
     </div>
@@ -1687,6 +1717,7 @@
   </section>
 
   <section id="member-maia" class="screen member-screen">
+    <div class="fondo-perfil" aria-hidden="true"></div>
     <div class="top-row rv-a">
       <button class="exit-link" id="exitBtnMaia">salir</button>
     </div>
@@ -1740,6 +1771,7 @@
   </section>
 
   <section id="member-flor" class="screen member-screen">
+    <div class="fondo-perfil" aria-hidden="true"></div>
     <div class="top-row rv-a">
       <button class="exit-link" id="exitBtnFlor">salir</button>
     </div>
@@ -1793,6 +1825,7 @@
   </section>
 
   <section id="member-vale" class="screen member-screen">
+    <div class="fondo-perfil" aria-hidden="true"></div>
     <div class="top-row rv-a">
       <button class="exit-link" id="exitBtnVale">salir</button>
     </div>
@@ -2734,10 +2767,9 @@ reveal();
     }
     ctx.putImageData(imgData, 0, 0);
   }
+  // se dibuja una sola vez. Redibujarlo quince veces por segundo daba una
+  // textura de cine, pero sobre una foto se leía como interferencia.
   draw();
-  if (!reduced){
-    setInterval(draw, 130);
-  }
 })();
 
 /* ---------- la pantalla del código nuevo ---------- */
