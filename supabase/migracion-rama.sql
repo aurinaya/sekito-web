@@ -33,7 +33,7 @@ declare
 begin
   with recursive rama as (
     -- los que traje yo
-    select m.id, m.nombre_sektario, m.nombre_real, 1 as profundidad,
+    select m.id, m.invitado_por as de, m.nombre_sektario, m.nombre_real, 1 as profundidad,
            array[coalesce(m.nombre_sektario, m.codigo_acceso)] as camino
       from public.miembros m
      where m.invitado_por = v_yo
@@ -41,7 +41,7 @@ begin
     union all
 
     -- y colgando de cada uno, los que trajo
-    select h.id, h.nombre_sektario, h.nombre_real, r.profundidad + 1,
+    select h.id, h.invitado_por, h.nombre_sektario, h.nombre_real, r.profundidad + 1,
            r.camino || coalesce(h.nombre_sektario, h.codigo_acceso)
       from public.miembros h
       join rama r on h.invitado_por = r.id
@@ -56,7 +56,12 @@ begin
     'directos',  (select count(*) from rama where profundidad = 1),
     'total',     (select count(*) from rama),
     'rama',      coalesce((
+                   -- id y "de" para poder armar el árbol plegable en la pantalla.
+                   -- Nada de apellidos, mails ni teléfonos: en la rama se ve
+                   -- el código y el nombre de pila, y nada más.
                    select jsonb_agg(jsonb_build_object(
+                            'id',          r.id,
+                            'de',          r.de,
                             'nombre',      r.nombre_sektario,
                             'nombre_real', r.nombre_real,
                             'profundidad', r.profundidad
