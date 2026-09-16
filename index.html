@@ -48,14 +48,19 @@
      encima es lo que mantiene el texto legible. */
   /* vive DENTRO del perfil y se recorta ahí: antes era fija y quedaba flotando
      en el medio mientras las otras secciones le pasaban por encima */
-  .member-screen{ position:relative; }
+  /* z-index 0 y no "auto": con auto, el fondo del perfil —que sobresale 293px
+     hacia arriba para acomodar el abanico— se le montaba encima a la historia
+     y le apagaba el texto. Con un z-index propio, todo el perfil queda
+     encerrado en su capa, debajo de la historia (que va en 1), y el sobrante
+     de arriba deja de tapar nada. */
+  .member-screen{ position:relative; z-index:0; }
   .member-screen > *:not(.fondo-perfil){ position:relative; z-index:1; }
-  /* Sube un 22,3%: con la foto a tamaño completo el abanico cae al 56,5% del
-     alto de la sección, y así queda a la altura de "mis ritos" (34%). Lo que
-     quede sin foto abajo ya venía apagado por la máscara. */
+  /* El bloque NO sobresale: arranca en el borde de la sección y recorta.
+     El que sube es la foto, adentro. Cuando el que subía era el bloque, sus
+     293px de sobrante se metían en la historia y le apagaban el texto. */
   .fondo-perfil{
     position:absolute;
-    top:-22.3%; left:50%;
+    top:0; left:50%;
     transform:translateX(-50%);
     width:100vw; height:100%;
     z-index:0;
@@ -63,7 +68,13 @@
     pointer-events:none;
   }
   .fondo-perfil::before,
-  .fondo-perfil::after{ content:""; position:absolute; inset:0; }
+  .fondo-perfil::after{ content:""; position:absolute; }
+  .fondo-perfil::after{ inset:0; }
+  /* sube un 22,3%: con la foto a tamaño completo el abanico cae al 56,5% del
+     alto de la sección, y "mis ritos" está al 34% */
+  .fondo-perfil::before{
+    top:-22.3%; left:0; right:0; height:100%;
+  }
   .fondo-perfil::before{
     background:url("images/fondo-general.jpg") center top / cover no-repeat;
   }
