@@ -52,39 +52,6 @@
     image-rendering:pixelated;
   }
 
-  /* ---------- toggle de sonido ---------- */
-  .sound-toggle{
-    position:fixed;
-    top:18px; right:18px;
-    z-index:60;
-    width:26px; height:26px;
-    border:1px solid rgba(var(--gray-rgb),.35);
-    border-radius:50%;
-    background:none;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer;
-    padding:0;
-  }
-  .sound-dot{
-    width:6px; height:6px;
-    border-radius:50%;
-    background:var(--gray);
-    transition:background .3s ease;
-    animation: soundFloat 2.8s ease-in-out infinite;
-  }
-  .sound-toggle.on .sound-dot{
-    background:var(--white);
-    animation: soundPulse 2.6s ease-in-out infinite, soundFloat 2.8s ease-in-out infinite;
-  }
-  @keyframes soundPulse{
-    0%,100%{ box-shadow:0 0 0 0 rgba(var(--white-rgb),.35); }
-    50%{ box-shadow:0 0 0 6px rgba(var(--white-rgb),0); }
-  }
-  @keyframes soundFloat{
-    0%,100%{ transform:translateY(0); }
-    50%{ transform:translateY(1.5px); }
-  }
-
   /* ---------- layout general ---------- */
   .stage{
     width:100%;
@@ -445,6 +412,49 @@
     transition:opacity .3s ease;
   }
   .share-feedback.show{ opacity:1; }
+
+  /* ---------- mi rama del árbol ---------- */
+  .rama-guia{
+    text-align:center;
+    margin:64px 0 44px;
+  }
+  .rama-guia .etiqueta{
+    font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gray); margin-bottom:12px;
+  }
+  .rama-guia .quien{
+    font-size:17px; letter-spacing:.14em; color:var(--white);
+  }
+  .rama-cuenta{
+    text-align:center;
+    border-top:1px solid rgba(var(--gray-rgb),.25);
+    padding-top:34px;
+    margin-bottom:38px;
+  }
+  .rama-numero{
+    font-size:58px; line-height:1;
+    letter-spacing:.06em;
+    color:var(--white);
+    text-shadow:0 0 22px rgba(var(--white-rgb),.28);
+  }
+  .rama-leyenda{
+    font-size:11px; letter-spacing:.08em; color:var(--gray); margin-top:14px;
+  }
+  .rama-leyenda b{ color:var(--white); font-weight:400; }
+  .rama-lista{ font-size:12.5px; }
+  .rama-nodo{
+    display:flex; align-items:baseline; gap:8px;
+    padding:9px 0;
+    border-bottom:1px solid rgba(var(--gray-rgb),.12);
+  }
+  .rama-nodo:last-child{ border-bottom:none; }
+  .rama-sangria{ color:rgba(var(--gray-rgb),.55); white-space:pre; }
+  .rama-sekt{ color:var(--white); letter-spacing:.06em; }
+  .rama-real{ color:var(--gray); font-size:11px; }
+  .rama-vacio{
+    text-align:center; color:var(--gray); font-size:12px;
+    line-height:1.9; padding:10px 0 0;
+  }
 
   /* ---------- mis ritos ---------- */
   .ritos-trigger{
@@ -1098,10 +1108,6 @@
 
 <canvas id="grain"></canvas>
 
-<button class="sound-toggle" id="soundToggle" aria-label="activar sonido" aria-pressed="false">
-  <span class="sound-dot"></span>
-</button>
-
 <!-- filtro para la textura chamuscada de la costura de la historia -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <filter id="burn" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
@@ -1254,6 +1260,7 @@
       <button class="invite-trigger">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
       <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
+      <button class="rama-trigger">mi rama</button>
     </div>
   </section>
 
@@ -1289,6 +1296,7 @@
       <button class="invite-trigger" data-profile="MAU">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
       <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
+      <button class="rama-trigger">mi rama</button>
     </div>
   </section>
 
@@ -1321,6 +1329,7 @@
       <button class="invite-trigger" data-profile="LUCHI">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
       <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
+      <button class="rama-trigger">mi rama</button>
     </div>
   </section>
 
@@ -1353,6 +1362,7 @@
       <button class="invite-trigger" data-profile="NAYA">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
       <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
+      <button class="rama-trigger">mi rama</button>
     </div>
   </section>
 
@@ -1391,11 +1401,21 @@
     </div>
 
     <div id="ritosCuerpo">
-      <div class="ritos-seccion">las fiestas</div>
       <div id="listaRitos"><div class="ritos-cargando">buscando...</div></div>
     </div>
 
     <div class="ritos-aviso" id="ritosAviso"></div>
+  </section>
+
+  <!-- ===================== MI RAMA DEL ÁRBOL ===================== -->
+  <section id="rama-screen" class="screen">
+    <div class="top-row">
+      <button class="exit-link" id="exitRama">volver</button>
+    </div>
+
+    <div class="ritos-titulo">mi rama</div>
+
+    <div id="ramaCuerpo"><div class="ritos-cargando">buscando...</div></div>
   </section>
 
   <section id="member-maia" class="screen member-screen">
@@ -1427,6 +1447,7 @@
       <button class="invite-trigger" data-profile="MAIA">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
       <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
+      <button class="rama-trigger">mi rama</button>
     </div>
   </section>
 
@@ -1459,6 +1480,7 @@
       <button class="invite-trigger" data-profile="FLOR">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
       <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
+      <button class="rama-trigger">mi rama</button>
     </div>
   </section>
 
@@ -1489,6 +1511,7 @@
       <button class="invite-trigger" data-profile="VALE">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
       <button class="ritos-trigger">mis ritos<span class="ritos-badge" hidden></span></button>
+      <button class="rama-trigger">mi rama</button>
     </div>
   </section>
 
@@ -1760,6 +1783,7 @@ function resetToGate(){
   document.getElementById('codigo-nuevo').classList.remove('active');
   document.getElementById('invite-screen').classList.remove('active');
   document.getElementById('ritos-screen').classList.remove('active');
+  document.getElementById('rama-screen').classList.remove('active');
   historiaScreen.classList.remove('active');
   scrollToTop();
   memberScreen.classList.remove('active');
@@ -2369,52 +2393,6 @@ reveal();
   schedule();
 })();
 
-/* ---------- sonido binaural, 7Hz, opt-in ---------- */
-(function sound(){
-  const btn = document.getElementById('soundToggle');
-  let audioCtx, gainNode, oscL, oscR, on = false;
-
-  function init(){
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const carrier = 200;  // tono base grave
-    const beat = 7;       // diferencia entre oídos = late percibido en 7Hz (rango theta)
-
-    oscL = audioCtx.createOscillator();
-    oscR = audioCtx.createOscillator();
-    oscL.type = 'sine';
-    oscR.type = 'sine';
-    oscL.frequency.value = carrier;
-    oscR.frequency.value = carrier + beat;
-
-    const panL = audioCtx.createStereoPanner(); panL.pan.value = -1;
-    const panR = audioCtx.createStereoPanner(); panR.pan.value = 1;
-
-    gainNode = audioCtx.createGain();
-    gainNode.gain.value = 0;
-
-    oscL.connect(panL).connect(gainNode);
-    oscR.connect(panR).connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-
-    oscL.start();
-    oscR.start();
-  }
-
-  btn.addEventListener('click', () => {
-    if (!audioCtx) init();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-
-    on = !on;
-    const now = audioCtx.currentTime;
-    gainNode.gain.cancelScheduledValues(now);
-    gainNode.gain.setValueAtTime(gainNode.gain.value, now);
-    gainNode.gain.linearRampToValueAtTime(on ? 0.035 : 0, now + 1.4);
-
-    btn.classList.toggle('on', on);
-    btn.setAttribute('aria-pressed', String(on));
-  });
-})();
-
 /* ---------- grano de fondo (textura, sutil) ---------- */
 (function grain(){
   const canvas = document.getElementById('grain');
@@ -2779,6 +2757,102 @@ reveal();
     if (!r.ok){ decir(r.motivo); b.disabled = false; return; }
     cargar();
   });
+})();
+
+/* ---------- mi rama del árbol ---------- */
+(function rama(){
+  const pantalla = document.getElementById('rama-screen');
+  const salir    = document.getElementById('exitRama');
+  const cuerpo   = document.getElementById('ramaCuerpo');
+
+  let volverA = null;
+
+  const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  document.querySelectorAll('.rama-trigger').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!miembroActual || !codigoActual) return;
+      volverA = btn.closest('.member-screen');
+      volverA.classList.remove('active');
+      historiaScreen.classList.remove('active');
+      pantalla.classList.add('active');
+      scrollToTop();
+
+      cuerpo.innerHTML = '<div class="ritos-cargando">buscando...</div>';
+      const r = await llamarRPC('mi_rama', { p_codigo: codigoActual });
+      if (!r.ok || !r.datos){
+        cuerpo.innerHTML = '<div class="ritos-cargando">el portal no responde.. probá de nuevo</div>';
+        return;
+      }
+      pintar(r.datos);
+    });
+  });
+
+  salir.addEventListener('click', () => {
+    pantalla.classList.remove('active');
+    historiaScreen.classList.add('active');
+    if (volverA){
+      volverA.classList.add('active');
+      volverA.scrollIntoView({ block:'start' });
+    }
+  });
+
+  function pintar(d){
+    // de dónde venís. Sin invitador cargado no quiere decir fundador: son dos
+    // cosas distintas y el texto tiene que distinguirlas.
+    let etiqueta, quien;
+    if (d.fundador){
+      etiqueta = 'tu lugar';
+      quien    = 'de los que empezaron esto';
+    } else if (!d.guia){
+      etiqueta = 'viniste por';
+      quien    = 'no figura quién te trajo';
+    } else if (d.guia === 'LA SEKTA'){
+      etiqueta = 'viniste por';
+      quien    = 'LA SEKTA';
+    } else {
+      etiqueta = 'viniste por';
+      quien    = d.guia;
+    }
+
+    const total = d.total || 0, directos = d.directos || 0;
+
+    let cuenta;
+    if (total === 0){
+      cuenta = '<div class="rama-cuenta">' +
+                 '<div class="rama-vacio">todavía no trajiste a nadie.<br>' +
+                 'el sékito crece por invitación.</div>' +
+               '</div>';
+    } else {
+      // si todos los que colgás son los que trajiste vos, no hay dos números
+      // que contar: sería decir lo mismo dos veces
+      const leyenda = (total === directos)
+        ? (total === 1 ? 'persona entró por vos' : 'personas entraron por vos')
+        : 'personas cuelgan de vos.. <b>' + directos + '</b> las trajiste en persona';
+      cuenta = '<div class="rama-cuenta">' +
+                 '<div class="rama-numero">' + total + '</div>' +
+                 '<div class="rama-leyenda">' + leyenda + '</div>' +
+               '</div>';
+    }
+
+    const lista = (d.rama || []).map(x => {
+      const sangria = x.profundidad > 1
+        ? '<span class="rama-sangria">' + '　'.repeat(x.profundidad - 1) + '└ </span>' : '';
+      return '<div class="rama-nodo">' + sangria +
+               '<span class="rama-sekt">' + esc(x.nombre || '—') + '</span>' +
+               (x.nombre_real ? '<span class="rama-real">' + esc(x.nombre_real) + '</span>' : '') +
+             '</div>';
+    }).join('');
+
+    cuerpo.innerHTML =
+      '<div class="rama-guia">' +
+        '<div class="etiqueta">' + etiqueta + '</div>' +
+        '<div class="quien">' + esc(quien) + '</div>' +
+      '</div>' +
+      cuenta +
+      '<div class="rama-lista">' + lista + '</div>';
+  }
 })();
 
 /* ---------- llegada por link de invitación (sekito.ar/i/CODIGO) ----------
