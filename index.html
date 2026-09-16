@@ -59,30 +59,32 @@
   .fondo-perfil::before{
     background:url("images/fondo-general.jpg") center top / cover no-repeat;
   }
+  /* el velo se abre en el medio —donde está el abanico— y solo aprieta en los
+     bordes, que es donde no hay nada que mirar */
   .fondo-perfil::after{
     background:
-      radial-gradient(ellipse 80% 55% at 50% 22%, rgba(13,13,13,.25), rgba(13,13,13,.86) 75%),
-      linear-gradient(to bottom, rgba(13,13,13,.55) 0%, rgba(13,13,13,.2) 30%, rgba(13,13,13,.8) 100%);
+      radial-gradient(ellipse 95% 62% at 50% 34%, rgba(13,13,13,0) 20%, rgba(13,13,13,.5) 88%),
+      linear-gradient(to bottom, rgba(13,13,13,.4) 0%, rgba(13,13,13,0) 22%, rgba(13,13,13,.06) 58%, rgba(13,13,13,.62) 100%);
   }
 
   /* --- los tres tratamientos que hay que comparar --- */
   body[data-fondo="bn"] .fondo-perfil::before{
-    filter:grayscale(1) contrast(1.08);
-    opacity:.20;
+    filter:grayscale(1) contrast(1.15) brightness(1.02);
+    opacity:.46;
   }
   body[data-fondo="color"] .fondo-perfil::before{
-    filter:saturate(.45);
-    opacity:.24;
+    filter:saturate(.5) brightness(1);
+    opacity:.44;
   }
   body[data-fondo="calido"] .fondo-perfil::before{
-    filter:grayscale(1) contrast(1.05);
-    opacity:.20;
+    filter:grayscale(1) contrast(1.12) brightness(1.02);
+    opacity:.46;
   }
   /* el cálido es el blanco y negro con una veladura del amarillo del sitio */
   body[data-fondo="calido"] .fondo-perfil::after{
     background:
-      radial-gradient(ellipse 80% 55% at 50% 22%, rgba(217,161,30,.10), rgba(13,13,13,.86) 72%),
-      linear-gradient(to bottom, rgba(13,13,13,.55) 0%, rgba(13,13,13,.2) 30%, rgba(13,13,13,.8) 100%);
+      radial-gradient(ellipse 95% 62% at 50% 34%, rgba(217,161,30,.14) 10%, rgba(13,13,13,.5) 88%),
+      linear-gradient(to bottom, rgba(13,13,13,.4) 0%, rgba(13,13,13,0) 22%, rgba(13,13,13,.06) 58%, rgba(13,13,13,.62) 100%);
   }
   body[data-fondo="sin"] .fondo-perfil{ opacity:0 !important; }
 
@@ -389,8 +391,8 @@
     display:block;
     margin:0 auto;
     padding:13px 26px;
-    border:1px solid rgba(var(--white-rgb),.55);
-    background:rgba(var(--white-rgb),.03);
+    border:1px solid rgba(var(--white-rgb),.75);
+    background:rgba(var(--white-rgb),.06);
     color:var(--white);
     font-family:inherit;
     font-size:10.5px;
@@ -398,18 +400,18 @@
     text-transform:uppercase;
     cursor:pointer;
     transition:border-color .2s ease, background .2s ease;
-    animation:invitaRespira 6s ease-in-out infinite;
+    animation:invitaRespira 4.5s ease-in-out infinite;
   }
   @keyframes invitaRespira{
-    0%,100%{ box-shadow:0 0 0 0 rgba(var(--white-rgb),.14), inset 0 0 12px rgba(var(--white-rgb),.02); }
-    50%    { box-shadow:0 0 16px 1px rgba(var(--white-rgb),.11), inset 0 0 14px rgba(var(--white-rgb),.05); }
+    0%,100%{ box-shadow:0 0 10px 0 rgba(var(--white-rgb),.16), inset 0 0 14px rgba(var(--white-rgb),.04); }
+    50%    { box-shadow:0 0 26px 3px rgba(var(--white-rgb),.3),  inset 0 0 20px rgba(var(--white-rgb),.1); }
   }
   .invite-trigger:hover{
     border-color:var(--white);
     background:rgba(var(--white-rgb),.07);
   }
   @media (prefers-reduced-motion: reduce){
-    .invite-trigger{ animation:none; box-shadow:0 0 14px rgba(var(--white-rgb),.1); }
+    .invite-trigger{ animation:none; box-shadow:0 0 22px rgba(var(--white-rgb),.24); }
   }
 
   /* ---------- pantalla de código de invitación ---------- */
@@ -577,6 +579,25 @@
 
   /* ---------- las secciones del perfil ---------- */
   .seccion{ margin:40px 0; text-align:center; }
+  /* la foto de fondo levanta el brillo detrás del texto: una sombra apenas
+     perceptible lo devuelve a ser legible sin cambiarle el color */
+  body.en-perfil .member-screen{
+    text-shadow:0 1px 3px rgba(13,13,13,.95), 0 0 18px rgba(13,13,13,.85);
+  }
+  body.en-perfil .member-screen .mau-logo path{
+    filter:drop-shadow(0 1px 4px rgba(13,13,13,.9)) drop-shadow(0 0 14px rgba(13,13,13,.8));
+  }
+  /* el gris de siempre se apaga contra el humo: en el perfil sube un escalón */
+  body.en-perfil .member-screen .seccion-titulo span,
+  body.en-perfil .member-screen .rp-hijos,
+  body.en-perfil .member-screen .rt-leyenda,
+  body.en-perfil .member-screen .seccion-btn{
+    color:rgba(var(--white-rgb),.82);
+  }
+  body.en-perfil .member-screen .seccion-titulo::before,
+  body.en-perfil .member-screen .seccion-titulo::after{
+    background:rgba(var(--white-rgb),.3);
+  }
   .seccion-titulo{
     display:flex; align-items:center; gap:14px;
     margin-bottom:26px;
