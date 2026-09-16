@@ -61,8 +61,15 @@
   }
   .fondo-perfil::before,
   .fondo-perfil::after{ content:""; position:absolute; inset:0; }
+  /* El abanico de la foto está al 56,5% de su alto, no al 50%, así que
+     centrado quedaba corrido hacia abajo. Con la foto al 130% del alto de la
+     sección sobra un 30% para desplazar, y al 78% el abanico cae justo en el
+     medio. Sale de: 0,565 x 1,30 - 0,78 x 0,30 = 0,50. No depende del alto de
+     la sección, así que vale para todos los perfiles. */
   .fondo-perfil::before{
-    background:url("images/fondo-general.jpg") center top / cover no-repeat;
+    background:url("images/fondo-general.jpg") no-repeat;
+    background-size:auto 130%;
+    background-position:50% 78%;
   }
   /* el perfil es más alto que la pantalla: el degradé de abajo tiene que
      apagar la foto antes de que termine la sección */
@@ -120,7 +127,7 @@
     width:100vw; height:100vh;
     z-index:40;
     pointer-events:none;
-    opacity:.025;   /* era .05 */
+    opacity:.02;    /* era .05 */
     mix-blend-mode:overlay;
     image-rendering:pixelated;
   }
@@ -343,8 +350,11 @@
   #code-input::placeholder{ color:rgba(var(--gray-rgb),.5); letter-spacing:.14em; }
 
   /* ---------- member view (genérica) ---------- */
+  /* el padding del .stage solo da aire arriba de la PRIMERA sección; cuando el
+     scroll engancha en el perfil, su borde queda al ras y "salir" pegado */
   .top-row{
     display:flex; justify-content:flex-end;
+    padding-top:26px;
     margin-bottom:40px;
   }
   .exit-link{
@@ -2767,9 +2777,10 @@ reveal();
     }
     ctx.putImageData(imgData, 0, 0);
   }
-  // se dibuja una sola vez. Redibujarlo quince veces por segundo daba una
-  // textura de cine, pero sobre una foto se leía como interferencia.
   draw();
+  if (!reduced){
+    setInterval(draw, 130);
+  }
 })();
 
 /* ---------- la pantalla del código nuevo ---------- */
