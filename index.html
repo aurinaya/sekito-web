@@ -537,10 +537,25 @@
   .r-atestiguado{ color:var(--amarillo); }
   .r-esperando{ color:var(--gray); }
   .rito-testigos{
-    display:flex; flex-wrap:wrap; gap:8px 12px;
-    margin-top:11px; font-size:11px; color:var(--gray);
+    display:flex; flex-wrap:wrap; gap:8px 16px;
+    margin-top:12px; font-size:11px; color:var(--gray);
+  }
+  /* mismo punto que los carruseles: relleno = ya está, hueco = falta.
+     El sitio ya usa ese lenguaje, así que no hay nada nuevo que aprender
+     ni hace falta un color para distinguirlos. */
+  .testigo{ display:inline-flex; align-items:center; gap:7px; }
+  .testigo::before{
+    content:"";
+    width:5px; height:5px; border-radius:50%;
+    flex:none;
+    background:none;
+    box-shadow:inset 0 0 0 1px rgba(var(--gray-rgb),.55);
   }
   .testigo.dio-fe{ color:var(--white); }
+  .testigo.dio-fe::before{
+    background:var(--white);
+    box-shadow:0 0 6px rgba(var(--white-rgb),.45);
+  }
   .rito-acciones{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
   .rito-btn{
     border:1px solid rgba(var(--gray-rgb),.4);
@@ -2573,7 +2588,7 @@ reveal();
       if (r.estado === 'esperando'){
         const testigos = (r.testigos || []).map(t =>
           '<span class="testigo' + (t.dio_fe ? ' dio-fe' : '') + '">' +
-            esc(t.nombre) + (t.dio_fe ? ' ✓' : ' · esperando') +
+            esc(t.nombre) +
           '</span>').join('');
         dentro = '<div class="rito-testigos">' + testigos + '</div>' +
                  '<div class="rito-acciones">' +
@@ -2588,10 +2603,15 @@ reveal();
             '</div>';
       }
 
+      // "1 de 2" se lee de un vistazo y no necesita que nadie explique los
+      // puntitos; entre los dos queda claro quién falta y cuánto falta
+      const dieronFe = (r.testigos || []).filter(t => t.dio_fe).length;
       const pastilla = r.estado === 'atestiguado'
         ? '<span class="rito-estado r-atestiguado">atestiguado</span>'
         : (r.estado === 'esperando'
-            ? '<span class="rito-estado r-esperando">esperando testigos</span>' : '');
+            ? '<span class="rito-estado r-esperando">' +
+                dieronFe + ' de ' + (r.testigos || []).length +
+              '</span>' : '');
 
       return '<div class="rito" data-fiesta="' + r.fiesta_id + '">' +
                '<div class="rito-cab">' +
