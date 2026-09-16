@@ -50,9 +50,12 @@
      en el medio mientras las otras secciones le pasaban por encima */
   .member-screen{ position:relative; }
   .member-screen > *:not(.fondo-perfil){ position:relative; z-index:1; }
+  /* Sube un 22,3%: con la foto a tamaño completo el abanico cae al 56,5% del
+     alto de la sección, y así queda a la altura de "mis ritos" (34%). Lo que
+     quede sin foto abajo ya venía apagado por la máscara. */
   .fondo-perfil{
     position:absolute;
-    top:0; left:50%;
+    top:-22.3%; left:50%;
     transform:translateX(-50%);
     width:100vw; height:100%;
     z-index:0;
@@ -61,48 +64,51 @@
   }
   .fondo-perfil::before,
   .fondo-perfil::after{ content:""; position:absolute; inset:0; }
-  /* El abanico de la foto está al 56,5% de su alto, no al 50%, así que
-     centrado quedaba corrido hacia abajo. Con la foto al 130% del alto de la
-     sección sobra un 30% para desplazar, y al 78% el abanico cae justo en el
-     medio. Sale de: 0,565 x 1,30 - 0,78 x 0,30 = 0,50. No depende del alto de
-     la sección, así que vale para todos los perfiles. */
   .fondo-perfil::before{
-    background:url("images/fondo-general.jpg") no-repeat;
-    background-size:auto 130%;
-    background-position:50% 78%;
+    background:url("images/fondo-general.jpg") center top / cover no-repeat;
   }
-  /* el perfil es más alto que la pantalla: el degradé de abajo tiene que
-     apagar la foto antes de que termine la sección */
+  /* el perfil es más alto que la pantalla: la foto tiene que apagarse antes de
+     que termine la sección */
   .fondo-perfil::before{
-    -webkit-mask-image:linear-gradient(to bottom, #000 0%, #000 62%, transparent 96%);
-    mask-image:linear-gradient(to bottom, #000 0%, #000 62%, transparent 96%);
+    -webkit-mask-image:linear-gradient(to bottom, #000 0%, #000 74%, transparent 100%);
+    mask-image:linear-gradient(to bottom, #000 0%, #000 74%, transparent 100%);
   }
-  /* el velo se abre en el medio —donde está el abanico— y solo aprieta en los
-     bordes, que es donde no hay nada que mirar */
+  /* Los porcentajes son del elemento, que arranca 22,3% por encima de la
+     sección: el 22% de acá es el borde de arriba del perfil. Se mantiene
+     oscuro ahí para encadenar con la historia, se abre en el medio y vuelve
+     a cerrar abajo. */
   .fondo-perfil::after{
-    background:
-      radial-gradient(ellipse 95% 62% at 50% 34%, rgba(13,13,13,0) 20%, rgba(13,13,13,.5) 88%),
-      linear-gradient(to bottom, rgba(13,13,13,.4) 0%, rgba(13,13,13,0) 22%, rgba(13,13,13,.06) 58%, rgba(13,13,13,.62) 100%);
+    background:linear-gradient(to bottom,
+      rgba(13,13,13,.92) 20%,
+      rgba(13,13,13,.18) 34%,
+      rgba(13,13,13,0)   52%,
+      rgba(13,13,13,.28) 76%,
+      rgba(13,13,13,.75) 100%);
   }
 
   /* --- los tres tratamientos que hay que comparar --- */
   body[data-fondo="bn"] .fondo-perfil::before{
     filter:grayscale(1) contrast(1.1) brightness(1);
-    opacity:.30;
+    opacity:.21;
   }
   body[data-fondo="color"] .fondo-perfil::before{
     filter:saturate(.45) brightness(.98);
-    opacity:.28;
+    opacity:.20;
   }
   body[data-fondo="calido"] .fondo-perfil::before{
     filter:grayscale(1) contrast(1.08) brightness(1);
-    opacity:.30;
+    opacity:.21;
   }
   /* el cálido es el blanco y negro con una veladura del amarillo del sitio */
   body[data-fondo="calido"] .fondo-perfil::after{
     background:
-      radial-gradient(ellipse 95% 62% at 50% 34%, rgba(217,161,30,.14) 10%, rgba(13,13,13,.5) 88%),
-      linear-gradient(to bottom, rgba(13,13,13,.4) 0%, rgba(13,13,13,0) 22%, rgba(13,13,13,.06) 58%, rgba(13,13,13,.62) 100%);
+      radial-gradient(ellipse 90% 40% at 50% 56%, rgba(217,161,30,.16), rgba(217,161,30,0) 80%),
+      linear-gradient(to bottom,
+        rgba(13,13,13,.92) 20%,
+        rgba(13,13,13,.18) 34%,
+        rgba(13,13,13,0)   52%,
+        rgba(13,13,13,.28) 76%,
+        rgba(13,13,13,.75) 100%);
   }
   body[data-fondo="sin"] .fondo-perfil{ opacity:0 !important; }
 
@@ -969,6 +975,25 @@
     object-fit:cover;
     transform-origin:center;
   }
+  /* el corte entre la historia y el perfil era a filo; esto disuelve el borde
+     de abajo en negro, y el perfil arranca en negro también, así que las dos
+     imágenes se encadenan en vez de chocar.
+     z-index 3 y como ::after: queda encima del quemado (z-3) porque va después
+     en el documento, y debajo del texto (z-4). */
+  .historia::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:45%;
+    z-index:3;
+    pointer-events:none;
+    background:linear-gradient(to bottom,
+      rgba(13,13,13,0) 0%,
+      rgba(13,13,13,.25) 35%,
+      rgba(13,13,13,.7) 70%,
+      var(--black) 100%);
+  }
+
   .hist-seki{ z-index:1; }
   .hist-seki img{ object-position:var(--focus-seki); }
   .hist-colapso{
@@ -1151,6 +1176,7 @@
     left:var(--side); right:var(--side);
     bottom:7svh;
     text-align:center;
+    z-index:5;   /* por encima del degradado de encadenado, que va en 3 */
   }
   .hist-cta{
     margin:0;
