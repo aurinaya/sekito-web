@@ -77,6 +77,11 @@
      sección: el 22% de acá es el borde de arriba del perfil. Se mantiene
      oscuro ahí para encadenar con la historia, se abre en el medio y vuelve
      a cerrar abajo. */
+  .fondo-perfil::before{
+    filter:grayscale(1) contrast(1.1) brightness(1);
+    opacity:.21;
+  }
+
   .fondo-perfil::after{
     background:linear-gradient(to bottom,
       rgba(13,13,13,.92) 20%,
@@ -87,46 +92,6 @@
   }
 
   /* --- los tres tratamientos que hay que comparar --- */
-  body[data-fondo="bn"] .fondo-perfil::before{
-    filter:grayscale(1) contrast(1.1) brightness(1);
-    opacity:.21;
-  }
-  body[data-fondo="color"] .fondo-perfil::before{
-    filter:saturate(.45) brightness(.98);
-    opacity:.20;
-  }
-  body[data-fondo="calido"] .fondo-perfil::before{
-    filter:grayscale(1) contrast(1.08) brightness(1);
-    opacity:.21;
-  }
-  /* el cálido es el blanco y negro con una veladura del amarillo del sitio */
-  body[data-fondo="calido"] .fondo-perfil::after{
-    background:
-      radial-gradient(ellipse 90% 40% at 50% 56%, rgba(217,161,30,.16), rgba(217,161,30,0) 80%),
-      linear-gradient(to bottom,
-        rgba(13,13,13,.92) 20%,
-        rgba(13,13,13,.18) 34%,
-        rgba(13,13,13,0)   52%,
-        rgba(13,13,13,.28) 76%,
-        rgba(13,13,13,.75) 100%);
-  }
-  body[data-fondo="sin"] .fondo-perfil{ opacity:0 !important; }
-
-  /* --- el selector, TEMPORAL: se saca antes de publicar --- */
-  #probarFondo{
-    position:fixed; left:12px; bottom:12px; z-index:90;
-    display:flex; gap:6px;
-    background:rgba(13,13,13,.9);
-    border:1px solid rgba(var(--gray-rgb),.35);
-    padding:6px;
-  }
-  #probarFondo button{
-    background:none; border:1px solid transparent;
-    color:var(--gray); font-family:inherit; font-size:9px;
-    letter-spacing:.1em; text-transform:uppercase;
-    padding:5px 9px; cursor:pointer;
-  }
-  #probarFondo button[aria-pressed="true"]{ color:var(--white); border-color:var(--gray); }
 
   #grain{
     position:fixed; inset:0;
@@ -968,6 +933,12 @@
   }
   .hist-photo{
     position:absolute; inset:0;
+    /* Lo único que había que corregir era la línea recta del borde de abajo.
+       Se desvanece apenas el último 5%, y no hasta transparente del todo: con
+       un desvanecido largo las fotos morían demasiado arriba y el texto de la
+       historia perdía el fondo contra el que se lee. */
+    -webkit-mask-image:linear-gradient(to bottom, #000 95%, rgba(0,0,0,.45) 100%);
+    mask-image:linear-gradient(to bottom, #000 95%, rgba(0,0,0,.45) 100%);
   }
   .hist-photo img{
     display:block;
@@ -975,25 +946,6 @@
     object-fit:cover;
     transform-origin:center;
   }
-  /* el corte entre la historia y el perfil era a filo; esto disuelve el borde
-     de abajo en negro, y el perfil arranca en negro también, así que las dos
-     imágenes se encadenan en vez de chocar.
-     z-index 3 y como ::after: queda encima del quemado (z-3) porque va después
-     en el documento, y debajo del texto (z-4). */
-  .historia::after{
-    content:"";
-    position:absolute;
-    left:0; right:0; bottom:0;
-    height:45%;
-    z-index:3;
-    pointer-events:none;
-    background:linear-gradient(to bottom,
-      rgba(13,13,13,0) 0%,
-      rgba(13,13,13,.25) 35%,
-      rgba(13,13,13,.7) 70%,
-      var(--black) 100%);
-  }
-
   .hist-seki{ z-index:1; }
   .hist-seki img{ object-position:var(--focus-seki); }
   .hist-colapso{
@@ -1176,7 +1128,6 @@
     left:var(--side); right:var(--side);
     bottom:7svh;
     text-align:center;
-    z-index:5;   /* por encima del degradado de encadenado, que va en 3 */
   }
   .hist-cta{
     margin:0;
@@ -1350,14 +1301,6 @@
 <body>
 
 <canvas id="grain"></canvas>
-
-<!-- TEMPORAL: para comparar tratamientos del fondo. Se saca antes de publicar. -->
-<div id="probarFondo">
-  <button data-f="bn" aria-pressed="true">b/n</button>
-  <button data-f="color" aria-pressed="false">color</button>
-  <button data-f="calido" aria-pressed="false">cálido</button>
-  <button data-f="sin" aria-pressed="false">sin</button>
-</div>
 
 <!-- filtro para la textura chamuscada de la costura de la historia -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -3370,19 +3313,6 @@ reveal();
     const id = n.dataset.abrir;
     if (abiertos.has(id)) abiertos.delete(id); else abiertos.add(id);
     pintar(datos);
-  });
-})();
-
-/* ---------- TEMPORAL: comparador de fondos ---------- */
-(function probarFondo(){
-  const caja = document.getElementById('probarFondo');
-  document.body.dataset.fondo = 'bn';
-  caja.addEventListener('click', e => {
-    const b = e.target.closest('[data-f]');
-    if (!b) return;
-    document.body.dataset.fondo = b.dataset.f;
-    caja.querySelectorAll('button').forEach(o =>
-      o.setAttribute('aria-pressed', String(o === b)));
   });
 })();
 
