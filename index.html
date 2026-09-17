@@ -2697,20 +2697,22 @@ reveal();
   if (!fan || !historia || reduced) return;
 
   const rand = (a, b) => a + Math.random() * (b - a);
-  const color = () => Math.random() < .5 ? 'var(--bordo)' : 'var(--amarillo)';
 
-  // Tajos horizontales: una o dos franjas que desaparecen, sin que el abanico
-  // se mueva de lugar. El polígono recorre el rectángulo de arriba, baja por el
-  // borde izquierdo —ancho cero, invisible— y sigue con el de abajo: la franja
-  // del medio queda afuera.
+  // El abanico es el de siempre, el blanco, el de la sekta. Lo que pasa cada
+  // tanto es que FALLA, y en esa falla se cuela uno de los dos mundos: SEKI o
+  // COLAPSO, nunca los dos en la misma falla. Después vuelve. Siempre vuelve.
+  const SEKI    = 'var(--amarillo)';
+  const COLAPSO = 'var(--bordo)';
+  const BLANCO  = 'var(--white)';
+
+  // una o dos franjas horizontales que desaparecen, sin moverse de lugar
   function tajos(){
     const franjas = [];
-    for (let i = 0, n = Math.random() < .45 ? 2 : 1; i < n; i++){
-      const y = rand(8, 80);
-      franjas.push([y, y + rand(2.5, 7)]);
+    for (let i = 0, n = Math.random() < .4 ? 2 : 1; i < n; i++){
+      const y = rand(10, 78);
+      franjas.push([y, y + rand(3, 8)]);
     }
     franjas.sort((a, b) => a[0] - b[0]);
-
     const pts = ['0% 0%', '100% 0%'];
     franjas.forEach(([a, b]) => pts.push(
       '100% ' + a.toFixed(1) + '%', '0% ' + a.toFixed(1) + '%',
@@ -2719,30 +2721,36 @@ reveal();
     return 'polygon(' + pts.join(',') + ')';
   }
 
-  // El apagón funciona como el corte de una película: es lo que te lleva al
-  // color y lo que te trae de vuelta al blanco. Tiene que ser cortísimo,
-  // apenas perceptible.
+  // el abanico sigue blanco, pero un renglón pertenece al otro mundo
+  function banda(mundo){
+    const a = rand(18, 70), b = a + rand(4, 11);
+    return 'linear-gradient(to bottom,' +
+      BLANCO + ' 0 ' + a.toFixed(1) + '%,' +
+      mundo  + ' ' + a.toFixed(1) + '% ' + b.toFixed(1) + '%,' +
+      BLANCO + ' ' + b.toFixed(1) + '% 100%)';
+  }
+
   function* guion(){
     for (;;){
-      yield { bg:'var(--white)', clip:null, dur: rand(420, 1300) };
+      // el de siempre, quieto. Largo a propósito: si la falla fuera seguido
+      // dejaría de llamar la atención y pasaría a ser el fondo.
+      yield { bg: BLANCO, clip: null, dur: rand(4200, 9000) };
 
-      // a veces un tajo brevísimo sin cambiar de color, para que el blanco
-      // largo no quede muerto
-      if (Math.random() < .35){
-        yield { bg:'var(--white)', clip: tajos(), dur: rand(25, 60) };
-        yield { bg:'var(--white)', clip: null,    dur: rand(60, 180) };
+      // la falla pertenece a UN mundo
+      const mundo = Math.random() < .5 ? COLAPSO : SEKI;
+
+      for (let i = 0, n = Math.round(rand(3, 6)); i < n; i++){
+        const r = Math.random();
+        if (r < .3){
+          yield { bg: 'transparent', clip: null, dur: rand(12, 28) };
+        } else if (r < .62){
+          yield { bg: banda(mundo), clip: null, dur: rand(35, 95) };
+        } else {
+          yield { bg: mundo, clip: tajos(), dur: rand(25, 70) };
+        }
       }
 
-      yield { bg:'transparent', clip:null, dur: rand(10, 30) };
-      yield { bg: color(), clip: tajos(), dur: rand(45, 150) };
-
-      // cada tanto encadena un segundo color antes de volver
-      if (Math.random() < .4){
-        yield { bg:'transparent', clip:null, dur: rand(10, 26) };
-        yield { bg: color(), clip: tajos(), dur: rand(40, 120) };
-      }
-
-      yield { bg:'transparent', clip:null, dur: rand(10, 30) };
+      yield { bg: 'transparent', clip: null, dur: rand(10, 24) };
     }
   }
 
