@@ -2698,45 +2698,51 @@ reveal();
 
   const rand = (a, b) => a + Math.random() * (b - a);
 
-  // El abanico es el de siempre, el blanco, el de la sekta. Cada dos a cuatro
-  // segundos falla, y la falla lo deja del color de un mundo el tiempo
-  // suficiente para que se entienda cuál es. Después vuelve. Siempre vuelve.
+  // El abanico nunca está del todo quieto: siempre se le van apagones, tan
+  // cortos que apenas se perciben. Cuando se viene el cambio de mundo, esos
+  // mismos apagones se aceleran y recién ahí se vuelven visibles. La falla no
+  // aparece de la nada: es algo que ya venía pasando, que se desborda.
   //
-  //   blanco 2-4s — fallas — bordo 1-2s — fallas — blanco 2-4s — fallas —
-  //   amarillo 1-2s — fallas — ...
-  //
-  // La falla es solo apagón: el abanico desaparece y aparece a los tirones.
-  // Nada se mueve ni se corta.
+  //   blanco 2-4s — la falla se desborda — bordo 1-2s — se desborda —
+  //   blanco 2-4s — se desborda — amarillo 1-2s — ...
   const BLANCO  = 'var(--white)';
   const MUNDOS  = ['var(--bordo)', 'var(--amarillo)'];
   const APAGADO = 'transparent';
+
+  // el estado normal: encendido largo, apagón de un cuadro
+  function* respirar(color, total){
+    let t = 0;
+    while (t < total){
+      const encendido = rand(140, 520);
+      const apagon    = rand(10, 22);
+      yield { bg: color,   dur: encendido };
+      yield { bg: APAGADO, dur: apagon };
+      t += encendido + apagon;
+    }
+  }
+
+  // el desborde: los mismos apagones, muchos más y más largos. En el medio los
+  // dos mundos se pelean el abanico.
+  function* desbordar(viejo, nuevo){
+    for (let i = 0, n = Math.round(rand(5, 9)); i < n; i++){
+      yield { bg: APAGADO, dur: rand(18, 45) };
+      yield { bg: Math.random() < .5 ? viejo : nuevo, dur: rand(14, 34) };
+    }
+    yield { bg: APAGADO, dur: rand(20, 50) };
+  }
 
   function* guion(){
     let turno = Math.random() < .5 ? 0 : 1;
 
     for (;;){
-      yield { bg: BLANCO, dur: rand(2000, 4000) };
+      yield* respirar(BLANCO, rand(2000, 4000));
 
       const mundo = MUNDOS[turno];
-      turno = 1 - turno;              // el próximo mundo es el otro
+      turno = 1 - turno;
 
-      // se rompe: muchos apagones muy cortos, en el mismo rato que antes
-      // llevaba la mitad. Lo violento es la cantidad, no la duración.
-      for (let i = 0, n = Math.round(rand(5, 9)); i < n; i++){
-        yield { bg: APAGADO, dur: rand(8, 18) };
-        yield { bg: BLANCO,  dur: rand(10, 28) };
-      }
-      yield { bg: APAGADO, dur: rand(10, 24) };
-
-      // el mundo se queda: el tiempo suficiente para que se entienda cuál es
-      yield { bg: mundo, dur: rand(1000, 2000) };
-
-      // y se rompe de vuelta para soltarlo
-      for (let i = 0, n = Math.round(rand(5, 9)); i < n; i++){
-        yield { bg: APAGADO, dur: rand(8, 18) };
-        yield { bg: mundo,   dur: rand(10, 28) };
-      }
-      yield { bg: APAGADO, dur: rand(10, 24) };
+      yield* desbordar(BLANCO, mundo);
+      yield* respirar(mundo, rand(1000, 2000));
+      yield* desbordar(mundo, BLANCO);
     }
   }
 
