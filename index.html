@@ -18,6 +18,7 @@
     --white: rgb(var(--white-rgb));
     --bordo:#800020;
     --amarillo:#D9A11E;
+    --amarillo-rgb:217,161,30;
     --fan-mask: url("images/abanico-seki.svg");
   }
 
@@ -672,10 +673,35 @@
   }
   .rt-nadie{ color:rgba(var(--gray-rgb),.65); }
   .rt-avisos{
-    display:flex; flex-direction:column; gap:5px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
     font-size:10px; letter-spacing:.06em;
-    color:var(--amarillo);
     margin-top:16px;
+  }
+  /* lo que espera de otros: apagado, no te pide nada */
+  .rt-aviso{ color:rgba(var(--gray-rgb),.85); }
+  /* lo que espera de vos: prendido, y late hasta que lo hagas */
+  .rt-llama{
+    color:var(--amarillo);
+    padding:7px 14px;
+    border:1px solid rgba(var(--amarillo-rgb),.4);
+    border-radius:999px;
+    background:rgba(var(--amarillo-rgb),.07);
+    animation:llamar 2.6s ease-in-out infinite;
+  }
+  @keyframes llamar{
+    0%,100%{
+      border-color:rgba(var(--amarillo-rgb),.3);
+      box-shadow:0 0 0 rgba(var(--amarillo-rgb),0);
+      text-shadow:none;
+    }
+    50%{
+      border-color:rgba(var(--amarillo-rgb),.85);
+      box-shadow:0 0 16px rgba(var(--amarillo-rgb),.25);
+      text-shadow:0 0 10px rgba(var(--amarillo-rgb),.5);
+    }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .rt-llama{ animation:none; border-color:rgba(var(--amarillo-rgb),.7); }
   }
 
   .ritos-titulo{
@@ -694,6 +720,12 @@
     border-top:1px solid rgba(var(--gray-rgb),.25);
     padding-top:16px;
     margin-bottom:18px;
+  }
+
+  /* el que llega desde la pastilla amarilla del perfil tiene que reconocerla acá */
+  #ritosPedidos .ritos-seccion{
+    color:var(--amarillo);
+    border-top-color:rgba(var(--amarillo-rgb),.35);
   }
 
   /* los pedidos que me hicieron a mí */
@@ -760,11 +792,18 @@
     transition:border-color .2s ease;
   }
   .rito-btn:hover{ border-color:var(--white); }
-  .rito-btn[disabled]{ opacity:.4; cursor:default; }
+  .rito-btn[disabled]{ opacity:.62; cursor:default; border-style:dashed; }
+  .rito-btn[disabled]:hover{ border-color:rgba(var(--gray-rgb),.4); }
 
   /* elegir los dos testigos */
   .declarar{ margin-top:14px; }
-  .declarar-label{ font-size:10.5px; color:var(--gray); margin-bottom:10px; }
+  .declarar-label{ font-size:10.5px; color:var(--gray); margin-bottom:6px; }
+  .declarar-regla{
+    font-size:10px; line-height:1.5;
+    color:rgba(var(--gray-rgb),.75);
+    margin-bottom:12px;
+  }
+  .declarar-regla strong{ color:var(--white); font-weight:500; }
   .slots{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
   .slot{
     display:inline-flex; align-items:center; gap:8px;
@@ -772,6 +811,8 @@
     padding:6px 12px; font-size:11px; color:var(--gray);
   }
   .slot.lleno{ border-style:solid; color:var(--white); }
+  /* el hueco que toca llenar ahora */
+  .slot.proximo{ border-color:rgba(var(--white-rgb),.75); color:var(--white); }
   .slot button{
     background:none; border:none; color:var(--gray);
     font-family:inherit; font-size:13px; line-height:1; cursor:pointer; padding:0;
@@ -863,6 +904,12 @@
   .cn-aviso p{ margin:0 0 12px; }
   .cn-aviso p:last-child{ margin-bottom:0; }
   .cn-aviso strong{ color:var(--white); font-weight:500; }
+  .cn-amenaza{
+    color:rgba(var(--gray-rgb),.85);
+    font-style:italic;
+    border-top:1px solid rgba(var(--gray-rgb),.18);
+    padding-top:14px;
+  }
 
   /* a quién le debemos la entrada, arriba del formulario */
   .bv-referente{
@@ -1447,8 +1494,9 @@
     <div class="cn-codigo" id="cnCodigo">—</div>
 
     <div class="cn-aviso">
-      <p>Guardalo. Es tuyo y es privado: con él vas a entrar al portal cada vez.</p>
-      <p><strong>No se vuelve a mostrar.</strong> Sacale una captura de pantalla ahora.</p>
+      <p>Esto es tu llave. Con esto, y nada más, se abre el portal cada vez que vuelvas.</p>
+      <p><strong>No se muestra nunca más.</strong> Sacale una captura ahora y guardala donde guardás lo que no mostrás.</p>
+      <p class="cn-amenaza">Si la perdés vas a tener que rogarle a la sekta. Te la va a dar. Pero lo va a disfrutar más que vos.</p>
     </div>
 
     <button class="share-btn" id="cnCopiar">copiar código</button>
@@ -1470,16 +1518,6 @@
     <!-- sin carrusel: quien no tiene pantalla propia todavía no tiene fotos -->
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>mi rama</span></div>
-      <div class="rama-preview rama-abrir" role="button" tabindex="0">
-        <div class="rp-origen"></div>
-        <div class="rp-yo">—</div>
-        <div class="rp-hijos"></div>
-      </div>
-      <button class="seccion-btn rama-abrir">ver mi rama</button>
-    </div>
-
-    <div class="seccion rv-d">
       <div class="seccion-titulo"><span>mis ritos</span></div>
       <div class="ritos-preview ritos-abrir" role="button" tabindex="0">
         <div class="rt-numero">—</div>
@@ -1487,6 +1525,16 @@
         <div class="rt-avisos"></div>
       </div>
       <button class="seccion-btn ritos-abrir">ver mis ritos</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>mi rama</span></div>
+      <div class="rama-preview rama-abrir" role="button" tabindex="0">
+        <div class="rp-origen"></div>
+        <div class="rp-yo">—</div>
+        <div class="rp-hijos"></div>
+      </div>
+      <button class="seccion-btn rama-abrir">ver mi rama</button>
     </div>
 
     <div class="seccion rv-d">
@@ -1514,16 +1562,6 @@
 
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>mi rama</span></div>
-      <div class="rama-preview rama-abrir" role="button" tabindex="0">
-        <div class="rp-origen"></div>
-        <div class="rp-yo">—</div>
-        <div class="rp-hijos"></div>
-      </div>
-      <button class="seccion-btn rama-abrir">ver mi rama</button>
-    </div>
-
-    <div class="seccion rv-d">
       <div class="seccion-titulo"><span>mis ritos</span></div>
       <div class="ritos-preview ritos-abrir" role="button" tabindex="0">
         <div class="rt-numero">—</div>
@@ -1531,6 +1569,16 @@
         <div class="rt-avisos"></div>
       </div>
       <button class="seccion-btn ritos-abrir">ver mis ritos</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>mi rama</span></div>
+      <div class="rama-preview rama-abrir" role="button" tabindex="0">
+        <div class="rp-origen"></div>
+        <div class="rp-yo">—</div>
+        <div class="rp-hijos"></div>
+      </div>
+      <button class="seccion-btn rama-abrir">ver mi rama</button>
     </div>
 
     <div class="seccion rv-d">
@@ -1570,16 +1618,6 @@
 
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>mi rama</span></div>
-      <div class="rama-preview rama-abrir" role="button" tabindex="0">
-        <div class="rp-origen"></div>
-        <div class="rp-yo">—</div>
-        <div class="rp-hijos"></div>
-      </div>
-      <button class="seccion-btn rama-abrir">ver mi rama</button>
-    </div>
-
-    <div class="seccion rv-d">
       <div class="seccion-titulo"><span>mis ritos</span></div>
       <div class="ritos-preview ritos-abrir" role="button" tabindex="0">
         <div class="rt-numero">—</div>
@@ -1587,6 +1625,16 @@
         <div class="rt-avisos"></div>
       </div>
       <button class="seccion-btn ritos-abrir">ver mis ritos</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>mi rama</span></div>
+      <div class="rama-preview rama-abrir" role="button" tabindex="0">
+        <div class="rp-origen"></div>
+        <div class="rp-yo">—</div>
+        <div class="rp-hijos"></div>
+      </div>
+      <button class="seccion-btn rama-abrir">ver mi rama</button>
     </div>
 
     <div class="seccion rv-d">
@@ -1624,16 +1672,6 @@
 
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>mi rama</span></div>
-      <div class="rama-preview rama-abrir" role="button" tabindex="0">
-        <div class="rp-origen"></div>
-        <div class="rp-yo">—</div>
-        <div class="rp-hijos"></div>
-      </div>
-      <button class="seccion-btn rama-abrir">ver mi rama</button>
-    </div>
-
-    <div class="seccion rv-d">
       <div class="seccion-titulo"><span>mis ritos</span></div>
       <div class="ritos-preview ritos-abrir" role="button" tabindex="0">
         <div class="rt-numero">—</div>
@@ -1641,6 +1679,16 @@
         <div class="rt-avisos"></div>
       </div>
       <button class="seccion-btn ritos-abrir">ver mis ritos</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>mi rama</span></div>
+      <div class="rama-preview rama-abrir" role="button" tabindex="0">
+        <div class="rp-origen"></div>
+        <div class="rp-yo">—</div>
+        <div class="rp-hijos"></div>
+      </div>
+      <button class="seccion-btn rama-abrir">ver mi rama</button>
     </div>
 
     <div class="seccion rv-d">
@@ -1730,16 +1778,6 @@
 
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>mi rama</span></div>
-      <div class="rama-preview rama-abrir" role="button" tabindex="0">
-        <div class="rp-origen"></div>
-        <div class="rp-yo">—</div>
-        <div class="rp-hijos"></div>
-      </div>
-      <button class="seccion-btn rama-abrir">ver mi rama</button>
-    </div>
-
-    <div class="seccion rv-d">
       <div class="seccion-titulo"><span>mis ritos</span></div>
       <div class="ritos-preview ritos-abrir" role="button" tabindex="0">
         <div class="rt-numero">—</div>
@@ -1747,6 +1785,16 @@
         <div class="rt-avisos"></div>
       </div>
       <button class="seccion-btn ritos-abrir">ver mis ritos</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>mi rama</span></div>
+      <div class="rama-preview rama-abrir" role="button" tabindex="0">
+        <div class="rp-origen"></div>
+        <div class="rp-yo">—</div>
+        <div class="rp-hijos"></div>
+      </div>
+      <button class="seccion-btn rama-abrir">ver mi rama</button>
     </div>
 
     <div class="seccion rv-d">
@@ -1784,16 +1832,6 @@
 
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>mi rama</span></div>
-      <div class="rama-preview rama-abrir" role="button" tabindex="0">
-        <div class="rp-origen"></div>
-        <div class="rp-yo">—</div>
-        <div class="rp-hijos"></div>
-      </div>
-      <button class="seccion-btn rama-abrir">ver mi rama</button>
-    </div>
-
-    <div class="seccion rv-d">
       <div class="seccion-titulo"><span>mis ritos</span></div>
       <div class="ritos-preview ritos-abrir" role="button" tabindex="0">
         <div class="rt-numero">—</div>
@@ -1801,6 +1839,16 @@
         <div class="rt-avisos"></div>
       </div>
       <button class="seccion-btn ritos-abrir">ver mis ritos</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>mi rama</span></div>
+      <div class="rama-preview rama-abrir" role="button" tabindex="0">
+        <div class="rp-origen"></div>
+        <div class="rp-yo">—</div>
+        <div class="rp-hijos"></div>
+      </div>
+      <button class="seccion-btn rama-abrir">ver mi rama</button>
     </div>
 
     <div class="seccion rv-d">
@@ -1838,16 +1886,6 @@
 
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>mi rama</span></div>
-      <div class="rama-preview rama-abrir" role="button" tabindex="0">
-        <div class="rp-origen"></div>
-        <div class="rp-yo">—</div>
-        <div class="rp-hijos"></div>
-      </div>
-      <button class="seccion-btn rama-abrir">ver mi rama</button>
-    </div>
-
-    <div class="seccion rv-d">
       <div class="seccion-titulo"><span>mis ritos</span></div>
       <div class="ritos-preview ritos-abrir" role="button" tabindex="0">
         <div class="rt-numero">—</div>
@@ -1855,6 +1893,16 @@
         <div class="rt-avisos"></div>
       </div>
       <button class="seccion-btn ritos-abrir">ver mis ritos</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>mi rama</span></div>
+      <div class="rama-preview rama-abrir" role="button" tabindex="0">
+        <div class="rp-origen"></div>
+        <div class="rp-yo">—</div>
+        <div class="rp-hijos"></div>
+      </div>
+      <button class="seccion-btn rama-abrir">ver mi rama</button>
     </div>
 
     <div class="seccion rv-d">
@@ -2687,62 +2735,78 @@ reveal();
   });
 })();
 
-/* ---------- abanico de la historia: ráfagas violentas e impredecibles ----------
-   css siempre repite el mismo ciclo, así que el parpadeo se agenda por js:
-   varía cuándo arranca cada ráfaga, cuántos flashes tiene y de qué tipo es
-   cada uno (apagón / color / base). sin deformación, solo un salto de 2-4px. */
+/* ---------- abanico de la historia: quieto, y de golpe falla ----------
+   css repite siempre el mismo ciclo, así que el parpadeo se agenda por js:
+   cada tramo dura distinto y cada ráfaga tiene otra cantidad de apagones.
+   nunca se mueve de lugar ni se deforma: lo único que cambia es el color. */
 (function fanFlicker(){
   const fan = document.querySelector('.hist-fan');
   const historia = document.getElementById('historia');
   if (!fan || !historia || reduced) return;
 
-  const rand = (a, b) => a + Math.random() * (b - a);
+  const rand   = (a, b) => a + Math.random() * (b - a);
+  const entero = (a, b) => Math.round(rand(a, b));
 
-  // El abanico nunca está del todo quieto: siempre se le van apagones, tan
-  // cortos que apenas se perciben. Cuando se viene el cambio de mundo, esos
-  // mismos apagones se aceleran y recién ahí se vuelven visibles. La falla no
-  // aparece de la nada: es algo que ya venía pasando, que se desborda.
+  // El abanico está quieto casi todo el tiempo. Lo que lo rompe son parpadeos:
+  // apagones muchos y muy rápidos, de dos intensidades. El sutil casi no se
+  // ve y no lleva a ningún lado; el notorio es el que suele traer un mundo.
   //
-  //   blanco 2-4s — la falla se desborda — bordo 1-2s — se desborda —
-  //   blanco 2-4s — se desborda — amarillo 1-2s — ...
+  //   blanco 1-4s — parpadeo sutil — blanco 1-4s — parpadeo notorio —
+  //   bordo 2-3s — parpadeo — blanco — parpadeo notorio — amarillo — ...
+  //
+  // Todo es al azar dentro de esas reglas: la lógica se reconoce, la
+  // secuencia no se puede anticipar.
   const BLANCO  = 'var(--white)';
   const MUNDOS  = ['var(--bordo)', 'var(--amarillo)'];
   const APAGADO = 'transparent';
 
-  // el estado normal: encendido largo, apagón de un cuadro
-  function* respirar(color, total){
-    let t = 0;
-    while (t < total){
-      const encendido = rand(140, 520);
-      const apagon    = rand(10, 22);
-      yield { bg: color,   dur: encendido };
-      yield { bg: APAGADO, dur: apagon };
-      t += encendido + apagon;
-    }
+  // el descanso: fijo, sin nada
+  function* fijo(color){
+    yield { bg: color, dur: color === BLANCO ? rand(1000, 4000) : rand(2000, 3000) };
   }
 
-  // el desborde: los mismos apagones, muchos más y más largos. En el medio los
-  // dos mundos se pelean el abanico.
-  function* desbordar(viejo, nuevo){
-    for (let i = 0, n = Math.round(rand(5, 9)); i < n; i++){
-      yield { bg: APAGADO, dur: rand(18, 45) };
-      yield { bg: Math.random() < .5 ? viejo : nuevo, dur: rand(14, 34) };
+  // el parpadeo: apagones en ráfaga. Si hay cambio de color, los encendidos
+  // del medio se los pelean el viejo y el nuevo.
+  function* parpadeo(viejo, nuevo, fuerte){
+    const golpes = fuerte ? entero(7, 13) : entero(2, 4);
+    for (let i = 0; i < golpes; i++){
+      yield { bg: APAGADO, dur: fuerte ? rand(28, 62) : rand(12, 26) };
+      yield { bg: (viejo === nuevo || Math.random() < .5) ? viejo : nuevo,
+              dur: fuerte ? rand(22, 58) : rand(26, 64) };
     }
-    yield { bg: APAGADO, dur: rand(20, 50) };
+    yield { bg: APAGADO, dur: fuerte ? rand(34, 80) : rand(14, 30) };
   }
 
   function* guion(){
-    let turno = Math.random() < .5 ? 0 : 1;
+    let actual   = BLANCO;
+    let turno    = Math.random() < .5 ? 0 : 1;   // los dos mundos se turnan
+    let seguidos = 0;                            // tramos en blanco sin cortar
 
     for (;;){
-      yield* respirar(BLANCO, rand(2000, 4000));
+      yield* fijo(actual);
 
-      const mundo = MUNDOS[turno];
-      turno = 1 - turno;
+      let proximo;
+      if (actual === BLANCO){
+        // cuanto más lleva en blanco, más probable es que se cuele un mundo:
+        // así el blanco manda, pero un mundo nunca tarda demasiado en aparecer
+        seguidos++;
+        if (Math.random() < .10 + .14 * seguidos){
+          proximo = MUNDOS[turno]; turno = 1 - turno; seguidos = 0;
+        } else {
+          proximo = BLANCO;
+        }
+      } else {
+        // desde un mundo casi siempre se vuelve al blanco; MUNDOS[turno] es
+        // siempre el otro, así que nunca se repite el mismo color
+        proximo = Math.random() < .88 ? BLANCO : MUNDOS[turno];
+        if (proximo !== BLANCO) turno = 1 - turno;
+      }
 
-      yield* desbordar(BLANCO, mundo);
-      yield* respirar(mundo, rand(1000, 2000));
-      yield* desbordar(mundo, BLANCO);
+      // el cambio casi siempre llega con un parpadeo notorio; el sutil es,
+      // sobre todo, el que no lleva a ningún lado
+      const fuerte = proximo !== actual ? Math.random() < .8 : Math.random() < .15;
+      yield* parpadeo(actual, proximo, fuerte);
+      actual = proximo;
     }
   }
 
@@ -2921,9 +2985,11 @@ reveal();
     // hacer es una promesa vacía
     const mePiden = pedidos.filter(x => x.puedo_ya).length;
 
+    // dos avisos distintos merecen dos pesos distintos: uno cuenta lo que
+    // estás esperando de otros, el otro es lo único que depende de vos
     const avisos = [];
-    if (esperando) avisos.push(esperando + (esperando === 1 ? ' esperando testigos' : ' esperando testigos'));
-    if (mePiden)   avisos.push(mePiden + (mePiden === 1 ? ' te pide que des fe' : ' te piden que des fe'));
+    if (esperando) avisos.push({ texto: esperando + ' esperando testigos', llama: false });
+    if (mePiden)   avisos.push({ texto: mePiden + (mePiden === 1 ? ' te pide que des fe' : ' te piden que des fe'), llama: true });
 
     document.querySelectorAll('.ritos-preview').forEach(box => {
       const num = box.querySelector('.rt-numero');
@@ -2937,7 +3003,9 @@ reveal();
         num.textContent = hechos + ' / ' + total;
         ley.textContent = hechos === 1 ? 'rito atestiguado' : 'ritos atestiguados';
       }
-      avi.innerHTML = avisos.map(a => '<span>' + a + '</span>').join('');
+      avi.innerHTML = avisos.map(a =>
+        '<span class="rt-aviso' + (a.llama ? ' rt-llama' : '') + '">' + a.texto + '</span>'
+      ).join('');
     });
   }
 
@@ -3017,16 +3085,28 @@ reveal();
   }
 
   function panelDeclarar(){
+    const faltan = 2 - declarando.elegidos.length;
+
+    // los huecos van numerados y el próximo va marcado: el panel tiene que
+    // decir solo que son dos, sin que nadie lo explique
     const slots = [0, 1].map(i => {
       const e = declarando.elegidos[i];
-      return e
-        ? '<span class="slot lleno">' + esc(e.nombre) +
-            '<button data-quitar="' + i + '" aria-label="quitar">×</button></span>'
-        : '<span class="slot">elegí un testigo</span>';
+      if (e){
+        return '<span class="slot lleno">' + esc(e.nombre) +
+                 '<button data-quitar="' + i + '" aria-label="quitar">×</button></span>';
+      }
+      const turno = i === declarando.elegidos.length ? ' proximo' : '';
+      return '<span class="slot' + turno + '">testigo ' + (i + 1) + '</span>';
     }).join('');
+
+    // el botón dice qué falta: antes se quedaba gris sin explicar por qué
+    const rotulo = faltan === 2 ? 'elegí 2 testigos'
+                 : faltan === 1 ? 'falta 1 testigo'
+                 : 'declarar';
 
     return '<div class="declarar">' +
              '<div class="declarar-label">¿quiénes dan fe de que estuviste?</div>' +
+             '<div class="declarar-regla">tienen que ser <strong>dos</strong>, y los dos tienen que estar atestiguados en esta fiesta</div>' +
              '<div class="slots">' + slots + '</div>' +
              (declarando.elegidos.length < 2
                ? '<input class="buscar-testigo" placeholder="buscá por nombre" ' +
@@ -3035,7 +3115,7 @@ reveal();
                : '') +
              '<div class="rito-acciones">' +
                '<button class="rito-btn" data-confirmar="1"' +
-                 (declarando.elegidos.length === 2 ? '' : ' disabled') + '>declarar</button>' +
+                 (faltan ? ' disabled' : '') + '>' + rotulo + '</button>' +
                '<button class="rito-btn" data-cancelar="1">cancelar</button>' +
              '</div>' +
            '</div>';
