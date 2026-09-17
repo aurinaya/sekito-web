@@ -2699,10 +2699,11 @@ reveal();
   const rand = (a, b) => a + Math.random() * (b - a);
 
   // El abanico es el de siempre, el blanco, el de la sekta. Cada dos a cuatro
-  // segundos falla, y la falla lo deja del color de un mundo: COLAPSO o SEKI,
-  // alternándose. Después vuelve. Siempre vuelve.
+  // segundos falla, y la falla lo deja del color de un mundo el tiempo
+  // suficiente para que se entienda cuál es. Después vuelve. Siempre vuelve.
   //
-  //   blanco — fallas — bordo — fallas — blanco — fallas — amarillo — ...
+  //   blanco 2-4s — fallas — bordo 1-2s — fallas — blanco 2-4s — fallas —
+  //   amarillo 1-2s — fallas — ...
   //
   // La falla es solo apagón: el abanico desaparece y aparece a los tirones.
   // Nada se mueve ni se corta.
@@ -2719,21 +2720,23 @@ reveal();
       const mundo = MUNDOS[turno];
       turno = 1 - turno;              // el próximo mundo es el otro
 
-      // se rompe: apagones cada vez más seguidos hasta que queda el color
-      for (let i = 0, n = Math.round(rand(2, 4)); i < n; i++){
-        yield { bg: APAGADO, dur: rand(10, 28) };
-        yield { bg: BLANCO,  dur: rand(20, 50) };
+      // se rompe: muchos apagones muy cortos, en el mismo rato que antes
+      // llevaba la mitad. Lo violento es la cantidad, no la duración.
+      for (let i = 0, n = Math.round(rand(5, 9)); i < n; i++){
+        yield { bg: APAGADO, dur: rand(8, 18) };
+        yield { bg: BLANCO,  dur: rand(10, 28) };
       }
-      yield { bg: APAGADO, dur: rand(12, 30) };
+      yield { bg: APAGADO, dur: rand(10, 24) };
 
-      yield { bg: mundo, dur: rand(70, 190) };
+      // el mundo se queda: el tiempo suficiente para que se entienda cuál es
+      yield { bg: mundo, dur: rand(1000, 2000) };
 
       // y se rompe de vuelta para soltarlo
-      for (let i = 0, n = Math.round(rand(2, 4)); i < n; i++){
-        yield { bg: APAGADO, dur: rand(10, 28) };
-        yield { bg: mundo,   dur: rand(20, 50) };
+      for (let i = 0, n = Math.round(rand(5, 9)); i < n; i++){
+        yield { bg: APAGADO, dur: rand(8, 18) };
+        yield { bg: mundo,   dur: rand(10, 28) };
       }
-      yield { bg: APAGADO, dur: rand(12, 30) };
+      yield { bg: APAGADO, dur: rand(10, 24) };
     }
   }
 
