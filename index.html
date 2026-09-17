@@ -72,9 +72,7 @@
     overflow:hidden;
     pointer-events:none;
   }
-  .fondo-perfil::before,
-  .fondo-perfil::after{ content:""; position:absolute; }
-  .fondo-perfil::after{ inset:0; }
+  .fondo-perfil::before{ content:""; position:absolute; }
   /* sube un 22,3%: con la foto a tamaño completo el abanico cae al 56,5% del
      alto de la sección, y "mis ritos" está al 34% */
   .fondo-perfil::before{
@@ -83,11 +81,18 @@
   .fondo-perfil::before{
     background:url("images/fondo-general.jpg") center top / cover no-repeat;
   }
-  /* el perfil es más alto que la pantalla: la foto tiene que apagarse antes de
-     que termine la sección */
+  /* Los dos bordes de la foto, y nada más.
+     Arriba entra de a poco para que no quede una línea contra la historia;
+     abajo se apaga porque el perfil es más alto que la pantalla.
+     El 22,3% es el borde de arriba de la sección —la foto sube eso y lo
+     anterior queda recortado—, así que el desvanecido arranca ahí.
+     Antes esto lo hacía un velo encima de TODA la foto: para disimular una
+     costura de dos centímetros borraba el humo y las luces del techo. */
   .fondo-perfil::before{
-    -webkit-mask-image:linear-gradient(to bottom, #000 0%, #000 74%, transparent 100%);
-    mask-image:linear-gradient(to bottom, #000 0%, #000 74%, transparent 100%);
+    -webkit-mask-image:linear-gradient(to bottom,
+      transparent 22.3%, #000 31%, #000 74%, transparent 100%);
+    mask-image:linear-gradient(to bottom,
+      transparent 22.3%, #000 31%, #000 74%, transparent 100%);
   }
   /* Los porcentajes son del elemento, que arranca 22,3% por encima de la
      sección: el 22% de acá es el borde de arriba del perfil. Se mantiene
@@ -97,17 +102,6 @@
     filter:grayscale(1) contrast(1.1) brightness(1);
     opacity:.21;
   }
-
-  .fondo-perfil::after{
-    background:linear-gradient(to bottom,
-      rgba(13,13,13,.92) 20%,
-      rgba(13,13,13,.18) 34%,
-      rgba(13,13,13,0)   52%,
-      rgba(13,13,13,.28) 76%,
-      rgba(13,13,13,.75) 100%);
-  }
-
-  /* --- los tres tratamientos que hay que comparar --- */
 
   #grain{
     position:fixed; inset:0;
