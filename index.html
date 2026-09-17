@@ -80,7 +80,7 @@
      el texto y el humo se sigue viendo. */
   .fondo-perfil::after{
     inset:0;
-    background:rgba(13,13,13,.42);
+    background:rgba(13,13,13,.36);
   }
   /* sube un 22,3%: con la foto a tamaño completo el abanico cae al 56,5% del
      alto de la sección, y "mis ritos" está al 34% */
@@ -2696,54 +2696,74 @@ reveal();
   const historia = document.getElementById('historia');
   if (!fan || !historia || reduced) return;
 
-  // Los tres colores del sékito más el apagón, sorteados todo el tiempo.
-  // Antes eran ráfagas con calma de 1,5 a 3,6 segundos en blanco entre una y
-  // otra, y esa pausa larga es lo que se sentía temporizado: blanco, efecto,
-  // blanco, efecto. Ahora no hay pausa: es rotura continua.
-  const ESTADOS = [
-    { bg:'var(--bordo)',    peso:26 },
-    { bg:'var(--amarillo)', peso:26 },
-    { bg:'var(--white)',    peso:24 },
-    { bg:'transparent',     peso:24 },   // el apagón es lo que lo hace glitch
-  ];
-  const TOTAL = ESTADOS.reduce((n, e) => n + e.peso, 0);
   const rand = (a, b) => a + Math.random() * (b - a);
+  const color = () => Math.random() < .5 ? 'var(--bordo)' : 'var(--amarillo)';
 
-  function sortear(){
-    let r = Math.random() * TOTAL;
-    for (const e of ESTADOS){ if ((r -= e.peso) < 0) return e; }
-    return ESTADOS[0];
+  // Tajos horizontales: una o dos franjas que desaparecen, sin que el abanico
+  // se mueva de lugar. El polígono recorre el rectángulo de arriba, baja por el
+  // borde izquierdo —ancho cero, invisible— y sigue con el de abajo: la franja
+  // del medio queda afuera.
+  function tajos(){
+    const franjas = [];
+    for (let i = 0, n = Math.random() < .45 ? 2 : 1; i < n; i++){
+      const y = rand(8, 80);
+      franjas.push([y, y + rand(2.5, 7)]);
+    }
+    franjas.sort((a, b) => a[0] - b[0]);
+
+    const pts = ['0% 0%', '100% 0%'];
+    franjas.forEach(([a, b]) => pts.push(
+      '100% ' + a.toFixed(1) + '%', '0% ' + a.toFixed(1) + '%',
+      '0% '   + b.toFixed(1) + '%', '100% ' + b.toFixed(1) + '%'));
+    pts.push('100% 100%', '0% 100%');
+    return 'polygon(' + pts.join(',') + ')';
   }
 
-  let anterior = null;
+  // El apagón funciona como el corte de una película: es lo que te lleva al
+  // color y lo que te trae de vuelta al blanco. Tiene que ser cortísimo,
+  // apenas perceptible.
+  function* guion(){
+    for (;;){
+      yield { bg:'var(--white)', clip:null, dur: rand(420, 1300) };
+
+      // a veces un tajo brevísimo sin cambiar de color, para que el blanco
+      // largo no quede muerto
+      if (Math.random() < .35){
+        yield { bg:'var(--white)', clip: tajos(), dur: rand(25, 60) };
+        yield { bg:'var(--white)', clip: null,    dur: rand(60, 180) };
+      }
+
+      yield { bg:'transparent', clip:null, dur: rand(10, 30) };
+      yield { bg: color(), clip: tajos(), dur: rand(45, 150) };
+
+      // cada tanto encadena un segundo color antes de volver
+      if (Math.random() < .4){
+        yield { bg:'transparent', clip:null, dur: rand(10, 26) };
+        yield { bg: color(), clip: tajos(), dur: rand(40, 120) };
+      }
+
+      yield { bg:'transparent', clip:null, dur: rand(10, 30) };
+    }
+  }
+
+  let pasos = guion();
   let visible = true;
 
-  // si el abanico no está en pantalla no tiene sentido seguir dibujando
   if ('IntersectionObserver' in window){
-    new IntersectionObserver(([e]) => { visible = e.isIntersecting; })
-      .observe(fan);
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(fan);
   }
 
   function tick(){
     if (!visible || !historia.classList.contains('active')){
       fan.style.background = '';
+      fan.style.clipPath = '';
       setTimeout(tick, 400);
       return;
     }
-
-    // que no salga dos veces seguido el mismo: repetir se siente como una
-    // pausa, y acá no tiene que haber pausas
-    let e = sortear(), intentos = 0;
-    while (e === anterior && intentos++ < 3) e = sortear();
-    anterior = e;
-
-    // solo el color. El salto de posición que había acá era el que se leía
-    // como movimiento en vez de rotura.
-    fan.style.background = e.bg;
-
-    // casi siempre muy corto; cada tanto se traba un poco más. Esa irregularidad
-    // es lo que impide que suene a metrónomo.
-    setTimeout(tick, Math.random() < .12 ? rand(90, 220) : rand(9, 55));
+    const p = pasos.next().value;
+    fan.style.background = p.bg;
+    fan.style.clipPath = p.clip || 'none';
+    setTimeout(tick, p.dur);
   }
 
   tick();
