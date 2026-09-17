@@ -72,7 +72,16 @@
     overflow:hidden;
     pointer-events:none;
   }
-  .fondo-perfil::before{ content:""; position:absolute; }
+  .fondo-perfil::before,
+  .fondo-perfil::after{ content:""; position:absolute; }
+  /* Plano y liviano, no un degradado. Un degradado tiene que ser fuerte en
+     alguna zona para servir de algo, y esa zona termina siendo la que se come
+     la foto. Parejo al 26% le baja el contraste a todo por igual: alcanza para
+     el texto y el humo se sigue viendo. */
+  .fondo-perfil::after{
+    inset:0;
+    background:rgba(13,13,13,.26);
+  }
   /* sube un 22,3%: con la foto a tamaño completo el abanico cae al 56,5% del
      alto de la sección, y "mis ritos" está al 34% */
   .fondo-perfil::before{
@@ -604,7 +613,7 @@
   /* la foto de fondo levanta el brillo detrás del texto: una sombra apenas
      perceptible lo devuelve a ser legible sin cambiarle el color */
   body.en-perfil .member-screen{
-    text-shadow:0 1px 3px rgba(13,13,13,.95), 0 0 18px rgba(13,13,13,.85);
+    text-shadow:0 1px 3px rgba(13,13,13,.98), 0 0 10px rgba(13,13,13,.9), 0 0 24px rgba(13,13,13,.8);
   }
   body.en-perfil .member-screen .mau-logo path{
     filter:drop-shadow(0 1px 4px rgba(13,13,13,.9)) drop-shadow(0 0 14px rgba(13,13,13,.8));
@@ -2687,61 +2696,58 @@ reveal();
   const historia = document.getElementById('historia');
   if (!fan || !historia || reduced) return;
 
-  const COLORS = ['var(--bordo)', 'var(--amarillo)'];
+  // Los tres colores del sékito más el apagón, sorteados todo el tiempo.
+  // Antes eran ráfagas con calma de 1,5 a 3,6 segundos en blanco entre una y
+  // otra, y esa pausa larga es lo que se sentía temporizado: blanco, efecto,
+  // blanco, efecto. Ahora no hay pausa: es rotura continua.
+  const ESTADOS = [
+    { bg:'var(--bordo)',    peso:26 },
+    { bg:'var(--amarillo)', peso:26 },
+    { bg:'var(--white)',    peso:24 },
+    { bg:'transparent',     peso:24 },   // el apagón es lo que lo hace glitch
+  ];
+  const TOTAL = ESTADOS.reduce((n, e) => n + e.peso, 0);
   const rand = (a, b) => a + Math.random() * (b - a);
-  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-  const pending = [];
 
-  function rest(){
-    fan.style.background = '';  // vuelve al f2f2f2 del css
-    fan.style.transform = '';
+  function sortear(){
+    let r = Math.random() * TOTAL;
+    for (const e of ESTADOS){ if ((r -= e.peso) < 0) return e; }
+    return ESTADOS[0];
   }
 
-  function burst(){
-    // ráfaga: entre 8 y 18 eventos encadenados, cada uno de 20 a 45ms.
-    // se arma la secuencia completa antes, para no encadenar tres apagones.
-    const n = Math.round(rand(8, 18));
-    const seq = [];
-    let blackRun = 0;
-    for (let k = 0; k < n; k++){
-      const roll = Math.random();
-      let kind;
-      if (roll < .36 && blackRun < 2) kind = 'off';
-      else if (roll < .48) kind = 'base';
-      else kind = 'color';
-      blackRun = kind === 'off' ? blackRun + 1 : 0;
-      seq.push({ kind, dur: rand(20, 45) });
+  let anterior = null;
+  let visible = true;
+
+  // si el abanico no está en pantalla no tiene sentido seguir dibujando
+  if ('IntersectionObserver' in window){
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; })
+      .observe(fan);
+  }
+
+  function tick(){
+    if (!visible || !historia.classList.contains('active')){
+      fan.style.background = '';
+      fan.style.transform = '';
+      setTimeout(tick, 400);
+      return;
     }
 
-    let t = 0;
-    seq.forEach(ev => {
-      t += ev.dur;
-      pending.push(setTimeout(() => {
-        if (ev.kind === 'off'){
-          fan.style.background = 'transparent';
-          fan.style.transform = '';
-        } else if (ev.kind === 'base'){
-          rest();
-        } else {
-          fan.style.background = pick(COLORS);
-          fan.style.transform =
-            'translate(' + rand(-4, 4).toFixed(1) + 'px,' + rand(-4, 4).toFixed(1) + 'px)';
-        }
-      }, t));
-    });
+    // que no salga dos veces seguido el mismo: repetir se siente como una
+    // pausa, y acá no tiene que haber pausas
+    let e = sortear(), intentos = 0;
+    while (e === anterior && intentos++ < 3) e = sortear();
+    anterior = e;
 
-    pending.push(setTimeout(() => { rest(); schedule(); }, t + rand(30, 90)));
+    fan.style.background = e.bg;
+    fan.style.transform = 'translate(' + rand(-6, 6).toFixed(1) + 'px,' +
+                                         rand(-6, 6).toFixed(1) + 'px)';
+
+    // casi siempre muy corto; cada tanto se traba un poco más. Esa irregularidad
+    // es lo que impide que suene a metrónomo.
+    setTimeout(tick, Math.random() < .12 ? rand(90, 220) : rand(9, 55));
   }
 
-  function schedule(){
-    // calma variable entre ráfagas; si la historia no está a la vista, espera
-    pending.push(setTimeout(() => {
-      if (!historia.classList.contains('active')){ schedule(); return; }
-      burst();
-    }, rand(1500, 3600)));
-  }
-
-  schedule();
+  tick();
 })();
 
 /* ---------- grano de fondo (textura, sutil) ---------- */
