@@ -33,7 +33,12 @@
 
   body{
     font-family:'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    /* svh y no vh: en iPhone son alturas distintas —vh cuenta con la barra del
+       navegador escondida y svh con ella a la vista—, y la historia usa svh.
+       Con vh acá el contenedor quedaba más alto que la pantalla y todo
+       arrancaba corrido. */
     min-height:100vh;
+    min-height:100svh;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -125,7 +130,11 @@
     scroll-snap-type:y proximity;
     scroll-padding-top:0;
   }
-  .screen.active{ scroll-snap-align:start; }
+  /* Solo la historia y el perfil se enganchan. Las pantallas de adentro
+     —ritos, rama, invitar— son de scroleo libre: son más altas que la
+     pantalla y el enganche no dejaba llegar al final. */
+  .historia.active,
+  .member-screen.active{ scroll-snap-align:start; }
 
   /* ---------- layout general ---------- */
   .stage{
@@ -2094,6 +2103,7 @@ function entrarAlSitio(miembro){
   const pantalla = miembro.pantalla;
 
   document.body.classList.add('en-perfil');
+  if (window.__marcarPantalla) window.__marcarPantalla();
   if (window.__refrescarRitos) window.__refrescarRitos();
   if (window.__refrescarRama)  window.__refrescarRama();
 
@@ -3235,8 +3245,10 @@ reveal();
     // cosas distintas y el texto tiene que distinguirlas.
     let etiqueta, quien;
     if (d.fundador){
-      etiqueta = 'tu lugar';
-      quien    = 'de los que empezaron esto';
+      // los fundadores no cuelgan de nadie: arriba no va nada, igual que en el
+      // preview del perfil
+      etiqueta = null;
+      quien    = null;
     } else if (!d.guia){
       etiqueta = 'viniste por';
       quien    = 'no figura quién te trajo';
@@ -3268,12 +3280,16 @@ reveal();
                '</div>';
     }
 
+    const arriba = quien
+      ? '<div class="rama-guia">' +
+          '<div class="etiqueta">' + etiqueta + '</div>' +
+          '<div class="quien">' + esc(quien) + '</div>' +
+        '</div>'
+      : '';
+
     cuerpo.innerHTML =
       '<div class="rama-sub">dentro del árbol de la sekta</div>' +
-      '<div class="rama-guia">' +
-        '<div class="etiqueta">' + etiqueta + '</div>' +
-        '<div class="quien">' + esc(quien) + '</div>' +
-      '</div>' +
+      arriba +
       cuenta +
       '<div class="rama-lista">' + dibujarNivel(1, null) + '</div>';
   }
@@ -3324,6 +3340,36 @@ reveal();
     const id = n.dataset.abrir;
     if (abiertos.has(id)) abiertos.delete(id); else abiertos.add(id);
     pintar(datos);
+  });
+})();
+
+/* ---------- el "atrás" del navegador ----------
+   La gente usa el gesto de atrás y eso, en un sitio de una sola página, te
+   saca afuera. Cada vez que se abre una pantalla dejamos una marca en el
+   historial; el atrás consume esa marca y cierra la pantalla en vez de irse.
+   Estando en el perfil, te devuelve al portón. */
+(function atras(){
+  const SALIDAS = {
+    'invite-screen': 'exitInvite',
+    'ritos-screen':  'exitRitos',
+    'rama-screen':   'exitRama',
+  };
+
+  function marcar(){ history.pushState({ sekito:true }, ''); }
+  window.__marcarPantalla = marcar;
+
+  document.querySelectorAll('.invite-trigger, .ritos-abrir, .rama-abrir')
+    .forEach(el => el.addEventListener('click', marcar));
+
+  window.addEventListener('popstate', () => {
+    const abierta = Object.keys(SALIDAS)
+      .find(id => document.getElementById(id).classList.contains('active'));
+
+    if (abierta){
+      document.getElementById(SALIDAS[abierta]).click();
+      return;
+    }
+    if (miembroActual) resetToGate();
   });
 })();
 
