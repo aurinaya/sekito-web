@@ -80,7 +80,7 @@
      el texto y el humo se sigue viendo. */
   .fondo-perfil::after{
     inset:0;
-    background:rgba(13,13,13,.26);
+    background:rgba(13,13,13,.42);
   }
   /* sube un 22,3%: con la foto a tamaño completo el abanico cae al 56,5% del
      alto de la sección, y "mis ritos" está al 34% */
@@ -2727,7 +2727,6 @@ reveal();
   function tick(){
     if (!visible || !historia.classList.contains('active')){
       fan.style.background = '';
-      fan.style.transform = '';
       setTimeout(tick, 400);
       return;
     }
@@ -2738,9 +2737,9 @@ reveal();
     while (e === anterior && intentos++ < 3) e = sortear();
     anterior = e;
 
+    // solo el color. El salto de posición que había acá era el que se leía
+    // como movimiento en vez de rotura.
     fan.style.background = e.bg;
-    fan.style.transform = 'translate(' + rand(-6, 6).toFixed(1) + 'px,' +
-                                         rand(-6, 6).toFixed(1) + 'px)';
 
     // casi siempre muy corto; cada tanto se traba un poco más. Esa irregularidad
     // es lo que impide que suene a metrónomo.
