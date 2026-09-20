@@ -858,24 +858,94 @@
   }
   .inv-intro p{ margin:0 0 14px; }
   .inv-intro p:last-child{ margin-bottom:0; }
-  .invite-link{
-    text-align:center;
-    font-size:13px;
-    letter-spacing:.06em;
-    color:var(--white);
-    word-break:break-all;
-    margin-bottom:14px;
-    min-height:1.2em;
-  }
-  .invite-restantes{
-    text-align:center;
-    font-size:9px;
-    letter-spacing:.08em;
-    color:var(--gray);
-    margin-top:26px;
-  }
   .share-btn + .share-btn{ margin-top:12px; }
-  .share-btn[disabled]{ opacity:.45; cursor:default; }
+  .share-btn[disabled]{
+    opacity:.55; cursor:default;
+    border-style:dashed;
+  }
+
+  /* ---------- el tag: a quién se lo mandaste ---------- */
+  /* el motivo del tope puede ocupar dos renglones: sin aire, se pega a la
+     línea de "tus invitaciones" */
+  #invTope{ line-height:1.6; margin-bottom:34px; }
+
+  .inv-campo{ margin-bottom:18px; }
+  .inv-campo label{
+    display:block;
+    font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gray);
+  }
+  .inv-ayuda{
+    font-size:11px; line-height:1.5;
+    color:rgba(var(--gray-rgb),.75);
+    margin:5px 0 12px;
+  }
+  #invTag{
+    width:100%;
+    background:none; border:none;
+    border-bottom:1px solid rgba(var(--gray-rgb),.4);
+    color:var(--white);
+    font-family:inherit; font-size:14px;
+    padding:8px 0; outline:none;
+  }
+  #invTag:focus{ border-bottom-color:var(--white); }
+  #invTag::placeholder{ color:rgba(var(--gray-rgb),.5); }
+
+  .inv-acciones{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    margin-top:12px;
+  }
+  /* adentro de la lista los botones son chicos: hay uno por fila y la fila
+     tiene que poder leerse de un vistazo, no ocupar media pantalla */
+  .inv-acciones .rito-btn{ font-size:9px; padding:6px 11px; }
+  /* dar de baja no compite con compartir: es una salida, no una acción */
+  .inv-acciones [data-baja],
+  .inv-acciones [data-baja-no]{
+    border:none; padding:6px 2px;
+    color:rgba(var(--gray-rgb),.7);
+    text-decoration:underline; text-underline-offset:3px;
+  }
+  .inv-acciones [data-baja]:hover,
+  .inv-acciones [data-baja-no]:hover{ color:var(--white); }
+
+  /* ---------- la lista de invitaciones ---------- */
+  .inv-item{
+    padding:16px 0;
+    border-bottom:1px solid rgba(var(--gray-rgb),.14);
+  }
+  .inv-item:last-child{ border-bottom:none; }
+  /* la que acaba de salir: se le nota, sin gritar */
+  .inv-item.recien{
+    border-left:2px solid rgba(var(--white-rgb),.55);
+    padding-left:12px;
+  }
+  .inv-cab{
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .inv-para{
+    font-size:14px; color:var(--white);
+    word-break:break-word;
+  }
+  .inv-sin-nombre{ color:rgba(var(--gray-rgb),.7); font-size:12.5px; }
+  .inv-estado{
+    font-size:10px; letter-spacing:.08em;
+    white-space:nowrap;
+  }
+  .e-esperando{ color:var(--gray); }
+  /* lo que está por vencerse es lo único accionable: si no lo mandaste, mandalo */
+  .e-urgente{ color:var(--amarillo); }
+  /* el que entró no es un aviso, es el premio */
+  .e-entro{
+    color:var(--white);
+    text-shadow:0 0 12px rgba(var(--white-rgb),.3);
+  }
+  .e-vencida{ color:rgba(var(--gray-rgb),.55); }
+
+  .inv-confirmar{ gap:10px; }
+  .inv-pregunta{
+    font-size:11px; color:var(--amarillo);
+    flex:1 1 100%;
+  }
 
   /* ---------- el código nuevo, mostrado una sola vez ---------- */
   .cn-titulo{
@@ -1725,14 +1795,29 @@
       <p>No se trata de llenar una fiesta. Se trata de elegir con quién.</p>
     </div>
 
-    <div class="invite-label">tu link de invitación</div>
-    <div class="invite-link" id="inviteLinkText">—</div>
-    <div class="invite-sub" id="inviteVence"></div>
+    <div id="invGenerar">
+      <button class="share-btn" id="invNuevo">generar link de invitación</button>
+      <div class="invite-trigger-sub" id="invTope"></div>
+    </div>
 
-    <button class="share-btn" id="shareCodeBtn">compartir</button>
-    <button class="share-btn" id="copyLinkBtn">copiar link</button>
+    <div id="invForm" hidden>
+      <div class="inv-campo">
+        <label for="invTag">tag</label>
+        <div class="inv-ayuda">dejate un recordatorio de a quién se lo mandaste</div>
+        <input id="invTag" type="text" maxlength="60" autocomplete="off"
+               autocapitalize="words" spellcheck="false" enterkeyhint="go"
+               placeholder="un nombre, un apodo, lo que te sirva">
+      </div>
+      <div class="inv-acciones">
+        <button class="rito-btn" id="invCrear">generar</button>
+        <button class="rito-btn" id="invCancelar">cancelar</button>
+      </div>
+      <div class="invite-sub" id="invFormAviso"></div>
+    </div>
+
+    <div class="ritos-seccion" id="invListaTitulo" hidden>tus invitaciones</div>
+    <div id="invLista"></div>
     <div class="share-feedback" id="shareFeedback"></div>
-    <div class="invite-restantes" id="inviteRestantes"></div>
   </section>
 
   <!-- ===================== MIS RITOS ===================== -->
@@ -2365,6 +2450,7 @@ reveal();
     invitacion_no_existe: 'esta invitación no existe',
     invitacion_ya_usada:  'esta invitación ya fue usada',
     invitacion_vencida:   'esta invitación venció',
+    invitacion_revocada:  'esta invitación se dio de baja.. pedile otra a quien te invitó',
     sin_conexion:         'el portal no responde.. probá de nuevo',
   };
 
@@ -2441,38 +2527,124 @@ reveal();
 
 /* ---------- código de invitación sektario ---------- */
 (function inviteCode(){
-  // el código sektario sale de miembroActual, o sea de la base
-  const inviteScreen = document.getElementById('invite-screen');
-  const inviteLinkText = document.getElementById('inviteLinkText');
-  const inviteVence = document.getElementById('inviteVence');
-  const inviteRestantes = document.getElementById('inviteRestantes');
-  const exitInvite = document.getElementById('exitInvite');
-  const shareCodeBtn = document.getElementById('shareCodeBtn');
-  const copyLinkBtn = document.getElementById('copyLinkBtn');
+  // Antes el link se generaba al ENTRAR acá: el que venía a leer el texto ya
+  // había gastado una invitación sin decidirlo. Ahora entrar no cuesta nada;
+  // generar es un acto aparte, y cada link lleva un tag para saber a quién se
+  // lo mandaste.
+  const inviteScreen  = document.getElementById('invite-screen');
+  const exitInvite    = document.getElementById('exitInvite');
   const shareFeedback = document.getElementById('shareFeedback');
+
+  const cajaGenerar = document.getElementById('invGenerar');
+  const btnNuevo    = document.getElementById('invNuevo');
+  const avisoTope   = document.getElementById('invTope');
+  const cajaForm    = document.getElementById('invForm');
+  const campoTag    = document.getElementById('invTag');
+  const btnCrear    = document.getElementById('invCrear');
+  const btnCancelar = document.getElementById('invCancelar');
+  const avisoForm   = document.getElementById('invFormAviso');
+  const tituloLista = document.getElementById('invListaTitulo');
+  const lista       = document.getElementById('invLista');
 
   const TOPE_ABIERTAS = 5;
 
   let cameFromScreen = null;
   let currentProfile = null;
-  let linkActual = null;
+  let invitaciones   = [];
+
+  // el tag lo escribe una persona y se vuelve a pintar como html: sin esto,
+  // un tag con "<" rompería la lista
+  const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   const MOTIVOS_INVITAR = {
-    codigo_invalido:     'tu código ya no está activo',
-    demasiadas_abiertas: 'ya tenés ' + TOPE_ABIERTAS + ' invitaciones dando vueltas.. esperá a que las usen',
-    no_se_pudo_generar:  'no se pudo generar.. probá de nuevo',
-    sin_conexion:        'el portal no responde.. probá de nuevo',
+    falta_tag:             'ponele un tag, para acordarte',
+    codigo_invalido:       'tu código ya no está activo',
+    demasiadas_abiertas:   'ya tenés ' + TOPE_ABIERTAS + ' dando vueltas.. dá de baja alguna',
+    no_se_pudo_generar:    'no se pudo generar.. probá de nuevo',
+    no_se_pudo_dar_de_baja:'esa invitación ya no se puede dar de baja',
+    sin_conexion:          'el portal no responde.. probá de nuevo',
   };
+
+  function motivoDe(r){
+    const clave = Object.keys(MOTIVOS_INVITAR).find(k => String(r.motivo).includes(k));
+    return MOTIVOS_INVITAR[clave] || 'no se pudo.. probá de nuevo';
+  }
+
+  function linkDe(codigo){ return location.origin + '/i/' + codigo; }
+
+  function vencimiento(dias){
+    if (dias <= 0) return 'vence hoy';
+    if (dias === 1) return 'vence mañana';
+    return 'vence en ' + dias + ' días';
+  }
 
   function fecha(iso){
     return new Date(iso).toLocaleDateString('es-AR', { day:'numeric', month:'long' });
   }
 
-  function habilitar(si){
-    shareCodeBtn.disabled = !si;
-    copyLinkBtn.disabled = !si;
+  // --- pintar -----------------------------------------------------------------
+  function pintar(){
+    const alTope = invitaciones.length ? invitaciones[0].al_tope : false;
+
+    btnNuevo.disabled = alTope;
+    avisoTope.textContent = alTope
+      ? 'llegaste a ' + TOPE_ABIERTAS + '.. dá de baja alguna para generar otra'
+      : 'usalo con cuidado';
+
+    tituloLista.hidden = invitaciones.length === 0;
+
+    if (!invitaciones.length){
+      lista.innerHTML = '';
+      return;
+    }
+
+    lista.innerHTML = invitaciones.map(inv => {
+      const tag = inv.para
+        ? esc(inv.para)
+        : '<span class="inv-sin-nombre">sin nombre · ' + fecha(inv.creado_en) + '</span>';
+
+      let estado, clase, acciones;
+
+      if (inv.estado === 'entro'){
+        estado = 'entró' + (inv.quien_entro ? ' · ' + esc(inv.quien_entro) : '');
+        clase  = 'e-entro';
+        acciones = '';
+      } else if (inv.estado === 'vencida'){
+        estado = 'venció sin usarse';
+        clase  = 'e-vencida';
+        acciones = '<button class="rito-btn" data-baja="' + inv.codigo + '">quitar</button>';
+      } else {
+        estado = vencimiento(inv.dias_restantes);
+        clase  = inv.dias_restantes <= 2 ? 'e-urgente' : 'e-esperando';
+        acciones =
+          '<button class="rito-btn" data-share="' + inv.codigo + '">compartir</button>' +
+          '<button class="rito-btn" data-copiar="' + inv.codigo + '">copiar link</button>' +
+          '<button class="rito-btn" data-baja="' + inv.codigo + '">dar de baja</button>';
+      }
+
+      return '<div class="inv-item" data-codigo="' + inv.codigo + '">' +
+               '<div class="inv-cab">' +
+                 '<span class="inv-para">' + tag + '</span>' +
+                 '<span class="inv-estado ' + clase + '">' + estado + '</span>' +
+               '</div>' +
+               (acciones ? '<div class="inv-acciones">' + acciones + '</div>' : '') +
+             '</div>';
+    }).join('');
   }
 
+  async function cargar(){
+    lista.innerHTML = '<div class="ritos-cargando">buscando...</div>';
+    const r = await llamarRPC('mis_invitaciones', { p_codigo: codigoActual });
+    if (!r.ok){
+      lista.innerHTML = '<div class="ritos-cargando">' + esc(motivoDe(r)) + '</div>';
+      return;
+    }
+    invitaciones = r.datos || [];
+    pintar();
+  }
+
+  // --- entrar a la pantalla (no cuesta nada) ----------------------------------
   document.querySelectorAll('.invite-trigger').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!miembroActual || !codigoActual) return;
@@ -2481,54 +2653,125 @@ reveal();
       currentProfile = miembroActual.pantalla;
       cameFromScreen = btn.closest('.member-screen');
 
-      linkActual = null;
-      inviteLinkText.textContent = 'generando...';
-      inviteVence.textContent = '';
-      inviteRestantes.textContent = '';
-      habilitar(false);
-
+      cerrarForm();
       cameFromScreen.classList.remove('active');
       historiaScreen.classList.remove('active'); // si no, quedaría un viewport más abajo
       inviteScreen.classList.add('active');
       scrollToTop();
 
-      const r = await llamarRPC('crear_invitacion', { p_codigo: codigoActual });
-
-      if (!r.ok || !Array.isArray(r.datos) || !r.datos.length){
-        const clave = Object.keys(MOTIVOS_INVITAR).find(k => String(r.motivo).includes(k));
-        inviteLinkText.textContent = '—';
-        inviteVence.textContent = MOTIVOS_INVITAR[clave] || 'no se pudo generar.. probá de nuevo';
-        return;
-      }
-
-      const inv = r.datos[0];
-      linkActual = location.origin + '/i/' + inv.codigo;
-      inviteLinkText.textContent = linkActual.replace(/^https?:\/\//, '');
-      inviteVence.textContent = 'vence el ' + fecha(inv.vence_en);
-      habilitar(true);
-
-      const abiertas = await llamarRPC('mis_invitaciones', { p_codigo: codigoActual });
-      if (abiertas.ok && Array.isArray(abiertas.datos)){
-        const quedan = TOPE_ABIERTAS - abiertas.datos.length;
-        inviteRestantes.textContent = quedan === 1
-          ? 'te queda 1 invitación más'
-          : 'te quedan ' + quedan + ' invitaciones más';
-      }
+      await cargar();
     });
   });
 
-  copyLinkBtn.addEventListener('click', async () => {
-    if (!linkActual) return;
-    try {
-      await navigator.clipboard.writeText(linkActual);
-      feedback('link copiado');
-    } catch (err) {
-      // sin permiso de portapapeles: que al menos lo pueda seleccionar
-      prompt('copiá el link:', linkActual);
+  // --- generar ----------------------------------------------------------------
+  function abrirForm(){
+    cajaGenerar.hidden = true;
+    cajaForm.hidden = false;
+    campoTag.value = '';
+    avisoForm.textContent = '';
+    campoTag.focus();
+  }
+
+  function cerrarForm(){
+    cajaForm.hidden = true;
+    cajaGenerar.hidden = false;
+    avisoForm.textContent = '';
+  }
+
+  btnNuevo.addEventListener('click', abrirForm);
+  btnCancelar.addEventListener('click', cerrarForm);
+
+  campoTag.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){ e.preventDefault(); btnCrear.click(); }
+  });
+
+  btnCrear.addEventListener('click', async () => {
+    const tag = campoTag.value.trim();
+    if (!tag){
+      avisoForm.textContent = MOTIVOS_INVITAR.falta_tag;
+      campoTag.focus();
+      return;
+    }
+
+    btnCrear.disabled = true;
+    avisoForm.textContent = 'generando...';
+
+    const r = await llamarRPC('crear_invitacion', { p_codigo: codigoActual, p_para: tag });
+    btnCrear.disabled = false;
+
+    if (!r.ok || !Array.isArray(r.datos) || !r.datos.length){
+      avisoForm.textContent = motivoDe(r);
+      return;
+    }
+
+    cerrarForm();
+    await cargar();
+    // el link recién hecho es el primero de la lista: compartirlo es el
+    // próximo paso obvio, así que se lo dejamos abierto
+    const nuevo = r.datos[0].codigo;
+    const fila = lista.querySelector('[data-codigo="' + nuevo + '"]');
+    if (fila){
+      fila.classList.add('recien');
+      fila.scrollIntoView({ block: 'nearest' });
     }
   });
 
+  // --- la lista ---------------------------------------------------------------
+  lista.addEventListener('click', async e => {
+    const copiar = e.target.closest('[data-copiar]');
+    if (copiar){ await copiarLink(copiar.dataset.copiar); return; }
+
+    const compartir = e.target.closest('[data-share]');
+    if (compartir){ await compartirLink(compartir, compartir.dataset.share); return; }
+
+    const baja = e.target.closest('[data-baja]');
+    if (baja){ pedirConfirmacion(baja); return; }
+
+    const si = e.target.closest('[data-baja-si]');
+    if (si){ await darDeBaja(si.dataset.bajaSi); return; }
+
+    const no = e.target.closest('[data-baja-no]');
+    if (no){ pintar(); return; }
+  });
+
+  // dar de baja un link que ya mandaste deja a esa persona con un link muerto:
+  // no es algo para hacer de un toque sin querer
+  function pedirConfirmacion(btn){
+    const item = btn.closest('.inv-item');
+    const cod  = btn.dataset.baja;
+    const quitar = btn.textContent === 'quitar';
+    const caja = item.querySelector('.inv-acciones');
+    caja.outerHTML =
+      '<div class="inv-acciones inv-confirmar">' +
+        '<span class="inv-pregunta">' +
+          (quitar ? '¿la sacamos de la lista?' : '¿seguro? el link deja de servir') +
+        '</span>' +
+        '<button class="rito-btn" data-baja-si="' + cod + '">sí</button>' +
+        '<button class="rito-btn" data-baja-no="1">no</button>' +
+      '</div>';
+  }
+
+  async function darDeBaja(codigo){
+    const r = await llamarRPC('revocar_invitacion', {
+      p_codigo: codigoActual, p_invitacion: codigo,
+    });
+    if (!r.ok){ feedback(motivoDe(r)); pintar(); return; }
+    await cargar();
+  }
+
+  async function copiarLink(codigo){
+    const link = linkDe(codigo);
+    try {
+      await navigator.clipboard.writeText(link);
+      feedback('link copiado');
+    } catch (err) {
+      // sin permiso de portapapeles: que al menos lo pueda seleccionar
+      prompt('copiá el link:', link);
+    }
+  }
+
   exitInvite.addEventListener('click', () => {
+    cerrarForm();
     inviteScreen.classList.remove('active');
     historiaScreen.classList.add('active');
     if (cameFromScreen){
@@ -2670,24 +2913,28 @@ reveal();
     return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
   }
 
-  shareCodeBtn.addEventListener('click', async () => {
-    if (!miembroActual || !miembroActual.nombre_sektario || !linkActual) return;
+  // cada link de la lista se comparte solo: el botón vive en su fila y lo
+  // único que cambia entre uno y otro es el link que va en el texto
+  async function compartirLink(btn, codigo){
+    if (!miembroActual || !miembroActual.nombre_sektario) return;
+    const link = linkDe(codigo);
+
     // MAU·000 -> mau-000, para que sirva de nombre de archivo
     const data = {
       code: miembroActual.nombre_sektario,
       name: miembroActual.nombre_sektario.replace(/·/g, '-').toLowerCase(),
     };
 
-    const originalLabel = shareCodeBtn.textContent;
-    shareCodeBtn.textContent = 'generando...';
-    shareCodeBtn.disabled = true;
+    const originalLabel = btn.textContent;
+    btn.textContent = 'generando...';
+    btn.disabled = true;
 
     try {
       const blob = await buildShareImage(currentProfile, data);
       const file = new File([blob], `sekito-${data.name}.png`, { type: 'image/png' });
       const shareText =
         miembroActual.nombre_sektario + ' es tu guía hacia el sékito.\n\n' +
-        'entrá en ' + linkActual + ' y confirmá tu invitación.\n\n' +
+        'entrá en ' + link + ' y confirmá tu invitación.\n\n' +
         'el link sirve una sola vez y vence en 7 días.';
 
       if (navigator.canShare && navigator.canShare({ files: [file] })){
@@ -2709,10 +2956,10 @@ reveal();
     } catch (err) {
       if (err && err.name !== 'AbortError') feedback('no se pudo compartir');
     } finally {
-      shareCodeBtn.textContent = originalLabel;
-      shareCodeBtn.disabled = false;
+      btn.textContent = originalLabel;
+      btn.disabled = false;
     }
-  });
+  }
 })();
 
 /* ---------- carrusel de fotos (todas las pantallas que tengan uno) ---------- */
@@ -3488,6 +3735,7 @@ reveal();
       no_existe: 'esta invitación no existe',
       ya_usada:  'esta invitación ya fue usada',
       vencida:   'esta invitación venció',
+      revocada:  'esta invitación se dio de baja.. pedile otra a quien te invitó',
     };
     // queda en el portón, con el motivo escrito: siempre puede entrar con un
     // código propio si lo tiene
