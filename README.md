@@ -44,7 +44,25 @@ El que lo recibe toca, cae en el formulario de bienvenida con su referente ya
 cargado, y al terminar recibe un código de acceso propio y permanente. **Ese
 código se muestra una sola vez**; si se pierde, está en el panel.
 
-Reglas: un solo uso, vence a los 7 días, hasta 5 abiertas por miembro.
+Reglas: un solo uso, vence a los 7 días, hasta 5 abiertas por miembro. **Los
+fundadores no tienen tope.**
+
+### El tag, y por qué entrar no cuesta nada
+
+La primera versión generaba el link **al entrar a la pantalla**. El que venía
+a leer el texto ya había gastado una invitación sin haberlo decidido: MAU
+llegó al tope de 5 con una sola usada. Ahora entrar no cuesta nada y generar
+es un acto aparte, con su botón.
+
+Cada invitación lleva un **tag obligatorio** —a quién se la mandaste—. Es
+texto libre que solo ve quien invita, y existe porque el problema real no era
+el tope: era no saber a quién le habías mandado qué.
+
+La pantalla lista las invitaciones en cuatro estados: *esperando*, *entró*
+(con el nombre sektario del que entró), *vencida*, y las dadas de baja, que
+no se listan. Dar de baja libera el lugar y mata el link: el que lo abra lee
+que **se dio de baja**, no que venció —no llegó tarde, y lo que tiene que
+hacer es pedir otro—.
 
 ### Por qué existe 404.html
 
