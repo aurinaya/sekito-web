@@ -395,14 +395,13 @@ grant execute on function public.mis_invitaciones(text)                         
 grant execute on function public.registrar_con_invitacion(text,text,text,text,text,text) to anon, authenticated;
 
 
--- ============================================================================
--- 8. LA VERSIÓN VIEJA — correr recién DESPUÉS de publicar el sitio
--- ============================================================================
--- crear_invitacion(text) —de un solo argumento— es la que llama el sitio que
--- está publicado ahora mismo. Mientras el sitio nuevo no esté arriba, tiene
--- que seguir viva o el botón de invitar deja de andar.
---
---   drop function if exists public.crear_invitacion(text);
+-- ----------------------------------------------------------------------------
+-- 8. la versión vieja
+-- ----------------------------------------------------------------------------
+-- crear_invitacion(text) —de un solo argumento— era la que llamaba el sitio
+-- anterior. Se mantuvo viva hasta que el sitio nuevo estuvo publicado, para
+-- que el botón de invitar no dejara de andar en el medio. Ya no está.
+drop function if exists public.crear_invitacion(text);
 --
 -- ============================================================================
 -- Verificación
