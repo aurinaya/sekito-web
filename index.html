@@ -2621,7 +2621,6 @@ reveal();
         clase  = inv.dias_restantes <= 2 ? 'e-urgente' : 'e-esperando';
         acciones =
           '<button class="rito-btn" data-share="' + inv.codigo + '">compartir</button>' +
-          '<button class="rito-btn" data-copiar="' + inv.codigo + '">copiar link</button>' +
           '<button class="rito-btn" data-baja="' + inv.codigo + '">dar de baja</button>';
       }
 
@@ -2720,9 +2719,6 @@ reveal();
 
   // --- la lista ---------------------------------------------------------------
   lista.addEventListener('click', async e => {
-    const copiar = e.target.closest('[data-copiar]');
-    if (copiar){ await copiarLink(copiar.dataset.copiar); return; }
-
     const compartir = e.target.closest('[data-share]');
     if (compartir){ await compartirLink(compartir, compartir.dataset.share); return; }
 
@@ -2759,17 +2755,6 @@ reveal();
     });
     if (!r.ok){ feedback(motivoDe(r)); pintar(); return; }
     await cargar();
-  }
-
-  async function copiarLink(codigo){
-    const link = linkDe(codigo);
-    try {
-      await navigator.clipboard.writeText(link);
-      feedback('link copiado');
-    } catch (err) {
-      // sin permiso de portapapeles: que al menos lo pueda seleccionar
-      prompt('copiá el link:', link);
-    }
   }
 
   exitInvite.addEventListener('click', () => {
@@ -2874,7 +2859,7 @@ reveal();
     ctx.fillRect(0, 0, W, H);
 
     // abanico arriba, centrado, con el mismo halo sutil que el código
-    const fanW = 120, fanH = fanImg.height * (fanW / fanImg.width);
+    const fanW = 152, fanH = fanImg.height * (fanW / fanImg.width);
     ctx.save();
     ctx.shadowColor = 'rgba(242,242,242,0.55)';
     ctx.shadowBlur = 18;
@@ -2887,8 +2872,8 @@ reveal();
     // reenviada sería la invitación entera, y además nadie va a tipear doce
     // caracteres mirando una foto. El link viaja en el mensaje.
     const cx = W / 2;
-    const codeH = 60, lineaH = 46, cierreH = 30;
-    const gapCodeLinea = 46, gapLineaCierre = 54;
+    const codeH = 76, lineaH = 56, cierreH = 38;
+    const gapCodeLinea = 50, gapLineaCierre = 58;
     const linea  = 'es tu guía hacia el sékito';
     const cierre = 'entrá y confirmá tu invitación';
 
@@ -2899,17 +2884,17 @@ reveal();
     ctx.save();
     ctx.shadowColor = 'rgba(242,242,242,0.55)';
     ctx.shadowBlur = 18;
-    drawTracked(ctx, data.code, cx, y, '600 60px "IBM Plex Mono"', 'rgb(242,242,242)', 5);
+    drawTracked(ctx, data.code, cx, y, '600 76px "IBM Plex Mono"', 'rgb(242,242,242)', 6);
     ctx.restore();
     y += codeH + gapCodeLinea;
 
-    drawTracked(ctx, linea, cx, y, '400 28px "IBM Plex Mono"', 'rgb(147,168,172)', 1);
+    drawTracked(ctx, linea, cx, y, '400 34px "IBM Plex Mono"', 'rgb(147,168,172)', 1);
     y += lineaH + gapLineaCierre;
 
-    drawTracked(ctx, cierre, cx, y, '500 25px "IBM Plex Mono"', 'rgb(242,242,242)', 2);
+    drawTracked(ctx, cierre, cx, y, '500 31px "IBM Plex Mono"', 'rgb(242,242,242)', 2);
 
     // logotipo SÉKITO abajo de todo
-    const wmW = 208, wmH = wordmarkImg.height * (wmW / wordmarkImg.width);
+    const wmW = 262, wmH = wordmarkImg.height * (wmW / wordmarkImg.width);
     ctx.drawImage(wordmarkImg, (W - wmW) / 2, H - wmH - 76, wmW, wmH);
 
     return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
