@@ -64,6 +64,28 @@ no se listan. Dar de baja libera el lugar y mata el link: el que lo abra lee
 que **se dio de baja**, no que venció —no llegó tarde, y lo que tiene que
 hacer es pedir otro—.
 
+## Lxs devotxs
+
+Adentro del perfil hay un buscador: escribís dos letras de un nombre o de un
+código y aparece esa persona. Su ficha muestra código sektario, nombre de
+pila, foto (o el abanico, para quien no tiene), de quién vino, a cuántos
+trajo, y en qué ritos está atestiguado. Desde ahí se salta a la ficha de su
+guía, y así se sube por el árbol.
+
+**Hay buscador y no hay lista.** No se puede scrollear el padrón, no hay un
+contador de cuántos somos, no se puede pasear por la sekta. Es a propósito:
+son 18, y una lista de 18 no parece una sekta, parece un grupo de WhatsApp.
+El día que sean 150, la lista pasa a ser un flex y se agrega.
+
+La ficha nunca devuelve mail, teléfono, apellido, código de acceso ni cómo
+llegó la persona. Los dados de baja no aparecen: no se borran de la base,
+pero dejan de estar en el padrón, que es justamente lo que significa darlos
+de baja.
+
+"En el sékito desde" sale del rito más viejo que tenga atestiguado, no de
+cuándo se cargó el registro: los que venimos de antes se cargamos todos el
+mismo mes, y diría "septiembre de 2026" para alguien con ritos de 2023.
+
 ### Por qué existe 404.html
 
 GitHub Pages sirve archivos, no entiende direcciones inventadas: `/i/CODIGO`

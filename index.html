@@ -662,6 +662,106 @@
   }
   .seccion-btn:hover{ color:var(--white); border-color:var(--white); }
 
+  /* ---------- lxs devotxs: buscar a alguien ---------- */
+  .padron-input{
+    width:100%;
+    background:none; border:none;
+    border-bottom:1px solid rgba(var(--gray-rgb),.4);
+    color:var(--white);
+    font-family:inherit; font-size:13px;
+    text-align:center; letter-spacing:.04em;
+    padding:9px 0; outline:none;
+  }
+  .padron-input:focus{ border-bottom-color:var(--white); }
+  .padron-input::placeholder{ color:rgba(var(--gray-rgb),.55); letter-spacing:.06em; }
+
+  .padron-resultados:not(:empty){ margin-top:8px; }
+  .padron-op{
+    display:flex; align-items:baseline; justify-content:center;
+    gap:10px;
+    padding:11px 4px;
+    border-bottom:1px solid rgba(var(--gray-rgb),.14);
+    cursor:pointer;
+    transition:color .2s ease;
+  }
+  .padron-op:last-child{ border-bottom:none; }
+  .padron-op:hover .po-nombre{ color:var(--white); }
+  .po-nombre{ font-size:13px; color:rgba(var(--white-rgb),.86); }
+  .po-cod{ font-size:10px; color:rgba(var(--gray-rgb),.8); }
+  .padron-nada{
+    text-align:center; font-size:10.5px;
+    color:rgba(var(--gray-rgb),.7);
+    padding:12px 0;
+  }
+
+  /* ---------- la ficha ---------- */
+  .ficha-cara{
+    width:132px; height:132px;
+    margin:56px auto 26px;
+    border-radius:50%;
+    overflow:hidden;
+    background:#151515;
+    border:1px solid rgba(var(--gray-rgb),.25);
+    background-size:cover; background-position:center 30%;
+  }
+  /* el que no tiene foto es un abanico: una cara es un lugar al que se llega */
+  .ficha-cara.sin-foto{
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ficha-cara.sin-foto::before{
+    content:"";
+    width:58px; height:58px;
+    background:rgba(var(--white-rgb),.5);
+    -webkit-mask:var(--fan-mask) center / contain no-repeat;
+            mask:var(--fan-mask) center / contain no-repeat;
+  }
+  .ficha-cod{
+    text-align:center;
+    font-size:26px; letter-spacing:.14em;
+    color:var(--white);
+    text-shadow:0 0 18px rgba(var(--white-rgb),.25);
+  }
+  .ficha-nombre{
+    text-align:center;
+    font-size:13px; letter-spacing:.06em;
+    color:var(--gray);
+    margin-top:12px;
+  }
+  .ficha-marca{
+    text-align:center;
+    font-size:9.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--amarillo);
+    margin-top:14px;
+  }
+  .ficha-linea{
+    text-align:center;
+    font-size:11.5px; line-height:1.9;
+    color:var(--gray);
+    margin-top:34px;
+  }
+  .ficha-linea strong{ color:var(--white); font-weight:500; }
+  .ficha-linea a{
+    color:var(--gray); text-decoration:underline;
+    text-underline-offset:3px; cursor:pointer;
+  }
+  .ficha-linea a:hover{ color:var(--white); }
+  .ficha-ritos{ margin-top:46px; }
+  .ficha-rito{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:14px;
+    padding:12px 0;
+    border-bottom:1px solid rgba(var(--gray-rgb),.14);
+    font-size:12.5px;
+  }
+  .ficha-rito:last-child{ border-bottom:none; }
+  .ficha-rito .fr-nombre{ color:var(--white); }
+  .ficha-rito .fr-fecha{ color:var(--gray); font-size:10.5px; }
+  .ficha-vacio{
+    text-align:center; font-size:11px;
+    color:rgba(var(--gray-rgb),.7);
+    margin-top:14px; line-height:1.7;
+  }
+
   /* ---------- mis ritos, resumido en el perfil ---------- */
   .ritos-preview{ cursor:pointer; }
   .rt-numero{
@@ -1622,6 +1722,16 @@
     </div>
 
     <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="padron">
+        <input class="padron-input" type="text" autocomplete="off"
+               autocapitalize="off" spellcheck="false" enterkeyhint="search"
+               placeholder="buscá por nombre o código">
+        <div class="padron-resultados"></div>
+      </div>
+    </div>
+
+    <div class="seccion rv-d">
       <div class="seccion-titulo"><span>invitar</span></div>
       <button class="invite-trigger">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
@@ -1663,6 +1773,16 @@
         <div class="rp-hijos"></div>
       </div>
       <button class="seccion-btn rama-abrir">ver mi rama</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="padron">
+        <input class="padron-input" type="text" autocomplete="off"
+               autocapitalize="off" spellcheck="false" enterkeyhint="search"
+               placeholder="buscá por nombre o código">
+        <div class="padron-resultados"></div>
+      </div>
     </div>
 
     <div class="seccion rv-d">
@@ -1722,6 +1842,16 @@
     </div>
 
     <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="padron">
+        <input class="padron-input" type="text" autocomplete="off"
+               autocapitalize="off" spellcheck="false" enterkeyhint="search"
+               placeholder="buscá por nombre o código">
+        <div class="padron-resultados"></div>
+      </div>
+    </div>
+
+    <div class="seccion rv-d">
       <div class="seccion-titulo"><span>invitar</span></div>
       <button class="invite-trigger" data-profile="LUCHI">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
@@ -1773,6 +1903,16 @@
         <div class="rp-hijos"></div>
       </div>
       <button class="seccion-btn rama-abrir">ver mi rama</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="padron">
+        <input class="padron-input" type="text" autocomplete="off"
+               autocapitalize="off" spellcheck="false" enterkeyhint="search"
+               placeholder="buscá por nombre o código">
+        <div class="padron-resultados"></div>
+      </div>
     </div>
 
     <div class="seccion rv-d">
@@ -1855,6 +1995,15 @@
   </section>
 
   <!-- ===================== MI RAMA DEL ÁRBOL ===================== -->
+  <!-- ===================== LA FICHA DE ALGUIEN ===================== -->
+  <section id="ficha-screen" class="screen">
+    <div class="top-row">
+      <button class="exit-link" id="exitFicha">volver</button>
+    </div>
+
+    <div id="fichaCuerpo"><div class="ritos-cargando">buscando...</div></div>
+  </section>
+
   <section id="rama-screen" class="screen">
     <div class="top-row">
       <button class="exit-link" id="exitRama">volver</button>
@@ -1894,6 +2043,16 @@
         <div class="rp-hijos"></div>
       </div>
       <button class="seccion-btn rama-abrir">ver mi rama</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="padron">
+        <input class="padron-input" type="text" autocomplete="off"
+               autocapitalize="off" spellcheck="false" enterkeyhint="search"
+               placeholder="buscá por nombre o código">
+        <div class="padron-resultados"></div>
+      </div>
     </div>
 
     <div class="seccion rv-d">
@@ -1951,6 +2110,16 @@
     </div>
 
     <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="padron">
+        <input class="padron-input" type="text" autocomplete="off"
+               autocapitalize="off" spellcheck="false" enterkeyhint="search"
+               placeholder="buscá por nombre o código">
+        <div class="padron-resultados"></div>
+      </div>
+    </div>
+
+    <div class="seccion rv-d">
       <div class="seccion-titulo"><span>invitar</span></div>
       <button class="invite-trigger" data-profile="FLOR">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
@@ -2002,6 +2171,16 @@
         <div class="rp-hijos"></div>
       </div>
       <button class="seccion-btn rama-abrir">ver mi rama</button>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="padron">
+        <input class="padron-input" type="text" autocomplete="off"
+               autocapitalize="off" spellcheck="false" enterkeyhint="search"
+               placeholder="buscá por nombre o código">
+        <div class="padron-resultados"></div>
+      </div>
     </div>
 
     <div class="seccion rv-d">
@@ -3501,6 +3680,173 @@ reveal();
 })();
 
 /* ---------- mi rama del árbol ---------- */
+/* ---------- lxs devotxs: buscar a alguien y ver quién es ----------
+   El código sektario todavía no se aprendió. Poner el nombre al lado del
+   código en cada pantalla es un parche por lugar; esto es el lugar donde
+   cualquier código se puede consultar.
+
+   Hay buscador y no hay lista: no se puede pasear por la sekta. */
+(function padron(){
+  const pantalla = document.getElementById('ficha-screen');
+  const salir    = document.getElementById('exitFicha');
+  const cuerpo   = document.getElementById('fichaCuerpo');
+
+  let volverA = null;
+  let reloj   = null;
+
+  const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const mes = f => new Date(f).toLocaleDateString('es-AR', { month:'long', year:'numeric' });
+
+  // la foto sale de la pantalla propia de cada uno; quien no tiene pantalla
+  // no tiene foto, y ese es un caso normal
+  function fotoDe(pantallaId){
+    if (!pantallaId) return null;
+    const scr = document.getElementById('member-' + pantallaId.toLowerCase());
+    const img = scr && scr.querySelector('.carousel-slide img');
+    return img ? img.src : null;
+  }
+
+  // --- el buscador, adentro del perfil ---------------------------------------
+  document.querySelectorAll('.padron-input').forEach(input => {
+    const caja = input.parentElement.querySelector('.padron-resultados');
+
+    input.addEventListener('input', () => {
+      clearTimeout(reloj);
+      const q = input.value.trim();
+      if (q.length < 2){ caja.innerHTML = ''; return; }
+
+      reloj = setTimeout(async () => {
+        const r = await llamarRPC('buscar_en_el_sekito', {
+          p_codigo: codigoActual, p_query: q,
+        });
+        const lista = (r.ok && r.datos) || [];
+        if (!lista.length){
+          caja.innerHTML = '<div class="padron-nada">nadie con ese nombre</div>';
+          return;
+        }
+        caja.innerHTML = lista.map(d =>
+          '<div class="padron-op" data-sektario="' + esc(d.sektario) + '">' +
+            '<span class="po-nombre">' + esc(d.nombre || d.sektario) + '</span>' +
+            (d.nombre ? '<span class="po-cod">' + esc(d.sektario) + '</span>' : '') +
+          '</div>').join('');
+      }, 250);
+    });
+
+    caja.addEventListener('click', e => {
+      const op = e.target.closest('[data-sektario]');
+      if (!op) return;
+      if (window.__marcarPantalla) window.__marcarPantalla();
+      abrir(op.dataset.sektario, input.closest('.member-screen'));
+    });
+  });
+
+  // --- la ficha ---------------------------------------------------------------
+  async function abrir(sektario, desde){
+    if (!miembroActual || !codigoActual) return;
+    // saltando de una ficha a la de su guía no llega un "desde": el camino
+    // de vuelta es el del primer salto, y se conserva
+    if (desde){ volverA = desde; volverA.classList.remove('active'); }
+    historiaScreen.classList.remove('active');
+    pantalla.classList.add('active');
+    scrollToTop();
+    cuerpo.innerHTML = '<div class="ritos-cargando">buscando...</div>';
+
+    const r = await llamarRPC('ficha_del_sekito', {
+      p_codigo: codigoActual, p_sektario: sektario,
+    });
+    if (!r.ok || !r.datos){
+      cuerpo.innerHTML = '<div class="ritos-cargando">no se pudo abrir.. probá de nuevo</div>';
+      return;
+    }
+    pintar(r.datos);
+  }
+
+  function pintar(d){
+    const foto = fotoDe(d.pantalla);
+    const cara = foto
+      ? '<div class="ficha-cara" data-foto="' + esc(foto) + '"></div>'
+      : '<div class="ficha-cara sin-foto"></div>';
+
+    // LA SEKTA no es una persona: no tiene nombre, ni ritos, ni guía
+    if (d.es_sekta){
+      cuerpo.innerHTML =
+        '<div class="ficha-cara sin-foto"></div>' +
+        '<div class="ficha-cod">' + esc(d.sektario) + '</div>' +
+        '<div class="ficha-marca">el origen</div>' +
+        '<div class="ficha-vacio">No es nadie y somos todos.<br>' +
+          'Testigo supremo: el único que da fe por su cuenta.<br>' +
+          'Por encima del sékito entero.</div>' +
+        (d.total ? '<div class="ficha-linea">de ella cuelgan <strong>' + d.total + '</strong></div>' : '');
+      return;
+    }
+
+    const marca = d.es_vos ? 'sos vos' : (d.fundador ? 'semilla' : '');
+
+    const guia = d.guia
+      ? 'vino de <a data-ir="' + esc(d.guia.sektario) + '">' +
+          esc(d.guia.nombre || d.guia.sektario) + '</a>'
+      : (d.fundador ? '' : 'llegó sin guía');
+
+    // dos números distintos: a cuántos trajo de la mano, y cuánta gente
+    // cuelga de esa persona contando las ramas de abajo
+    let trajo;
+    if (!d.directos){
+      trajo = 'todavía no trajo a nadie';
+    } else if (d.total === d.directos){
+      trajo = 'trajo a <strong>' + d.directos + '</strong>';
+    } else {
+      trajo = 'trajo a <strong>' + d.directos + '</strong>, y de su rama cuelgan <strong>' + d.total + '</strong>';
+    }
+
+    const ritos = (d.ritos || []).length
+      ? '<div class="ficha-ritos">' +
+          d.ritos.map(r =>
+            '<div class="ficha-rito">' +
+              '<span class="fr-nombre">' + esc(r.nombre) + '</span>' +
+              '<span class="fr-fecha">' + mes(r.fecha) + '</span>' +
+            '</div>').join('') +
+        '</div>'
+      : '<div class="ficha-ritos"><div class="ficha-vacio">' +
+          (d.es_vos ? 'Todavía no tenés ningún rito atestiguado.'
+                    : 'Todavía no tiene ningún rito atestiguado.') +
+        '</div></div>';
+
+    cuerpo.innerHTML =
+      cara +
+      '<div class="ficha-cod">' + esc(d.sektario) + '</div>' +
+      (d.nombre ? '<div class="ficha-nombre">' + esc(d.nombre) + '</div>' : '') +
+      (marca ? '<div class="ficha-marca">' + marca + '</div>' : '') +
+      '<div class="ficha-linea">' + (guia ? guia + '<br>' : '') + trajo +
+        (d.desde ? '<br>en el sékito desde ' + mes(d.desde) : '') +
+      '</div>' +
+      ritos;
+
+    // la foto va por js y no en el atributo: una url entre comillas adentro
+    // de un style="" corta el atributo a la mitad
+    const cara2 = cuerpo.querySelector('.ficha-cara[data-foto]');
+    if (cara2) cara2.style.backgroundImage = 'url("' + cara2.dataset.foto + '")';
+  }
+
+  // de una ficha se salta a la de su guía: así se sube por el árbol
+  cuerpo.addEventListener('click', e => {
+    const ir = e.target.closest('[data-ir]');
+    if (!ir) return;
+    if (window.__marcarPantalla) window.__marcarPantalla();
+    abrir(ir.dataset.ir, null);
+  });
+
+  salir.addEventListener('click', () => {
+    pantalla.classList.remove('active');
+    historiaScreen.classList.add('active');
+    if (volverA){
+      volverA.classList.add('active');
+      volverA.scrollIntoView({ block: 'start' });
+    }
+  });
+})();
+
 (function rama(){
   const pantalla = document.getElementById('rama-screen');
   const salir    = document.getElementById('exitRama');
@@ -3703,6 +4049,7 @@ reveal();
     'invite-screen': 'exitInvite',
     'ritos-screen':  'exitRitos',
     'rama-screen':   'exitRama',
+    'ficha-screen':  'exitFicha',
   };
 
   function marcar(){ history.pushState({ sekito:true }, ''); }
