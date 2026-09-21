@@ -100,8 +100,10 @@ Las reglas, y el por qué de cada una:
   distinto, habría textos que la pantalla acepta y la base rechaza.
 - **Uno por persona cada 7 días.** Si se pudiera mandar un segundo enseguida,
   los 90 dejarían de existir: serían 90 + 90 + 90.
-- **Se puede retirar.** No es mandar dos: es que nunca haya dos. Lo que no se
-  puede retirar es que ya lo haya leído.
+- **No se retira.** Se probó tenerlo y se sacó: *bancate decir algo, bancate
+  haberlo dicho*. Un susurro que se puede deshacer es un borrador, y el
+  arrepentimiento es parte del gesto. Además vuelve firme la espera: no hay
+  forma de acortar los siete días.
 - **Sin visto.** Si el que manda supiera que lo leyeron, le crearía a la otra
   persona la obligación de contestar. La única señal de que llegó es que un
   día te llegue uno.
