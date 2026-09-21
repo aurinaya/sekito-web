@@ -86,6 +86,39 @@ de baja.
 cuándo se cargó el registro: los que venimos de antes se cargamos todos el
 mismo mes, y diría "septiembre de 2026" para alguien con ritos de 2023.
 
+## Los susurros
+
+Desde la ficha de alguien le dejás algo corto. Lo lee esa persona y nadie
+más. **No se responde**: si querés decir algo, vas y le dejás uno vos.
+
+Las reglas, y el por qué de cada una:
+
+- **90 caracteres.** No es un tope técnico, es la forma. Con 180 alguien
+  escribe un párrafo y esto se vuelve un chat con pasos de más. Quedarse
+  corto es el ejercicio. El contador cuenta *code points*, no unidades
+  UTF-16, para que un emoji valga uno igual que en la base: si contaran
+  distinto, habría textos que la pantalla acepta y la base rechaza.
+- **Uno por persona cada 7 días.** Si se pudiera mandar un segundo enseguida,
+  los 90 dejarían de existir: serían 90 + 90 + 90.
+- **Se puede retirar.** No es mandar dos: es que nunca haya dos. Lo que no se
+  puede retirar es que ya lo haya leído.
+- **Sin visto.** Si el que manda supiera que lo leyeron, le crearía a la otra
+  persona la obligación de contestar. La única señal de que llegó es que un
+  día te llegue uno.
+
+### Privacidad, dicha con todas las letras
+
+Los susurros están en esta base y quien tenga la llave los puede leer. Por eso
+el sitio **no promete** que nadie más los ve, y por eso no existe ninguna
+función que se los liste a un admin: `admin_borrar_susurros_de` borra los de
+una persona a otra **sin devolver el texto**, y deja en el log quién borró qué
+par, nunca el contenido.
+
+Moderar necesita borrar, no leer. Si hubiera una pantalla que los lista,
+alguien los iba a leer — no por maldad, porque están ahí. La diferencia entre
+poder hacerlo y que sea un acto deliberado es la única privacidad honesta que
+se puede ofrecer acá.
+
 ### Por qué existe 404.html
 
 GitHub Pages sirve archivos, no entiende direcciones inventadas: `/i/CODIGO`
