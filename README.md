@@ -91,6 +91,12 @@ mismo mes, y diría "septiembre de 2026" para alguien con ritos de 2023.
 Desde la ficha de alguien le dejás algo corto. Lo lee esa persona y nadie
 más. **No se responde**: si querés decir algo, vas y le dejás uno vos.
 
+La pantalla *susurros* muestra los dos lados: **te susurraron** y
+**susurraste**. Lo segundo hace falta porque no se puede retirar ni volver a
+mandar hasta los siete días: sin verlo, una semana después no sabés a quién le
+susurraste ni qué le pusiste. El número del perfil cuenta solo los que te
+dejaron.
+
 Las reglas, y el por qué de cada una:
 
 - **90 caracteres.** No es un tope técnico, es la forma. Con 180 alguien

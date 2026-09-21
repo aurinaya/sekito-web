@@ -708,6 +708,9 @@
           text-underline-offset:3px; }
   .su-de:hover{ color:var(--white); }
   .su-cod{ font-size:9.5px; color:rgba(var(--gray-rgb),.7); }
+  .su-hacia{ color:rgba(var(--gray-rgb),.7); }
+  /* lo que dijiste vos pesa menos que lo que te dijeron */
+  .sus-segunda{ margin-top:44px; }
   .su-nuevo{
     font-size:9px; letter-spacing:.14em; text-transform:uppercase;
     color:var(--amarillo);
@@ -3930,28 +3933,49 @@ reveal();
     pintar(r.datos || []);
 
     // abrirlos es escucharlos: la base ya los marcó, acá se apaga el aviso
-    cuenta = { nuevos: 0, total: (r.datos || []).length };
+    // el número del perfil cuenta lo que te dejaron, no lo que dijiste
+    cuenta = { nuevos: 0, total: (r.datos || []).filter(x => !x.mio).length };
     pintarPreview();
   }
 
+  function uno(su){
+    return '<div class="susurro">' +
+             '<div class="su-texto">' + esc(su.texto) + '</div>' +
+             '<div class="su-pie">' +
+               (su.mio ? '<span class="su-hacia">a</span>' : '') +
+               '<span class="su-de" data-ir="' + esc(su.sektario) + '">' +
+                 esc(su.nombre || su.sektario) + '</span>' +
+               (su.nombre ? '<span class="su-cod">' + esc(su.sektario) + '</span>' : '') +
+               '<span>' + cuando(su.creado_en) + '</span>' +
+               (su.es_nuevo ? '<span class="su-nuevo">nuevo</span>' : '') +
+             '</div>' +
+           '</div>';
+  }
+
   function pintar(lista){
+    // los dos lados: lo que te dijeron y lo que dijiste. Sin lo segundo, una
+    // semana después no te acordás a quién le susurraste ni qué le pusiste.
+    const recibidos = lista.filter(x => !x.mio);
+    const dejados   = lista.filter(x =>  x.mio);
+
     if (!lista.length){
       cuerpo.innerHTML =
-        '<div class="ficha-vacio">Todavía nadie te susurró.<br>' +
+        '<div class="ficha-vacio">Todavía nadie te susurró,<br>' +
+        'y vos todavía no susurraste a nadie.<br>' +
         'Se susurra desde la ficha de cada uno, en devotxs.</div>';
       return;
     }
-    cuerpo.innerHTML = lista.map(su =>
-      '<div class="susurro">' +
-        '<div class="su-texto">' + esc(su.texto) + '</div>' +
-        '<div class="su-pie">' +
-          '<span class="su-de" data-ir="' + esc(su.de_sektario) + '">' +
-            esc(su.de_nombre || su.de_sektario) + '</span>' +
-          (su.de_nombre ? '<span class="su-cod">' + esc(su.de_sektario) + '</span>' : '') +
-          '<span>' + cuando(su.creado_en) + '</span>' +
-          (su.es_nuevo ? '<span class="su-nuevo">nuevo</span>' : '') +
-        '</div>' +
-      '</div>').join('');
+
+    let html = '';
+    if (recibidos.length){
+      html += '<div class="ritos-seccion">te susurraron</div>' +
+              recibidos.map(uno).join('');
+    }
+    if (dejados.length){
+      html += '<div class="ritos-seccion sus-segunda">susurraste</div>' +
+              dejados.map(uno).join('');
+    }
+    cuerpo.innerHTML = html;
   }
 
   // del susurro se va a la ficha de quien lo dejó: ahí está el único botón
@@ -4179,7 +4203,7 @@ reveal();
         'Después, siete días de silencio.' +
       '</div>' +
       '<textarea id="susTexto" rows="3" autocapitalize="sentences" ' +
-        'placeholder="noventa caracteres, ni uno más"></textarea>' +
+        'placeholder="susurrale acá..."></textarea>' +
       '<div class="fs-quedan">te quedan ' + TOPE + '</div>' +
       '<div class="fs-acciones">' +
         '<button class="rito-btn" data-enviar="' + esc(sektario) + '">susurrar</button>' +
