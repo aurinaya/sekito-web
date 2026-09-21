@@ -3775,18 +3775,19 @@ reveal();
         '<div class="ficha-cara sin-foto"></div>' +
         '<div class="ficha-cod">' + esc(d.sektario) + '</div>' +
         '<div class="ficha-marca">el origen</div>' +
-        '<div class="ficha-vacio">No es alguien. Es de donde cuelga el que llegó ' +
-          'sin que nadie lo trajera.</div>' +
+        '<div class="ficha-vacio">No es nadie y somos todos.<br>' +
+          'Testigo supremo: el único que da fe por su cuenta.<br>' +
+          'Por encima del sékito entero.</div>' +
         (d.total ? '<div class="ficha-linea">de ella cuelgan <strong>' + d.total + '</strong></div>' : '');
       return;
     }
 
-    const marca = d.es_vos ? 'sos vos' : (d.fundador ? 'la semilla' : '');
+    const marca = d.es_vos ? 'sos vos' : (d.fundador ? 'semilla' : '');
 
     const guia = d.guia
       ? 'vino de <a data-ir="' + esc(d.guia.sektario) + '">' +
           esc(d.guia.nombre || d.guia.sektario) + '</a>'
-      : (d.fundador ? 'no vino de nadie: estaba desde el principio' : 'llegó sin guía');
+      : (d.fundador ? '' : 'llegó sin guía');
 
     // dos números distintos: a cuántos trajo de la mano, y cuánta gente
     // cuelga de esa persona contando las ramas de abajo
@@ -3817,7 +3818,7 @@ reveal();
       '<div class="ficha-cod">' + esc(d.sektario) + '</div>' +
       (d.nombre ? '<div class="ficha-nombre">' + esc(d.nombre) + '</div>' : '') +
       (marca ? '<div class="ficha-marca">' + marca + '</div>' : '') +
-      '<div class="ficha-linea">' + guia + '<br>' + trajo +
+      '<div class="ficha-linea">' + (guia ? guia + '<br>' : '') + trajo +
         (d.desde ? '<br>en el sékito desde ' + mes(d.desde) : '') +
       '</div>' +
       ritos;
