@@ -662,6 +662,110 @@
   }
   .seccion-btn:hover{ color:var(--white); border-color:var(--white); }
 
+  /* ---------- los susurros ---------- */
+  .sus-preview{ cursor:pointer; }
+  .sus-preview:focus-visible{ outline:1px solid var(--gray); outline-offset:8px; }
+  .sp-numero{
+    font-size:34px; letter-spacing:.1em;
+    color:var(--white);
+    text-shadow:0 0 18px rgba(var(--white-rgb),.25);
+  }
+  .sp-numero:empty{ display:none; }
+  /* los que todavía no leíste laten, igual que el pedido de fe: es lo único
+     de esta pantalla que te está esperando */
+  .sp-numero.nuevos{
+    color:var(--amarillo);
+    animation:latir 2.6s ease-in-out infinite;
+  }
+  @keyframes latir{
+    0%,100%{ text-shadow:0 0 10px rgba(var(--amarillo-rgb),.2); }
+    50%    { text-shadow:0 0 28px rgba(var(--amarillo-rgb),.6); }
+  }
+  .sp-leyenda{
+    font-size:10.5px; letter-spacing:.1em; color:var(--gray); margin-top:11px;
+  }
+  .sp-nadie{ color:rgba(var(--gray-rgb),.65); }
+  @media (prefers-reduced-motion: reduce){
+    .sp-numero.nuevos{ animation:none; text-shadow:0 0 22px rgba(var(--amarillo-rgb),.4); }
+  }
+
+  .susurro{
+    padding:20px 0;
+    border-bottom:1px solid rgba(var(--gray-rgb),.14);
+  }
+  .susurro:last-child{ border-bottom:none; }
+  .su-texto{
+    font-size:15px; line-height:1.65;
+    color:var(--white);
+    word-break:break-word;
+  }
+  .su-pie{
+    display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 10px;
+    margin-top:12px;
+    font-size:10.5px; color:var(--gray);
+  }
+  .su-de{ color:rgba(var(--white-rgb),.8); cursor:pointer; text-decoration:underline;
+          text-underline-offset:3px; }
+  .su-de:hover{ color:var(--white); }
+  .su-cod{ font-size:9.5px; color:rgba(var(--gray-rgb),.7); }
+  .su-nuevo{
+    font-size:9px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--amarillo);
+  }
+
+  /* dejarle uno a alguien, desde su ficha */
+  .ficha-susurro{
+    margin-top:46px;
+    padding-top:26px;
+    border-top:1px solid rgba(var(--gray-rgb),.18);
+  }
+  .fs-reglas{
+    text-align:center;
+    font-size:10.5px; line-height:1.9;
+    color:rgba(var(--gray-rgb),.8);
+    margin-bottom:22px;
+  }
+  .fs-mio{
+    font-size:14px; line-height:1.6;
+    color:var(--white);
+    text-align:center;
+    padding:16px 0;
+  }
+  .fs-cuando{
+    text-align:center;
+    font-size:10px; letter-spacing:.06em;
+    color:rgba(var(--gray-rgb),.75);
+    margin-top:10px;
+  }
+  #susTexto{
+    width:100%;
+    background:none; border:none;
+    border-bottom:1px solid rgba(var(--gray-rgb),.4);
+    color:var(--white);
+    font-family:inherit; font-size:14px; line-height:1.6;
+    padding:8px 0; outline:none;
+    resize:none;
+  }
+  #susTexto:focus{ border-bottom-color:var(--white); }
+  #susTexto::placeholder{ color:rgba(var(--gray-rgb),.5); }
+  .fs-quedan{
+    text-align:right;
+    font-size:10px; letter-spacing:.06em;
+    color:rgba(var(--gray-rgb),.75);
+    margin-top:8px;
+  }
+  .fs-quedan.poco{ color:var(--amarillo); }
+  .fs-acciones{
+    display:flex; flex-wrap:wrap; justify-content:center;
+    align-items:center; gap:10px;
+    margin-top:18px;
+  }
+  .fs-aviso{
+    text-align:center; font-size:10.5px;
+    color:var(--amarillo);
+    margin-top:14px; min-height:13px;
+  }
+
   /* ---------- lxs devotxs: buscar a alguien ---------- */
   .padron-input{
     width:100%;
@@ -1722,13 +1826,22 @@
     </div>
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="seccion-titulo"><span>devotxs</span></div>
       <div class="padron">
         <input class="padron-input" type="text" autocomplete="off"
                autocapitalize="off" spellcheck="false" enterkeyhint="search"
                placeholder="buscá por nombre o código">
         <div class="padron-resultados"></div>
       </div>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>susurros</span></div>
+      <div class="sus-preview sus-abrir" role="button" tabindex="0">
+        <div class="sp-numero">—</div>
+        <div class="sp-leyenda"></div>
+      </div>
+      <button class="seccion-btn sus-abrir">ver mis susurros</button>
     </div>
 
     <div class="seccion rv-d">
@@ -1776,13 +1889,22 @@
     </div>
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="seccion-titulo"><span>devotxs</span></div>
       <div class="padron">
         <input class="padron-input" type="text" autocomplete="off"
                autocapitalize="off" spellcheck="false" enterkeyhint="search"
                placeholder="buscá por nombre o código">
         <div class="padron-resultados"></div>
       </div>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>susurros</span></div>
+      <div class="sus-preview sus-abrir" role="button" tabindex="0">
+        <div class="sp-numero">—</div>
+        <div class="sp-leyenda"></div>
+      </div>
+      <button class="seccion-btn sus-abrir">ver mis susurros</button>
     </div>
 
     <div class="seccion rv-d">
@@ -1842,13 +1964,22 @@
     </div>
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="seccion-titulo"><span>devotxs</span></div>
       <div class="padron">
         <input class="padron-input" type="text" autocomplete="off"
                autocapitalize="off" spellcheck="false" enterkeyhint="search"
                placeholder="buscá por nombre o código">
         <div class="padron-resultados"></div>
       </div>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>susurros</span></div>
+      <div class="sus-preview sus-abrir" role="button" tabindex="0">
+        <div class="sp-numero">—</div>
+        <div class="sp-leyenda"></div>
+      </div>
+      <button class="seccion-btn sus-abrir">ver mis susurros</button>
     </div>
 
     <div class="seccion rv-d">
@@ -1906,13 +2037,22 @@
     </div>
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="seccion-titulo"><span>devotxs</span></div>
       <div class="padron">
         <input class="padron-input" type="text" autocomplete="off"
                autocapitalize="off" spellcheck="false" enterkeyhint="search"
                placeholder="buscá por nombre o código">
         <div class="padron-resultados"></div>
       </div>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>susurros</span></div>
+      <div class="sus-preview sus-abrir" role="button" tabindex="0">
+        <div class="sp-numero">—</div>
+        <div class="sp-leyenda"></div>
+      </div>
+      <button class="seccion-btn sus-abrir">ver mis susurros</button>
     </div>
 
     <div class="seccion rv-d">
@@ -1995,6 +2135,17 @@
   </section>
 
   <!-- ===================== MI RAMA DEL ÁRBOL ===================== -->
+  <!-- ===================== LOS SUSURROS QUE ME DEJARON ===================== -->
+  <section id="susurros-screen" class="screen">
+    <div class="top-row">
+      <button class="exit-link" id="exitSusurros">volver</button>
+    </div>
+
+    <div class="ritos-titulo">susurros</div>
+
+    <div id="susurrosCuerpo"><div class="ritos-cargando">buscando...</div></div>
+  </section>
+
   <!-- ===================== LA FICHA DE ALGUIEN ===================== -->
   <section id="ficha-screen" class="screen">
     <div class="top-row">
@@ -2046,13 +2197,22 @@
     </div>
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="seccion-titulo"><span>devotxs</span></div>
       <div class="padron">
         <input class="padron-input" type="text" autocomplete="off"
                autocapitalize="off" spellcheck="false" enterkeyhint="search"
                placeholder="buscá por nombre o código">
         <div class="padron-resultados"></div>
       </div>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>susurros</span></div>
+      <div class="sus-preview sus-abrir" role="button" tabindex="0">
+        <div class="sp-numero">—</div>
+        <div class="sp-leyenda"></div>
+      </div>
+      <button class="seccion-btn sus-abrir">ver mis susurros</button>
     </div>
 
     <div class="seccion rv-d">
@@ -2110,13 +2270,22 @@
     </div>
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="seccion-titulo"><span>devotxs</span></div>
       <div class="padron">
         <input class="padron-input" type="text" autocomplete="off"
                autocapitalize="off" spellcheck="false" enterkeyhint="search"
                placeholder="buscá por nombre o código">
         <div class="padron-resultados"></div>
       </div>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>susurros</span></div>
+      <div class="sus-preview sus-abrir" role="button" tabindex="0">
+        <div class="sp-numero">—</div>
+        <div class="sp-leyenda"></div>
+      </div>
+      <button class="seccion-btn sus-abrir">ver mis susurros</button>
     </div>
 
     <div class="seccion rv-d">
@@ -2174,13 +2343,22 @@
     </div>
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>lxs devotxs</span></div>
+      <div class="seccion-titulo"><span>devotxs</span></div>
       <div class="padron">
         <input class="padron-input" type="text" autocomplete="off"
                autocapitalize="off" spellcheck="false" enterkeyhint="search"
                placeholder="buscá por nombre o código">
         <div class="padron-resultados"></div>
       </div>
+    </div>
+
+    <div class="seccion rv-d">
+      <div class="seccion-titulo"><span>susurros</span></div>
+      <div class="sus-preview sus-abrir" role="button" tabindex="0">
+        <div class="sp-numero">—</div>
+        <div class="sp-leyenda"></div>
+      </div>
+      <button class="seccion-btn sus-abrir">ver mis susurros</button>
     </div>
 
     <div class="seccion rv-d">
@@ -2433,8 +2611,9 @@ function entrarAlSitio(miembro){
 
   document.body.classList.add('en-perfil');
   if (window.__marcarPantalla) window.__marcarPantalla();
-  if (window.__refrescarRitos) window.__refrescarRitos();
-  if (window.__refrescarRama)  window.__refrescarRama();
+  if (window.__refrescarRitos)    window.__refrescarRitos();
+  if (window.__refrescarRama)     window.__refrescarRama();
+  if (window.__refrescarSusurros) window.__refrescarSusurros();
 
   // el nombre sektario ya no va debajo del nombre de pila: lo muestra el
   // preview de la rama, grande y en el lugar que ocupa en el árbol
@@ -3686,6 +3865,122 @@ reveal();
    cualquier código se puede consultar.
 
    Hay buscador y no hay lista: no se puede pasear por la sekta. */
+/* ---------- los susurros que me dejaron ----------
+   Uno por persona cada siete días, noventa caracteres, sin responder y sin
+   visto. La única reacción posible es ir y dejarle uno vos. */
+(function susurros(){
+  const pantalla = document.getElementById('susurros-screen');
+  const salir    = document.getElementById('exitSusurros');
+  const cuerpo   = document.getElementById('susurrosCuerpo');
+
+  let volverA = null;
+  let cuenta  = { nuevos: 0, total: 0 };
+
+  const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const cuando = f => new Date(f).toLocaleDateString('es-AR',
+    { day:'numeric', month:'long' });
+
+  // --- el resumen del perfil --------------------------------------------------
+  function pintarPreview(){
+    document.querySelectorAll('.sus-preview').forEach(box => {
+      const num = box.querySelector('.sp-numero');
+      const ley = box.querySelector('.sp-leyenda');
+
+      if (cuenta.nuevos){
+        num.textContent = cuenta.nuevos;
+        num.classList.add('nuevos');
+        ley.textContent = cuenta.nuevos === 1
+          ? 'susurro sin escuchar' : 'susurros sin escuchar';
+      } else if (cuenta.total){
+        num.textContent = cuenta.total;
+        num.classList.remove('nuevos');
+        ley.textContent = cuenta.total === 1 ? 'susurro' : 'susurros';
+      } else {
+        num.textContent = '';
+        num.classList.remove('nuevos');
+        ley.innerHTML = '<span class="sp-nadie">todavía nadie te susurró</span>';
+      }
+    });
+  }
+
+  window.__refrescarSusurros = async function(){
+    if (!codigoActual) return;
+    const r = await llamarRPC('susurros_nuevos', { p_codigo: codigoActual });
+    if (r.ok && Array.isArray(r.datos) && r.datos.length) cuenta = r.datos[0];
+    pintarPreview();
+  };
+
+  // --- la pantalla ------------------------------------------------------------
+  async function abrir(desde){
+    if (!miembroActual || !codigoActual) return;
+    volverA = desde.closest('.member-screen');
+    volverA.classList.remove('active');
+    historiaScreen.classList.remove('active');
+    pantalla.classList.add('active');
+    scrollToTop();
+    cuerpo.innerHTML = '<div class="ritos-cargando">buscando...</div>';
+
+    const r = await llamarRPC('mis_susurros', { p_codigo: codigoActual });
+    if (!r.ok){
+      cuerpo.innerHTML = '<div class="ritos-cargando">el portal no responde.. probá de nuevo</div>';
+      return;
+    }
+    pintar(r.datos || []);
+
+    // abrirlos es escucharlos: la base ya los marcó, acá se apaga el aviso
+    cuenta = { nuevos: 0, total: (r.datos || []).length };
+    pintarPreview();
+  }
+
+  function pintar(lista){
+    if (!lista.length){
+      cuerpo.innerHTML =
+        '<div class="ficha-vacio">Todavía nadie te susurró.<br>' +
+        'Se susurra desde la ficha de cada uno, en devotxs.</div>';
+      return;
+    }
+    cuerpo.innerHTML = lista.map(su =>
+      '<div class="susurro">' +
+        '<div class="su-texto">' + esc(su.texto) + '</div>' +
+        '<div class="su-pie">' +
+          '<span class="su-de" data-ir="' + esc(su.de_sektario) + '">' +
+            esc(su.de_nombre || su.de_sektario) + '</span>' +
+          (su.de_nombre ? '<span class="su-cod">' + esc(su.de_sektario) + '</span>' : '') +
+          '<span>' + cuando(su.creado_en) + '</span>' +
+          (su.es_nuevo ? '<span class="su-nuevo">nuevo</span>' : '') +
+        '</div>' +
+      '</div>').join('');
+  }
+
+  // del susurro se va a la ficha de quien lo dejó: ahí está el único botón
+  // que hace algo parecido a responder
+  cuerpo.addEventListener('click', e => {
+    const ir = e.target.closest('[data-ir]');
+    if (!ir) return;
+    if (window.__marcarPantalla) window.__marcarPantalla();
+    pantalla.classList.remove('active');
+    if (window.__abrirFicha) window.__abrirFicha(ir.dataset.ir, volverA);
+  });
+
+  document.querySelectorAll('.sus-abrir').forEach(el => {
+    el.addEventListener('click', () => abrir(el));
+    el.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); abrir(el); }
+    });
+  });
+
+  salir.addEventListener('click', () => {
+    pantalla.classList.remove('active');
+    historiaScreen.classList.add('active');
+    if (volverA){
+      volverA.classList.add('active');
+      volverA.scrollIntoView({ block: 'start' });
+    }
+  });
+})();
+
 (function padron(){
   const pantalla = document.getElementById('ficha-screen');
   const salir    = document.getElementById('exitFicha');
@@ -3743,14 +4038,17 @@ reveal();
   });
 
   // --- la ficha ---------------------------------------------------------------
-  async function abrir(sektario, desde){
+  window.__abrirFicha = (sektario, desde) => abrir(sektario, desde, true);
+
+  async function abrir(sektario, desde, forzar){
     if (!miembroActual || !codigoActual) return;
     // saltando de una ficha a la de su guía no llega un "desde": el camino
     // de vuelta es el del primer salto, y se conserva
-    if (desde){ volverA = desde; volverA.classList.remove('active'); }
+    if (desde){ volverA = desde; if (!forzar) volverA.classList.remove('active'); }
     historiaScreen.classList.remove('active');
     pantalla.classList.add('active');
     scrollToTop();
+    ultimo = sektario;
     cuerpo.innerHTML = '<div class="ritos-cargando">buscando...</div>';
 
     const r = await llamarRPC('ficha_del_sekito', {
@@ -3821,7 +4119,8 @@ reveal();
       '<div class="ficha-linea">' + (guia ? guia + '<br>' : '') + trajo +
         (d.desde ? '<br>en el sékito desde ' + mes(d.desde) : '') +
       '</div>' +
-      ritos;
+      ritos +
+      bloqueSusurro(d);
 
     // la foto va por js y no en el atributo: una url entre comillas adentro
     // de un style="" corta el atributo a la mitad
@@ -3829,13 +4128,118 @@ reveal();
     if (cara2) cara2.style.backgroundImage = 'url("' + cara2.dataset.foto + '")';
   }
 
-  // de una ficha se salta a la de su guía: así se sube por el árbol
-  cuerpo.addEventListener('click', e => {
-    const ir = e.target.closest('[data-ir]');
-    if (!ir) return;
-    if (window.__marcarPantalla) window.__marcarPantalla();
-    abrir(ir.dataset.ir, null);
+  // --- dejarle un susurro -----------------------------------------------------
+  const TOPE = 90;
+  // los code points y no .length: un emoji tiene que contar uno, igual que
+  // en la base. Si contaran distinto habría textos que el contador acepta y
+  // la base rechaza.
+  const largo = t => [...String(t)].length;
+
+  const MOTIVOS_SUS = {
+    susurro_vacio:               'escribí algo',
+    susurro_largo:               'no entra: son ' + TOPE + ' caracteres',
+    todavia_no:                  'ya le susurraste.. esperá los siete días',
+    a_la_sekta_no_se_le_susurra: 'la sekta no tiene oídos',
+    no_te_susurres:              'no podés susurrarte a vos',
+    sin_conexion:                'el portal no responde.. probá de nuevo',
+  };
+  const motivoSus = r => {
+    const k = Object.keys(MOTIVOS_SUS).find(x => String(r.motivo).includes(x));
+    return MOTIVOS_SUS[k] || 'no se pudo.. probá de nuevo';
+  };
+
+  function bloqueSusurro(d){
+    if (!d.susurro) return '';   // sos vos, o es LA SEKTA
+
+    if (d.susurro.mio){
+      return '<div class="ficha-susurro">' +
+               '<div class="fs-reglas">le dejaste esto</div>' +
+               '<div class="fs-mio">' + esc(d.susurro.texto) + '</div>' +
+               '<div class="fs-cuando">' +
+                 (d.susurro.dias > 0
+                   ? 'vas a poder dejarle otro en ' + d.susurro.dias +
+                     (d.susurro.dias === 1 ? ' día' : ' días')
+                   : 'ya podés dejarle otro') +
+               '</div>' +
+             '</div>';
+    }
+
+    return '<div class="ficha-susurro">' +
+             '<div class="fs-acciones">' +
+               '<button class="rito-btn" data-susurrar="' + esc(d.sektario) + '">dejarle un susurro</button>' +
+             '</div>' +
+           '</div>';
+  }
+
+  function abrirForm(caja, sektario){
+    caja.innerHTML =
+      '<div class="fs-reglas">' +
+        'Se susurra una sola vez.<br>' +
+        'Lo escucha esa persona y nadie más.<br>' +
+        'Después, siete días de silencio.' +
+      '</div>' +
+      '<textarea id="susTexto" rows="3" autocapitalize="sentences" ' +
+        'placeholder="noventa caracteres, ni uno más"></textarea>' +
+      '<div class="fs-quedan">te quedan ' + TOPE + '</div>' +
+      '<div class="fs-acciones">' +
+        '<button class="rito-btn" data-enviar="' + esc(sektario) + '">susurrar</button>' +
+        '<button class="rito-btn" data-sus-cancelar="1">cancelar</button>' +
+      '</div>' +
+      '<div class="fs-aviso"></div>';
+    caja.querySelector('#susTexto').focus();
+  }
+
+  cuerpo.addEventListener('input', e => {
+    if (e.target.id !== 'susTexto') return;
+    const t = e.target;
+    const chars = [...t.value];
+    if (chars.length > TOPE) t.value = chars.slice(0, TOPE).join('');
+    const quedan = TOPE - largo(t.value);
+    const cartel = t.parentElement.querySelector('.fs-quedan');
+    cartel.textContent = 'te quedan ' + quedan;
+    cartel.classList.toggle('poco', quedan <= 15);
   });
+
+  // --- de una ficha se salta a la de su guía: así se sube por el árbol --------
+  cuerpo.addEventListener('click', async e => {
+    const ir = e.target.closest('[data-ir]');
+    if (ir){
+      if (window.__marcarPantalla) window.__marcarPantalla();
+      abrir(ir.dataset.ir, null);
+      return;
+    }
+
+    const abrirlo = e.target.closest('[data-susurrar]');
+    if (abrirlo){
+      abrirForm(abrirlo.closest('.ficha-susurro'), abrirlo.dataset.susurrar);
+      return;
+    }
+
+    if (e.target.closest('[data-sus-cancelar]')){ recargar(); return; }
+
+    const enviar = e.target.closest('[data-enviar]');
+    if (enviar){
+      const caja  = enviar.closest('.ficha-susurro');
+      const texto = caja.querySelector('#susTexto').value.trim();
+      const aviso = caja.querySelector('.fs-aviso');
+      if (!texto){ aviso.textContent = MOTIVOS_SUS.susurro_vacio; return; }
+
+      enviar.disabled = true;
+      aviso.textContent = '';
+      const r = await llamarRPC('dejar_susurro', {
+        p_codigo: codigoActual, p_sektario: enviar.dataset.enviar, p_texto: texto,
+      });
+      enviar.disabled = false;
+      if (!r.ok){ aviso.textContent = motivoSus(r); return; }
+      recargar();
+      return;
+    }
+
+  });
+
+  // volver a pedir la ficha: el estado del susurro lo decide la base, no acá
+  let ultimo = null;
+  function recargar(){ if (ultimo) abrir(ultimo, null); }
 
   salir.addEventListener('click', () => {
     pantalla.classList.remove('active');
@@ -4050,12 +4454,13 @@ reveal();
     'ritos-screen':  'exitRitos',
     'rama-screen':   'exitRama',
     'ficha-screen':  'exitFicha',
+    'susurros-screen': 'exitSusurros',
   };
 
   function marcar(){ history.pushState({ sekito:true }, ''); }
   window.__marcarPantalla = marcar;
 
-  document.querySelectorAll('.invite-trigger, .ritos-abrir, .rama-abrir')
+  document.querySelectorAll('.invite-trigger, .ritos-abrir, .rama-abrir, .sus-abrir')
     .forEach(el => el.addEventListener('click', marcar));
 
   window.addEventListener('popstate', () => {
