@@ -742,6 +742,12 @@
   }
   .pedido:last-child{ border-bottom:none; }
   .pedido .quien{ color:var(--white); }
+  /* el código va al lado del nombre, más chico: es el que hay que aprenderse */
+  .pedido .quien-cod{
+    color:rgba(var(--gray-rgb),.8);
+    font-size:10.5px;
+    margin-left:-8px;
+  }
   .pedido .donde{ color:var(--gray); flex:1 1 auto; }
   .pedido .espera{ color:var(--gray); font-size:10.5px; flex:1 1 100%; }
 
@@ -778,6 +784,12 @@
     flex:none;
     background:none;
     box-shadow:inset 0 0 0 1px rgba(var(--gray-rgb),.55);
+  }
+  .testigo-cod{
+    font-style:normal;
+    font-size:9.5px;
+    color:rgba(var(--gray-rgb),.7);
+    margin-left:6px;
   }
   .testigo.dio-fe{ color:var(--white); }
   .testigo.dio-fe::before{
@@ -3264,8 +3276,12 @@ reveal();
         : '';
       const espera = p.puedo_ya ? ''
         : '<div class="espera">vas a poder cuando estés atestiguado en ' + esc(p.fiesta) + '</div>';
+      const quien = p.quien_nombre
+        ? '<span class="quien">' + esc(p.quien_nombre) + '</span>' +
+          '<span class="quien-cod">' + esc(p.quien) + '</span>'
+        : '<span class="quien">' + esc(p.quien) + '</span>';
       return '<div class="pedido">' +
-               '<span class="quien">' + esc(p.quien) + '</span>' +
+               quien +
                '<span class="donde">' + esc(p.fiesta) + '</span>' +
                boton + espera +
              '</div>';
@@ -3278,7 +3294,8 @@ reveal();
       if (r.estado === 'esperando'){
         const testigos = (r.testigos || []).map(t =>
           '<span class="testigo' + (t.dio_fe ? ' dio-fe' : '') + '">' +
-            esc(t.nombre) +
+            esc(t.nombre_real || t.nombre) +
+            (t.nombre_real ? '<em class="testigo-cod">' + esc(t.nombre) + '</em>' : '') +
           '</span>').join('');
         dentro = '<div class="rito-testigos">' + testigos + '</div>' +
                  '<div class="rito-acciones">' +
@@ -3436,8 +3453,10 @@ reveal();
       const lista = (r.ok && r.datos) || [];
       caja2.innerHTML = lista.map(t =>
         '<div class="testigo-op' + (t.puede_ya ? '' : ' no-puede') + '" ' +
-             'data-testigo="' + t.id + '" data-nombre="' + esc(t.nombre) + '">' +
-          esc(t.nombre) + (t.nombre_real ? ' · ' + esc(t.nombre_real) : '') +
+             'data-testigo="' + t.id + '" ' +
+             'data-nombre="' + esc(t.nombre_real || t.nombre) + '">' +
+          esc(t.nombre_real || t.nombre) +
+          (t.nombre_real ? '<em class="testigo-cod">' + esc(t.nombre) + '</em>' : '') +
           '<span>' + (t.puede_ya ? 'puede dar fe' : 'todavía no está atestiguado acá') + '</span>' +
         '</div>').join('') || '<div class="ritos-cargando">nadie con ese nombre</div>';
     }, 250);
