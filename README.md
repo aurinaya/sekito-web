@@ -12,7 +12,16 @@ python3 -m http.server 8000
 
 y abrir `http://localhost:8000/index.html`.
 
-Una vez desplegado en un hosting real (GitHub Pages, etc.) esto no es un problema — el sitio se sirve por `https://` y todo funciona normal.
+Una vez desplegado esto no es un problema — el sitio se sirve por `https://` y todo funciona normal.
+
+## Dónde vive el sitio
+
+**El dominio `sekito.ar` está en DonWeb** (ahí se maneja la zona DNS) y
+**apunta a Vercel**, que es quien sirve las páginas. Vercel está conectado al
+repo: cada `push` a `main` publica solo, y tarda segundos.
+
+No hay GitHub Pages en el medio, aunque el DNS tenga un `aurinaya.sekito.ar`
+que sí apunta a GitHub — ese es otro proyecto y no toca al portal.
 
 ## El panel de administración
 
@@ -129,11 +138,14 @@ se puede ofrecer acá.
 
 ### Por qué existe 404.html
 
-GitHub Pages sirve archivos, no entiende direcciones inventadas: `/i/CODIGO`
-no es ninguna carpeta. Pero sirve `404.html` para toda dirección que no
-existe, así que ese archivo lee el código y redirige a `/?i=CODIGO`, que sí es
-una página real. **Si se borra 404.html, todos los links de invitación dejan
-de funcionar.**
+Un sitio estático sirve archivos, no entiende direcciones inventadas:
+`/i/CODIGO` no es ninguna carpeta. Pero Vercel sirve `404.html` para toda
+dirección que no existe, así que ese archivo lee el código y redirige a
+`/?i=CODIGO`, que sí es una página real. **Si se borra 404.html, todos los
+links de invitación dejan de funcionar.**
+
+(Esta explicación decía "GitHub Pages" hasta el 22/09/2026, de cuando se creía
+que el sitio estaba ahí. El mecanismo es el mismo, pero el hosting no era ese.)
 
 Efecto secundario: esa dirección responde 404 antes de redirigir, así que
 WhatsApp e Instagram no le arman la tarjetita de vista previa. Para la persona
