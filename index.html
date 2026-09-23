@@ -4499,6 +4499,26 @@ reveal();
   });
 })();
 
+/* ---------- baja de los mails (sekito.ar/?baja=TOKEN) ----------
+   El link va al pie de cada mail que manda el portal. No pide código de
+   acceso a propósito: poner un login en el medio de una baja es una forma
+   elegante de no dejar que se den de baja. */
+(async function bajaDeMails(){
+  const token = (new URLSearchParams(location.search).get('baja') || '').trim();
+  if (!token) return;
+
+  history.replaceState(null, '', location.pathname);
+
+  await llamarRPC('baja_de_mails', { p_token: token });
+
+  // siempre el mismo mensaje, haya existido el token o no: decir "ese no
+  // existe" sería confirmarle a cualquiera cuáles sí
+  gateAviso.innerHTML =
+    'listo, el portal no te escribe más.<br>' +
+    'si cambiás de idea, entrá con tu código y volvé a activarlos.';
+  gateAviso.classList.add('show');
+})();
+
 /* ---------- llegada por link de invitación (sekito.ar/i/CODIGO) ----------
    404.html convierte /i/CODIGO en /?i=CODIGO; acá se recoge. */
 (async function porInvitacion(){
