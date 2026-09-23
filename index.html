@@ -994,6 +994,22 @@
   }
   .pedido .donde{ color:var(--gray); flex:1 1 auto; }
   .pedido .espera{ color:var(--gray); font-size:10.5px; flex:1 1 100%; }
+  /* correrse no compite con dar fe: es una salida, no una respuesta */
+  .pedido-salida{
+    background:none; border:none; padding:6px 2px;
+    font-family:inherit; font-size:10px;
+    color:rgba(var(--gray-rgb),.6);
+    text-decoration:underline; text-underline-offset:3px;
+    cursor:pointer;
+  }
+  .pedido-salida:hover{ color:var(--white); }
+  /* el testigo que se corrió: ahí sigue, apagado, sin que nadie diga que no */
+  .testigo.no-recuerda{
+    color:rgba(var(--gray-rgb),.45);
+    text-decoration:line-through;
+    text-decoration-thickness:1px;
+  }
+  .testigo.no-recuerda .testigo-cod{ color:rgba(var(--gray-rgb),.35); }
 
   /* cada fiesta */
   .rito{
@@ -3583,6 +3599,7 @@ reveal();
     ese_testigo_ya_dio_fe:     'ese testigo ya dio fe',
     ya_es_testigo:             'esa persona ya es testigo de este rito',
     no_te_toca:                'ese pedido no es tuyo',
+    ese_pedido_ya_no_esta:     'ese pedido ya no está',
     codigo_invalido:           'tu código ya no está activo',
     sin_conexion:              'el portal no responde.. probá de nuevo',
   };
@@ -3601,7 +3618,7 @@ reveal();
 
   // sin artículo: "en Seki 4" y "en COLAPSO" funcionan los dos; "en la COLAPSO" no
   function linkAviso(nombre){
-    const texto = 'me confirmás que estuve en ' + nombre + '? entrá a sekito.ar y validame 🙏';
+    const texto = 'me confirmás que estuve en ' + nombre + '? entrá a sekito.ar y da fe de que estuve ahí';
     return 'https://wa.me/?text=' + encodeURIComponent(texto);
   }
 
@@ -3702,6 +3719,9 @@ reveal();
       const boton = p.puedo_ya
         ? '<button class="rito-btn" data-fe="' + p.validacion_id + '">doy fe</button>'
         : '';
+      // la salida: no es rechazar, es correrse. Va como texto y no como botón
+      // para que nadie la toque por error queriendo dar fe.
+      const salida = '<button class="pedido-salida" data-nada="' + p.validacion_id + '">no recuerdo</button>';
       const espera = p.puedo_ya ? ''
         : '<div class="espera">vas a poder cuando estés atestiguado en ' + esc(p.fiesta) + '</div>';
       const quien = p.quien_nombre
@@ -3711,7 +3731,7 @@ reveal();
       return '<div class="pedido">' +
                quien +
                '<span class="donde">' + esc(p.fiesta) + '</span>' +
-               boton + espera +
+               boton + salida + espera +
              '</div>';
     }).join('');
 
@@ -3721,7 +3741,8 @@ reveal();
 
       if (r.estado === 'esperando'){
         const testigos = (r.testigos || []).map(t =>
-          '<span class="testigo' + (t.dio_fe ? ' dio-fe' : '') + '">' +
+          '<span class="testigo' + (t.dio_fe ? ' dio-fe' : '') +
+            (t.no_recuerda ? ' no-recuerda' : '') + '">' +
             esc(t.nombre_real || t.nombre) +
             (t.nombre_real ? '<em class="testigo-cod">' + esc(t.nombre) + '</em>' : '') +
           '</span>').join('');
@@ -3919,6 +3940,16 @@ reveal();
 
   // dar fe
   listaPed.addEventListener('click', async e => {
+    const nada = e.target.closest('[data-nada]');
+    if (nada){
+      nada.disabled = true;
+      const r = await llamarRPC('no_recuerdo', {
+        p_codigo: codigoActual, p_validacion: nada.dataset.nada,
+      });
+      if (!r.ok){ nada.disabled = false; decir(r.motivo); return; }
+      cargar();
+      return;
+    }
     const b = e.target.closest('[data-fe]');
     if (!b) return;
     b.disabled = true;
