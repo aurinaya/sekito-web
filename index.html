@@ -304,6 +304,43 @@
     transition:opacity .3s ease;
   }
   .gate-aviso.show{ opacity:1; }
+  /* ---------- perdí mi llave ---------- */
+  .gate-perdida{
+    display:block; margin:26px auto 0;
+    background:none; border:none;
+    font-family:inherit; font-size:10px;
+    letter-spacing:.14em; color:rgba(var(--gray-rgb),.6);
+    text-decoration:underline; text-underline-offset:4px;
+    cursor:pointer; padding:6px;
+  }
+  .gate-perdida:hover{ color:var(--gray); }
+  .gate-rogar{
+    margin-top:18px; text-align:center;
+    font-size:11px; line-height:1.9; color:var(--gray);
+  }
+  .gate-rogar p{ margin:0; }
+  .gr-frase{
+    color:var(--white);
+    font-style:italic;
+    margin:10px 0 14px !important;
+    cursor:pointer;
+  }
+  .gr-ir{
+    display:inline-block;
+    border:1px solid rgba(var(--gray-rgb),.5);
+    color:var(--white); text-decoration:none;
+    font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    padding:9px 18px;
+  }
+  .gr-ir:hover{ border-color:var(--white); }
+  .gr-copiado{
+    font-size:9px; letter-spacing:.1em;
+    color:var(--amarillo);
+    min-height:12px; margin-top:10px;
+    opacity:0; transition:opacity .3s ease;
+  }
+  .gr-copiado.show{ opacity:1; }
+
   .code-row .chevron{
     position:absolute;
     left:calc(50% - 95px);
@@ -1720,6 +1757,13 @@
         </div>
       </form>
       <div class="gate-aviso" id="gateAviso"></div>
+      <button type="button" class="gate-perdida" id="gatePerdida">perdí mi llave</button>
+      <div class="gate-rogar" id="gateRogar" hidden>
+        <p>Se le pide a la sekta, por privado.</p>
+        <p class="gr-frase" id="grFrase">vengo a rogar: perdí mi llave</p>
+        <a class="gr-ir" id="grIr" href="https://ig.me/m/sekito.gde" target="_blank" rel="noopener">ir a instagram</a>
+        <div class="gr-copiado" id="grCopiado"></div>
+      </div>
     </div>
   </section>
 
@@ -1785,9 +1829,9 @@
     <div class="cn-codigo" id="cnCodigo">—</div>
 
     <div class="cn-aviso">
-      <p>Esto es tu llave. Con esto, y nada más, se abre el portal cada vez que vuelvas.</p>
-      <p><strong>No se muestra nunca más.</strong> Sacale una captura ahora y guardala donde guardás lo que no mostrás.</p>
-      <p class="cn-amenaza">Si la perdés vas a tener que rogarle a la sekta. Te la va a dar. Pero lo va a disfrutar...</p>
+      <p>Esta es tu llave personal. Con esto, y nada más, se abre el portal cada vez que vuelvas.</p>
+      <p>Sacale una captura ahora y guardala donde guardás lo que no mostrás.</p>
+      <p class="cn-amenaza">Si la perdés, la sekta decide qué hacer...</p>
     </div>
 
     <button class="share-btn" id="cnCopiar">copiar código</button>
@@ -2435,6 +2479,27 @@ let miembroActual = null;
 // el código con el que entró: lo necesitan el buscador y el registro
 let codigoActual = null;
 
+/* ---------- el portal se acuerda de vos ----------
+   La llave queda guardada en este aparato y solo en este aparato: no viaja a
+   ningún lado. Sin esto hay que tipearla cada vez, y esa es la razón número
+   uno por la que la gente la pierde.
+
+   "salir" la borra: es la única manera de olvidarla, y tiene que serlo, para
+   que el botón signifique algo en un teléfono prestado. */
+const LLAVE = 'sekito.llave';
+
+function guardarLlave(codigo){
+  try { localStorage.setItem(LLAVE, codigo); } catch (e) {}
+}
+function olvidarLlave(){
+  try { localStorage.removeItem(LLAVE); } catch (e) {}
+}
+function llaveGuardada(){
+  // en ventana privada o con el almacenamiento bloqueado, esto explota:
+  // que no se lleve puesto el portón
+  try { return localStorage.getItem(LLAVE); } catch (e) { return null; }
+}
+
 // si llegó por un link de invitación: { codigo, referente }. El que entra así
 // no tiene todavía ningún código de miembro — lo recibe al final.
 let invitacionActual = null;
@@ -2540,6 +2605,7 @@ codeForm.addEventListener('submit', async (e) => {
     sinConexion();          // el portal no pudo preguntar
   } else if (miembro){
     codigoActual = raw;
+    guardarLlave(raw);
     grant(miembro);
   } else {
     deny();                 // preguntó y el código no vale
@@ -2642,6 +2708,7 @@ function mostrarCodigoNuevo(miembro){
 }
 
 function resetToGate(){
+  olvidarLlave();
   document.body.classList.remove('en-perfil');
   miembroActual = null;
   codigoActual = null;
@@ -4497,6 +4564,58 @@ reveal();
     }
     if (miembroActual) resetToGate();
   });
+})();
+
+/* ---------- perdí mi llave ----------
+   No se la devuelve el sistema: hay que pedírsela a alguien. Es a propósito.
+   Instagram no deja precargar el texto de un privado, así que lo copiamos al
+   portapapeles y que lo peguen. */
+(function perdiMiLlave(){
+  const boton  = document.getElementById('gatePerdida');
+  const caja   = document.getElementById('gateRogar');
+  const frase  = document.getElementById('grFrase');
+  const ir     = document.getElementById('grIr');
+  const dicho  = document.getElementById('grCopiado');
+
+  function copiar(){
+    navigator.clipboard.writeText(frase.textContent.trim()).then(() => {
+      dicho.textContent = 'frase copiada';
+      dicho.classList.add('show');
+      setTimeout(() => dicho.classList.remove('show'), 2400);
+    }).catch(() => {});
+  }
+
+  boton.addEventListener('click', () => {
+    caja.hidden = !caja.hidden;
+    boton.hidden = !caja.hidden ? true : false;
+    if (!caja.hidden) copiar();
+  });
+
+  frase.addEventListener('click', copiar);
+  ir.addEventListener('click', copiar);
+})();
+
+/* ---------- entrar solo, con la llave guardada ----------
+   Si el aparato se acuerda de la llave, el portón se abre sin tipear nada.
+   Los links de invitación y de baja mandan por encima de esto: si alguien
+   llega con uno, viene a hacer otra cosa. */
+(async function llaveRecordada(){
+  const params = new URLSearchParams(location.search);
+  if (params.get('i') || params.get('baja')) return;
+
+  const guardada = llaveGuardada();
+  if (!guardada) return;
+
+  const { ok, miembro } = await consultarCodigo(guardada);
+
+  if (ok && miembro){
+    codigoActual = guardada;
+    grant(miembro);
+  } else if (ok){
+    // el portal contestó y la llave ya no vale: se dio de baja, o se rotó
+    olvidarLlave();
+  }
+  // si no contestó, la llave se queda: no la tiramos por un problema de red
 })();
 
 /* ---------- baja de los mails (sekito.ar/?baja=TOKEN) ----------
