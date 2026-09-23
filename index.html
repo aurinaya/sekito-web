@@ -304,6 +304,43 @@
     transition:opacity .3s ease;
   }
   .gate-aviso.show{ opacity:1; }
+  /* ---------- perdí mi llave ---------- */
+  .gate-perdida{
+    display:block; margin:26px auto 0;
+    background:none; border:none;
+    font-family:inherit; font-size:10px;
+    letter-spacing:.14em; color:rgba(var(--gray-rgb),.6);
+    text-decoration:underline; text-underline-offset:4px;
+    cursor:pointer; padding:6px;
+  }
+  .gate-perdida:hover{ color:var(--gray); }
+  .gate-rogar{
+    margin-top:18px; text-align:center;
+    font-size:11px; line-height:1.9; color:var(--gray);
+  }
+  .gate-rogar p{ margin:0; }
+  .gr-frase{
+    color:var(--white);
+    font-style:italic;
+    margin:10px 0 14px !important;
+    cursor:pointer;
+  }
+  .gr-ir{
+    display:inline-block;
+    border:1px solid rgba(var(--gray-rgb),.5);
+    color:var(--white); text-decoration:none;
+    font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    padding:9px 18px;
+  }
+  .gr-ir:hover{ border-color:var(--white); }
+  .gr-copiado{
+    font-size:9px; letter-spacing:.1em;
+    color:var(--amarillo);
+    min-height:12px; margin-top:10px;
+    opacity:0; transition:opacity .3s ease;
+  }
+  .gr-copiado.show{ opacity:1; }
+
   .code-row .chevron{
     position:absolute;
     left:calc(50% - 95px);
@@ -1720,6 +1757,13 @@
         </div>
       </form>
       <div class="gate-aviso" id="gateAviso"></div>
+      <button type="button" class="gate-perdida" id="gatePerdida">perdí mi llave</button>
+      <div class="gate-rogar" id="gateRogar" hidden>
+        <p>Se le pide a la sekta, por privado.</p>
+        <p class="gr-frase" id="grFrase">vengo a rogar: perdí mi llave</p>
+        <a class="gr-ir" id="grIr" href="https://ig.me/m/sekito.gde" target="_blank" rel="noopener">ir a instagram</a>
+        <div class="gr-copiado" id="grCopiado"></div>
+      </div>
     </div>
   </section>
 
@@ -4520,6 +4564,35 @@ reveal();
     }
     if (miembroActual) resetToGate();
   });
+})();
+
+/* ---------- perdí mi llave ----------
+   No se la devuelve el sistema: hay que pedírsela a alguien. Es a propósito.
+   Instagram no deja precargar el texto de un privado, así que lo copiamos al
+   portapapeles y que lo peguen. */
+(function perdiMiLlave(){
+  const boton  = document.getElementById('gatePerdida');
+  const caja   = document.getElementById('gateRogar');
+  const frase  = document.getElementById('grFrase');
+  const ir     = document.getElementById('grIr');
+  const dicho  = document.getElementById('grCopiado');
+
+  function copiar(){
+    navigator.clipboard.writeText(frase.textContent.trim()).then(() => {
+      dicho.textContent = 'frase copiada';
+      dicho.classList.add('show');
+      setTimeout(() => dicho.classList.remove('show'), 2400);
+    }).catch(() => {});
+  }
+
+  boton.addEventListener('click', () => {
+    caja.hidden = !caja.hidden;
+    boton.hidden = !caja.hidden ? true : false;
+    if (!caja.hidden) copiar();
+  });
+
+  frase.addEventListener('click', copiar);
+  ir.addEventListener('click', copiar);
 })();
 
 /* ---------- entrar solo, con la llave guardada ----------
