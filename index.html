@@ -958,6 +958,17 @@
     color:var(--gray);
     margin:64px 0 34px;
   }
+  /* las reglas del juego, una sola vez y arriba de todo */
+  .ritos-ley{
+    text-align:center;
+    font-size:11px; line-height:1.85;
+    color:rgba(var(--gray-rgb),.8);
+    margin:-14px 0 40px;
+  }
+  .ritos-ley p{ margin:0 0 4px; }
+  .ritos-ley p:last-child{ margin-bottom:0; }
+  .ritos-ley strong{ color:var(--white); font-weight:500; }
+
   .ritos-seccion{
     font-size:10px;
     letter-spacing:.14em;
@@ -2184,6 +2195,12 @@
     </div>
 
     <div class="ritos-titulo">mis ritos</div>
+
+    <div class="ritos-ley">
+      <p>Acá declarás los ritos en los que estuviste.</p>
+      <p>Cada uno necesita <strong>dos testigos</strong> que den fe.</p>
+      <p>Solo puede darla quien ya esté atestiguado ahí. Y <strong>LA SEKTA</strong>, que no le rinde cuentas a nadie.</p>
+    </div>
 
     <div id="ritosPedidos" hidden>
       <div class="ritos-seccion">te piden que des fe</div>
@@ -3887,7 +3904,7 @@ reveal();
     const q = e.target.value.trim();
     const caja = listaRitos.querySelector('#opTestigos');
     clearTimeout(debounce);
-    if (q.length < 3){ if (caja) caja.innerHTML = ''; return; }
+    if (q.length < 1){ if (caja) caja.innerHTML = ''; return; }
 
     const mio = ++turno;
     debounce = setTimeout(async () => {
@@ -4132,7 +4149,7 @@ reveal();
     input.addEventListener('input', () => {
       clearTimeout(reloj);
       const q = input.value.trim();
-      if (q.length < 2){ caja.innerHTML = ''; return; }
+      if (q.length < 1){ caja.innerHTML = ''; return; }
 
       reloj = setTimeout(async () => {
         const r = await llamarRPC('buscar_en_el_sekito', {
