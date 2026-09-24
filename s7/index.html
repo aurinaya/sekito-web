@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SEKI 7 — 14 de noviembre</title>
+
+<!-- la tarjeta que se ve al pegar el link en whatsapp o instagram -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.sekito.ar/s7">
+<meta property="og:title" content="SEKI 7">
+<meta property="og:description" content="Sábado 14 de noviembre · Palermo, Buenos Aires. Preventa solo desde el portal.">
+<meta property="og:image" content="https://www.sekito.ar/images/tarjeta-s7.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="SÉKITO">
+<meta property="og:locale" content="es_AR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0D0D0D">
+
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0D0D0D;
+    --white-rgb:242,242,242;
+    --gray-rgb:147,168,172;
+    --white:rgb(var(--white-rgb));
+    --gray:rgb(var(--gray-rgb));
+    --bordo:#800020;
+    --fan-mask:url("../images/abanico-seki.svg");
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; height:100%; background:var(--black); }
+  body{
+    font-family:'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    color:var(--white);
+    min-height:100svh;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:calc(env(safe-area-inset-top,0px) + 32px) 22px
+            calc(env(safe-area-inset-bottom,0px) + 32px);
+    text-align:center;
+    overflow:hidden;
+  }
+
+  /* el grano del portal, para que se sienta la misma casa */
+  #grano{
+    position:fixed; inset:0;
+    width:100vw; height:100vh;
+    opacity:.02;
+    mix-blend-mode:overlay;
+    pointer-events:none;
+    image-rendering:pixelated;
+  }
+
+  .abanico{
+    width:130px; height:84px;
+    background:var(--white);
+    -webkit-mask:var(--fan-mask) center / contain no-repeat;
+            mask:var(--fan-mask) center / contain no-repeat;
+  }
+
+  /* se escribe a máquina, una letra por vez */
+  .nombre{
+    font-size:clamp(34px, 13vw, 58px);
+    font-weight:500;
+    letter-spacing:.22em;
+    margin:70px 0 0;
+    text-indent:.22em;   /* el tracking del final, que si no descentra */
+    min-height:1.2em;
+  }
+  .fecha{
+    font-size:12px;
+    letter-spacing:.3em;
+    color:var(--gray);
+    margin-top:40px;
+    text-indent:.3em;
+    min-height:1.5em;
+  }
+  .lugar{
+    font-size:11px;
+    letter-spacing:.22em;
+    color:rgba(var(--gray-rgb),.72);
+    margin-top:20px;
+    text-indent:.22em;
+    min-height:1.5em;
+  }
+  /* la fecha y el lugar no se escriben: aparecen. Lo que se teclea es una
+     sola cosa, que por eso se nota. */
+  .aparece{ opacity:0; transition:opacity .9s ease; }
+  .aparece.llego{ opacity:1; }
+
+  /* la preventa respira, igual que el botón de invitar del portal.
+     Pero en bordo: acá el que llama es SEKI. */
+  .preventa{
+    display:inline-block;
+    margin-top:72px;
+    text-decoration:none;
+    padding:13px 26px;
+    border:1px solid rgba(128,0,32,.85);
+    background:rgba(128,0,32,.1);
+    color:var(--white);
+    font-size:10.5px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:0;
+    transition:opacity .9s ease;
+  }
+  .preventa.llego{
+    opacity:1;
+    animation:respiraBordo 4.5s ease-in-out infinite;
+  }
+  @keyframes respiraBordo{
+    0%,100%{ box-shadow:0 0 10px 0 rgba(128,0,32,.35), inset 0 0 14px rgba(128,0,32,.12); }
+    50%    { box-shadow:0 0 30px 4px rgba(128,0,32,.65), inset 0 0 22px rgba(128,0,32,.3); }
+  }
+
+  /* la rendija */
+  .rendija{
+    position:fixed;
+    left:0; right:0;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 26px);
+    text-align:center;
+  }
+  .rendija button{
+    background:none; border:none;
+    font-family:inherit; font-size:8px;
+    letter-spacing:.16em;
+    color:rgba(var(--gray-rgb),.34);
+    text-decoration:underline; text-underline-offset:4px;
+    cursor:pointer; padding:8px;
+  }
+  .rendija button:hover{ color:var(--gray); }
+  .rogar{
+    font-size:11px; line-height:1.9; color:var(--gray);
+    margin-top:12px;
+  }
+  .rogar .frase{ color:var(--white); font-style:italic; cursor:pointer; }
+  .rogar a{
+    display:inline-block; margin-top:12px;
+    border:1px solid rgba(var(--gray-rgb),.5);
+    color:var(--white); text-decoration:none;
+    font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    padding:9px 18px;
+  }
+  .rogar a:hover{ border-color:var(--white); }
+  .copiado{
+    font-size:9px; letter-spacing:.1em; color:#D9A11E;
+    min-height:12px; margin-top:10px;
+    opacity:0; transition:opacity .3s ease;
+  }
+  .copiado.show{ opacity:1; }
+  [hidden]{ display:none !important; }
+
+  @media (prefers-reduced-motion: reduce){
+    .preventa, .aparece{ transition:none; }
+    .preventa.llego{ animation:none; box-shadow:0 0 26px rgba(128,0,32,.5); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="grano" aria-hidden="true"></canvas>
+
+<div class="abanico" id="abanico" role="img" aria-label="SEKI 7"></div>
+
+<h1 class="nombre" id="nombre"></h1>
+<div class="fecha aparece" id="fecha">SÁBADO 14 · NOVIEMBRE</div>
+<div class="lugar aparece" id="lugar">PALERMO, BUENOS AIRES</div>
+<a class="preventa" id="preventa" href="https://www.sekito.ar">preventa desde el portal</a>
+
+<div class="rendija">
+  <button type="button" id="sinCodigo">no tengo mi llave</button>
+  <div class="rogar" id="rogar" hidden>
+    <div>Se le pide a la sekta, por privado.</div>
+    <div class="frase" id="frase">quiero entrar al sékito</div>
+    <a id="irIg" href="https://ig.me/m/sekito.gde" target="_blank" rel="noopener">ir a instagram</a>
+    <div class="copiado" id="copiado"></div>
+  </div>
+</div>
+
+<script>
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- la falla ----------
+   Milisegundo y medio de abanico blanco que parpadea, el parpadeo se acelera,
+   y corta de golpe al bordo. El bordo es SEKI: el color dice el nombre antes
+   que el texto.
+
+   Termina quieto en la información a propósito. El que llega tarde, recarga,
+   o vuelve, tiene que ver la fecha igual — un teaser que nadie ve terminar
+   es un teaser perdido. */
+(function falla(){
+  const fan    = document.getElementById('abanico');
+  const BORDO  = 'var(--bordo)';
+  const BLANCO = 'var(--white)';
+
+  const TITULO = 'SEKI 7';
+
+  function mostrarResto(){
+    document.getElementById('fecha').classList.add('llego');
+    document.getElementById('lugar').classList.add('llego');
+    setTimeout(() => document.getElementById('preventa').classList.add('llego'), 650);
+  }
+
+  // se teclea una sola cosa, y despacio: el nombre. Lo demás aparece.
+  function escribir(){
+    const el = document.getElementById('nombre');
+    let n = 0;
+    (function letra(){
+      el.textContent = TITULO.slice(0, ++n);
+      if (n < TITULO.length){ setTimeout(letra, 105); return; }
+      setTimeout(mostrarResto, 880);
+    })();
+  }
+
+  function terminar(){
+    fan.style.background = BORDO;
+    escribir();
+  }
+
+  if (reduced){
+    fan.style.background = BORDO;
+    document.getElementById('nombre').textContent = TITULO;
+    mostrarResto();
+    return;
+  }
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pasos = [];
+
+  // primer tramo: apenas se nota que algo anda mal
+  let t = 0;
+  while (t < 680){
+    const on = rand(80, 165), off = rand(10, 20);
+    pasos.push([BLANCO, on], ['transparent', off]);
+    t += on + off;
+  }
+  // segundo tramo: se desarma
+  while (t < 1120){
+    const on = rand(18, 48), off = rand(22, 46);
+    pasos.push([BLANCO, on], ['transparent', off]);
+    t += on + off;
+  }
+  // el corte
+  pasos.push(['transparent', 90]);
+
+  let i = 0;
+  (function tick(){
+    if (i >= pasos.length){ terminar(); return; }
+    const [color, dur] = pasos[i++];
+    fan.style.background = color;
+    setTimeout(tick, dur);
+  })();
+})();
+
+/* ---------- el grano ---------- */
+(function grano(){
+  const c = document.getElementById('grano');
+  const x = c.getContext('2d');
+  const N = 90;
+  c.width = N; c.height = N;
+  c.style.imageRendering = 'pixelated';
+  function dibujar(){
+    const d = x.createImageData(N, N);
+    const b = new Uint32Array(d.data.buffer);
+    for (let i = 0; i < b.length; i++) b[i] = Math.random() < .5 ? 0xffffffff : 0;
+    x.putImageData(d, 0, 0);
+  }
+  dibujar();
+  if (!reduced) setInterval(dibujar, 130);
+})();
+
+/* ---------- la rendija ----------
+   Instagram no deja precargar el texto de un privado, así que la frase se
+   copia al portapapeles y se pega. */
+(function rendija(){
+  const boton = document.getElementById('sinCodigo');
+  const caja  = document.getElementById('rogar');
+  const frase = document.getElementById('frase');
+  const ir    = document.getElementById('irIg');
+  const dicho = document.getElementById('copiado');
+
+  function copiar(){
+    navigator.clipboard.writeText(frase.textContent.trim()).then(() => {
+      dicho.textContent = 'frase copiada';
+      dicho.classList.add('show');
+      setTimeout(() => dicho.classList.remove('show'), 2400);
+    }).catch(() => {});
+  }
+
+  boton.addEventListener('click', () => {
+    caja.hidden = false;
+    boton.hidden = true;
+    copiar();
+  });
+  frase.addEventListener('click', copiar);
+  ir.addEventListener('click', copiar);
+})();
+</script>
+</body>
+</html>
