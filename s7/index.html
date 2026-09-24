@@ -9,14 +9,15 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.sekito.ar/s7">
 <meta property="og:title" content="SEKI 7">
-<meta property="og:description" content="Sábado 14 de noviembre · Palermo, Buenos Aires. Preventa solo desde el portal.">
-<meta property="og:image" content="https://www.sekito.ar/images/tarjeta-s7.png">
+<meta property="og:description" content="Sábado 14 de noviembre · Palermo, Buenos Aires. Preventa desde el portal.">
+<meta property="og:image" content="https://www.sekito.ar/images/tarjeta-s7.jpg">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:site_name" content="SÉKITO">
 <meta property="og:locale" content="es_AR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#0D0D0D">
+<meta name="theme-color" content="#800020">
 
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="icon" href="../favicon.ico" sizes="any">
@@ -27,14 +28,19 @@
   :root{
     --black:#0D0D0D;
     --white-rgb:242,242,242;
-    --gray-rgb:147,168,172;
+    --gray-rgb:242,242,242;              /* sobre bordo, el gris azulado embarra */
     --white:rgb(var(--white-rgb));
-    --gray:rgb(var(--gray-rgb));
+    --gray:rgba(var(--gray-rgb),.68);    /* el segundo plano es blanco bajado */
     --bordo:#800020;
     --fan-mask:url("../images/abanico-seki.svg");
   }
   *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; height:100%; background:var(--black); }
+  /* el corte ya no lo da el abanico (que queda blanco): lo da el fondo,
+     que se inunda de bordo de golpe. */
+  html{ background:var(--black); transition:background-color .7s ease-out; }
+  html.inundado{ background:var(--bordo); }
+  html,body{ margin:0; padding:0; height:100%; }
+  body{ background:transparent; }
   body{
     font-family:'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
     color:var(--white);
@@ -49,12 +55,43 @@
 
   /* el grano del portal, para que se sienta la misma casa */
   #grano{
-    position:fixed; inset:0;
+    position:fixed; inset:0; z-index:3;
     width:100vw; height:100vh;
-    opacity:.02;
+    opacity:.045;
     mix-blend-mode:overlay;
     pointer-events:none;
     image-rendering:pixelated;
+  }
+
+  /* La tela: el viñeteado, los bordes apagados de una foto vieja.
+     Aparece recién con la inundación: antes no hay nada que texturar. */
+  #tela{
+    position:fixed; inset:0; z-index:2;
+    pointer-events:none;
+    opacity:0; transition:opacity 1.6s ease;
+    background:
+      radial-gradient(125% 100% at 50% 44%, transparent 40%, rgba(0,0,0,.30) 100%);
+  }
+
+  /* La chispa: cada tanto la cinta salta. Dos parpadeos pegados y, más
+     tarde, uno solo. Once segundos de vuelta entera, así nunca cae en un
+     ritmo que se pueda anticipar. */
+  #chispa{
+    position:fixed; inset:0; z-index:4;
+    pointer-events:none;
+    background:rgba(var(--white-rgb),.055);
+    opacity:0;
+  }
+  html.inundado #tela{ opacity:1; }
+  html.inundado #chispa{ animation:cinta 11s linear infinite; }
+  @keyframes cinta{
+    0%,   49.3%{ opacity:0; }
+    49.6%      { opacity:.55; }
+    49.9%      { opacity:0; }
+    50.2%      { opacity:.85; }
+    50.7%, 86.6%{ opacity:0; }
+    86.9%      { opacity:.45; }
+    87.3%, 100%{ opacity:0; }
   }
 
   .abanico{
@@ -84,7 +121,7 @@
   .lugar{
     font-size:11px;
     letter-spacing:.22em;
-    color:rgba(var(--gray-rgb),.72);
+    color:rgba(var(--gray-rgb),.44);
     margin-top:20px;
     text-indent:.22em;
     min-height:1.5em;
@@ -101,8 +138,8 @@
     margin-top:72px;
     text-decoration:none;
     padding:13px 26px;
-    border:1px solid rgba(128,0,32,.85);
-    background:rgba(128,0,32,.1);
+    border:1px solid rgba(var(--white-rgb),.55);
+    background:rgba(var(--white-rgb),.07);
     color:var(--white);
     font-size:10.5px;
     letter-spacing:.16em;
@@ -112,11 +149,11 @@
   }
   .preventa.llego{
     opacity:1;
-    animation:respiraBordo 4.5s ease-in-out infinite;
+    animation:respiraBlanco 4.5s ease-in-out infinite;
   }
-  @keyframes respiraBordo{
-    0%,100%{ box-shadow:0 0 10px 0 rgba(128,0,32,.35), inset 0 0 14px rgba(128,0,32,.12); }
-    50%    { box-shadow:0 0 30px 4px rgba(128,0,32,.65), inset 0 0 22px rgba(128,0,32,.3); }
+  @keyframes respiraBlanco{
+    0%,100%{ box-shadow:0 0 10px 0 rgba(var(--white-rgb),.18), inset 0 0 14px rgba(var(--white-rgb),.07); }
+    50%    { box-shadow:0 0 28px 3px rgba(var(--white-rgb),.42), inset 0 0 22px rgba(var(--white-rgb),.16); }
   }
 
   /* la rendija */
@@ -158,13 +195,17 @@
 
   @media (prefers-reduced-motion: reduce){
     .preventa, .aparece{ transition:none; }
-    .preventa.llego{ animation:none; box-shadow:0 0 26px rgba(128,0,32,.5); }
+    #tela{ transition:none; }
+    html.inundado #chispa{ animation:none; }
+    .preventa.llego{ animation:none; box-shadow:0 0 26px rgba(var(--white-rgb),.3); }
   }
 </style>
 </head>
 <body>
 
 <canvas id="grano" aria-hidden="true"></canvas>
+<div id="tela" aria-hidden="true"></div>
+<div id="chispa" aria-hidden="true"></div>
 
 <div class="abanico" id="abanico" role="img" aria-label="SEKI 7"></div>
 
@@ -196,8 +237,8 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
    es un teaser perdido. */
 (function falla(){
   const fan    = document.getElementById('abanico');
-  const BORDO  = 'var(--bordo)';
   const BLANCO = 'var(--white)';
+  const inundar = () => document.documentElement.classList.add('inundado');
 
   const TITULO = 'SEKI 7';
 
@@ -219,12 +260,14 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   function terminar(){
-    fan.style.background = BORDO;
+    inundar();
+    fan.style.background = BLANCO;
     escribir();
   }
 
   if (reduced){
-    fan.style.background = BORDO;
+    inundar();
+    fan.style.background = BLANCO;
     document.getElementById('nombre').textContent = TITULO;
     mostrarResto();
     return;
@@ -262,7 +305,7 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 (function grano(){
   const c = document.getElementById('grano');
   const x = c.getContext('2d');
-  const N = 90;
+  const N = 200;
   c.width = N; c.height = N;
   c.style.imageRendering = 'pixelated';
   function dibujar(){
