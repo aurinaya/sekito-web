@@ -1210,6 +1210,29 @@
     border-bottom:1px solid rgba(var(--gray-rgb),.14);
   }
   .inv-item:last-child{ border-bottom:none; }
+
+  /* lo que pasó al compartir desde la compu */
+  .inv-copiado{
+    margin-top:14px; padding:12px 14px;
+    border-left:2px solid var(--amarillo);
+    background:rgba(var(--amarillo-rgb),.07);
+    text-align:left;
+    animation:invCopiado .35s ease both;
+  }
+  .inv-copiado strong{
+    display:block; font-weight:500;
+    font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--amarillo);
+  }
+  .inv-copiado span{
+    display:block; margin-top:7px;
+    font-size:11.5px; line-height:1.5; color:rgba(var(--white-rgb),.88);
+  }
+  .inv-copiado .inv-copiado-extra{ margin-top:4px; color:rgba(var(--gray-rgb),.85); font-size:10.5px; }
+  @keyframes invCopiado{
+    from{ opacity:0; transform:translateY(-4px); }
+    to  { opacity:1; transform:none; }
+  }
   /* la que acaba de salir: se le nota, sin gritar */
   .inv-item.recien{
     border-left:2px solid rgba(var(--white-rgb),.55);
@@ -3257,6 +3280,24 @@ reveal();
     feedback.t = setTimeout(() => shareFeedback.classList.remove('show'), ms);
   }
 
+  /* En la compu el botón no abre nada: copia y descarga en silencio. Sin un
+     aviso claro, el que no sabe lo que pasó cree que no pasó nada.
+     El aviso va pegado a la invitación que se compartió, no al pie de la
+     lista: tocaste un botón y la respuesta tiene que aparecer ahí. Y se
+     queda, porque dice qué hacer después; lo borra el próximo cambio. */
+  function avisarCopiado(btn){
+    const item = btn.closest('.inv-item');
+    if (!item) return;
+    lista.querySelectorAll('.inv-copiado').forEach(n => n.remove());
+    const aviso = document.createElement('div');
+    aviso.className = 'inv-copiado';
+    aviso.innerHTML =
+      '<strong>link copiado</strong>' +
+      '<span>pegalo en WhatsApp o donde quieras</span>' +
+      '<span class="inv-copiado-extra">la tarjeta de invitación quedó en tus descargas</span>';
+    item.appendChild(aviso);
+  }
+
   async function copiarTexto(texto){
     try { await navigator.clipboard.writeText(texto); return true; }
     catch (e) {
@@ -3449,7 +3490,7 @@ reveal();
         a.remove();
         URL.revokeObjectURL(url);
         if (copiado){
-          feedback('copiamos el mensaje con el link · pegalo donde quieras', 7000);
+          avisarCopiado(btn);
         } else {
           // si el portapapeles no dejó, que el mensaje igual llegue a la mano
           window.prompt('copiá este mensaje y mandalo:', shareText);
