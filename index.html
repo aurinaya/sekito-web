@@ -3250,10 +3250,26 @@ reveal();
     }
   });
 
-  function feedback(msg){
+  function feedback(msg, ms = 2200){
     shareFeedback.textContent = msg;
     shareFeedback.classList.add('show');
-    setTimeout(() => shareFeedback.classList.remove('show'), 2200);
+    clearTimeout(feedback.t);
+    feedback.t = setTimeout(() => shareFeedback.classList.remove('show'), ms);
+  }
+
+  async function copiarTexto(texto){
+    try { await navigator.clipboard.writeText(texto); return true; }
+    catch (e) {
+      // el camino viejo, para navegadores que no dejan usar el nuevo
+      const ta = document.createElement('textarea');
+      ta.value = texto; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e2) {}
+      ta.remove();
+      return ok;
+    }
   }
 
   function loadImage(src){
@@ -3395,6 +3411,22 @@ reveal();
       name: miembroActual.nombre_sektario.replace(/·/g, '-').toLowerCase(),
     };
 
+    const shareText =
+      miembroActual.nombre_sektario + ' es tu guía hacia el sékito.\n\n' +
+      'entrá en ' + link + ' y confirmá tu invitación.\n\n' +
+      'el link sirve una sola vez y vence en 7 días.';
+
+    /* En la compu el navegador también "sabe" compartir una imagen: abre la
+       ventana de compartir del sistema, y ahí "copiar" se lleva sólo la
+       imagen. El link —lo único imprescindible— se pierde, y la gente queda
+       con una foto en la mano sin saber qué hacer con ella.
+       Por eso el compartir del sistema es sólo para el celu. La compu copia
+       el mensaje entero con el link, y la imagen baja aparte.
+       Y lo copia antes de armar la imagen: Safari no deja escribir en el
+       portapapeles si entre el clic y la escritura hubo una espera. */
+    const esCelu = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    let copiado = esCelu ? false : await copiarTexto(shareText);
+
     const originalLabel = btn.textContent;
     btn.textContent = 'generando...';
     btn.disabled = true;
@@ -3402,17 +3434,12 @@ reveal();
     try {
       const blob = await buildShareImage(currentProfile, data);
       const file = new File([blob], `sekito-${data.name}.png`, { type: 'image/png' });
-      const shareText =
-        miembroActual.nombre_sektario + ' es tu guía hacia el sékito.\n\n' +
-        'entrá en ' + link + ' y confirmá tu invitación.\n\n' +
-        'el link sirve una sola vez y vence en 7 días.';
 
-      if (navigator.canShare && navigator.canShare({ files: [file] })){
+      if (esCelu && navigator.canShare && navigator.canShare({ files: [file] })){
         await navigator.share({ files: [file], text: shareText });
       } else {
-        // sin compartir nativo: el link es lo imprescindible, la imagen es el
-        // adorno. Primero el texto al portapapeles, después la imagen al rollo.
-        try { await navigator.clipboard.writeText(shareText); } catch (e) {}
+        // el link es lo imprescindible, la imagen es el adorno
+        if (!copiado) copiado = await copiarTexto(shareText);
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -3421,7 +3448,12 @@ reveal();
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
-        feedback('texto copiado e imagen descargada');
+        if (copiado){
+          feedback('copiamos el mensaje con el link · pegalo donde quieras', 7000);
+        } else {
+          // si el portapapeles no dejó, que el mensaje igual llegue a la mano
+          window.prompt('copiá este mensaje y mandalo:', shareText);
+        }
       }
     } catch (err) {
       if (err && err.name !== 'AbortError') feedback('no se pudo compartir');
