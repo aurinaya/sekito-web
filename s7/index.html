@@ -163,15 +163,25 @@
     bottom:calc(env(safe-area-inset-bottom,0px) + 26px);
     text-align:center;
   }
+  /* Sigue siendo una rendija: chiquita y abajo, lejos del botón de la
+     preventa, que es lo que importa. Pero ya no se esconde: brilla, y el
+     brillo respira despacio. Luz que se escapa por debajo de una puerta. */
   .rendija button{
     background:none; border:none;
-    font-family:inherit; font-size:8px;
-    letter-spacing:.16em;
-    color:rgba(var(--gray-rgb),.34);
-    text-decoration:underline; text-underline-offset:4px;
-    cursor:pointer; padding:8px;
+    font-family:inherit; font-size:10px;
+    letter-spacing:.18em;
+    color:rgba(var(--white-rgb),.72);
+    text-decoration:underline; text-underline-offset:5px;
+    text-decoration-color:rgba(var(--white-rgb),.3);
+    cursor:pointer; padding:10px;
+    animation:seEscapa 5s ease-in-out infinite;
   }
-  .rendija button:hover{ color:var(--gray); }
+  .rendija button:hover{ color:var(--white); text-decoration-color:var(--white); }
+  @keyframes seEscapa{
+    0%,100%{ text-shadow:0 0 4px rgba(var(--white-rgb),.15); }
+    50%    { text-shadow:0 0 12px rgba(var(--white-rgb),.75), 0 0 3px rgba(var(--white-rgb),.5); }
+  }
+  @media (prefers-reduced-motion: reduce){ .rendija button{ animation:none; } }
   .rogar{
     font-size:11px; line-height:1.9; color:var(--gray);
     margin-top:12px;
