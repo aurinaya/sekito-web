@@ -151,6 +151,17 @@ td.apretado{white-space:normal; min-width:150px}
   text-align:center; font-size:26px; letter-spacing:.3em;
   color:var(--amarillo); padding:20px 0; word-break:break-all;
 }
+/* el mensaje entero, como va a llegar. Un clic lo selecciona todo: si el
+   portapapeles no deja, se copia a mano igual de rápido. */
+#mensajeNuevo{
+  margin:0 0 4px; padding:14px 16px;
+  border:1px solid var(--linea); background:rgba(242,242,242,.03);
+  font:inherit; font-size:13px; line-height:1.6; color:var(--white);
+  white-space:pre-wrap; text-align:left;
+  user-select:all; -webkit-user-select:all; cursor:text;
+}
+.btn-principal{border-color:var(--amarillo); color:var(--amarillo)}
+.btn-principal:hover{border-color:var(--amarillo); background:rgba(217,161,30,.08)}
 .cargando{color:var(--gray); padding:20px 0}
 .vacio{color:var(--gray); padding:28px 0; text-align:center}
 @media (max-width:600px){
@@ -180,7 +191,7 @@ td.apretado{white-space:normal; min-width:150px}
 
   <nav role="tablist">
     <button role="tab" data-vista="miembros" aria-selected="true">miembros</button>
-    <button role="tab" data-vista="sinusar" aria-selected="false">códigos sin usar</button>
+    <button role="tab" data-vista="sinusar" aria-selected="false">llaves sin usar</button>
     <button role="tab" data-vista="validaciones" aria-selected="false">validaciones<span id="contaVal"></span></button>
     <button role="tab" data-vista="linaje" aria-selected="false">linaje</button>
     <button role="tab" data-vista="registro" aria-selected="false">registro</button>
@@ -189,14 +200,14 @@ td.apretado{white-space:normal; min-width:150px}
   <main>
     <div class="vista activa" id="v-miembros">
       <div class="barra">
-        <input type="search" id="buscar" placeholder="buscar por nombre, código o mail…">
-        <button class="btn" id="btnCrear">+ código nuevo</button>
+        <input type="search" id="buscar" placeholder="buscar por nombre, llave o mail…">
+        <button class="btn" id="btnCrear">+ llave nueva</button>
         <button class="btn" id="btnCSV">exportar csv</button>
       </div>
       <div class="tabla-scroll">
         <table>
           <thead><tr>
-            <th>sektario</th><th>código</th><th>nombre</th><th>contacto</th>
+            <th>sektario</th><th>llave</th><th>nombre</th><th>contacto</th>
             <th>quién lo trajo</th><th>nota</th><th>estado</th><th>ingreso</th>
             <th>cómo llegó</th><th></th>
           </tr></thead>
@@ -214,7 +225,7 @@ td.apretado{white-space:normal; min-width:150px}
       <div class="tabla-scroll">
         <table>
           <thead><tr>
-            <th>código</th><th>nota</th><th>quién lo trajo</th>
+            <th>llave</th><th>nota</th><th>quién lo trajo</th>
             <th>creado</th><th>estado</th><th></th>
           </tr></thead>
           <tbody id="filasSinUsar"></tbody>
@@ -257,10 +268,10 @@ td.apretado{white-space:normal; min-width:150px}
   </main>
 </section>
 
-<!-- crear código -->
+<!-- crear una llave -->
 <div class="fondo" id="modalCrear">
   <div class="ventana">
-    <h2>código nuevo</h2>
+    <h2>llave de acceso nueva</h2>
     <div id="crearPaso1">
       <div class="campo">
         <label for="notaNueva">nota (para acordarte quién es)</label>
@@ -280,10 +291,13 @@ td.apretado{white-space:normal; min-width:150px}
       </div>
     </div>
     <div id="crearPaso2" hidden>
-      <p class="tenue" style="text-align:center; margin:0">pasale este código:</p>
+      <p class="tenue" style="text-align:center; margin:0">la llave:</p>
       <div id="codigoNuevo"></div>
+      <p class="tenue" style="margin:6px 0 8px; font-size:12px">el mensaje para mandarle por Instagram:</p>
+      <pre id="mensajeNuevo"></pre>
       <div class="pie" style="justify-content:center">
-        <button class="btn" id="btnCopiar">copiar</button>
+        <button class="btn btn-principal" id="btnCopiarMensaje">copiar mensaje</button>
+        <button class="btn" id="btnCopiar">copiar solo la llave</button>
         <button class="btn" data-cerrar>listo</button>
       </div>
     </div>
@@ -505,7 +519,7 @@ function pintarSinUsar(){
   const cuerpo = $('#filasSinUsar');
 
   if (!lista.length){
-    cuerpo.innerHTML = '<tr><td colspan="6" class="vacio">todos los códigos fueron usados</td></tr>';
+    cuerpo.innerHTML = '<tr><td colspan="6" class="vacio">todas las llaves fueron usadas</td></tr>';
     return;
   }
 
@@ -667,22 +681,36 @@ $('#btnConfirmarCrear').addEventListener('click', async () => {
     alert(enCastellano(r.motivo)); return;
   }
   $('#codigoNuevo').textContent = r.datos[0].codigo_acceso;
+  $('#mensajeNuevo').textContent = mensajeConLlave(r.datos[0].codigo_acceso);
   $('#crearPaso1').hidden = true;
   $('#crearPaso2').hidden = false;
   cargarTodo();
 });
 
-$('#btnCopiar').addEventListener('click', async () => {
-  const texto = $('#codigoNuevo').textContent;
+// El mensaje que se manda por Instagram a quien pidió entrar. Vive acá y
+// no en la cabeza de cada uno: así le llega lo mismo a todo el mundo.
+function mensajeConLlave(llave){
+  return 'La sekta te abre la puerta.\n\n' +
+         'Entrá en sekito.ar con esta llave:\n\n' +
+         llave + '\n\n' +
+         'Es tuya y de nadie más. Guardala.';
+}
+
+async function copiar(texto, boton, dice){
   try {
     await navigator.clipboard.writeText(texto);
-    $('#btnCopiar').textContent = 'copiado';
-    setTimeout(() => { $('#btnCopiar').textContent = 'copiar'; }, 1500);
+    boton.textContent = 'copiado';
+    setTimeout(() => { boton.textContent = dice; }, 1500);
   } catch (err) {
     // sin permiso de portapapeles: que al menos quede seleccionable
-    prompt('copiá el código:', texto);
+    prompt('copiá esto:', texto);
   }
-});
+}
+
+$('#btnCopiarMensaje').addEventListener('click', () =>
+  copiar($('#mensajeNuevo').textContent, $('#btnCopiarMensaje'), 'copiar mensaje'));
+$('#btnCopiar').addEventListener('click', () =>
+  copiar($('#codigoNuevo').textContent, $('#btnCopiar'), 'copiar solo la llave'));
 
 // ---------------------------------------------------------------- editar
 let editandoId = null;
