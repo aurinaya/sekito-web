@@ -22,16 +22,16 @@
    recorta todo a 4:5, así que lo que se ve es justamente ese lado. Los
    originales viven afuera del repo, en SEKITO-fotos/originales.
 
-   `apodo` es opcional. Si está, es el título del perfil; si no, el título
-   es el nombre de la persona.
+   El título del perfil no se define acá: es el apodo que cada uno eligió
+   (vive en la base, con la persona), y si no eligió ninguno, su nombre.
    =========================================================================== */
 window.PERFILES = {
-  'MAU·000': { fotos: 3, apodo: 'MAU'   },
-  'LCN·105': { fotos: 3, apodo: 'LUCHI' },
-  'NYA·000': { fotos: 2, apodo: 'NAYA'  },
-  'MDL·842': { fotos: 2, apodo: 'MAIA'  },
-  'FLR·000': { fotos: 2, apodo: 'FLOR'  },
-  'VLR·173': { fotos: 1, apodo: 'VALE'  },
+  'MAU·000': { fotos: 3 },
+  'LCN·105': { fotos: 3 },
+  'NYA·000': { fotos: 2 },
+  'MDL·842': { fotos: 2 },
+  'FLR·000': { fotos: 2 },
+  'VLR·173': { fotos: 1 },
   'GSN·019': { fotos: 1 },
   'NTL·797': { fotos: 2 },
 };
