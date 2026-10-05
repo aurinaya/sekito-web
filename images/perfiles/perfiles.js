@@ -20,7 +20,7 @@
 
    Las fotos entran ya achicadas: el lado corto en 1080 px. El carrusel
    recorta todo a 4:5, así que lo que se ve es justamente ese lado. Los
-   originales viven afuera del repo, en SEKITO-fotos/originales.
+   originales viven en material/fotos-originales, que git no sube.
 
    El título del perfil no se define acá: es el apodo que cada uno eligió
    (vive en la base, con la persona), y si no eligió ninguno, su nombre.

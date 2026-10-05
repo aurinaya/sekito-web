@@ -1476,17 +1476,17 @@
   }
 
   /* ---------- texto de la historia ----------
-     todo se ancla a las ternas del medio: el párrafo 1 termina a --para-gap
-     por encima del primer renglón, el párrafo 3 arranca a --para-gap por
-     debajo del último. el cierre queda abajo de todo, aparte. */
+     todo se ancla al renglón del medio (acá está todo / afuera, nada): el
+     párrafo 1 termina a --para-gap por encima, el párrafo 3 arranca a
+     --para-gap por debajo. el cierre queda abajo de todo, aparte. */
   .hist-text{
     position:absolute; inset:0;
     z-index:4;
     color:var(--white);
     font-style:italic;
     --side:24px;
-    --mid-first:46.5%;  /* renglón 1 de las ternas (mismo valor que --p en el html) */
-    --mid-last:52.5%;   /* renglón 3 */
+    --mid-first:49.5%;  /* el renglón del medio (mismo valor que --p en el html) */
+    --mid-last:49.5%;   /* es uno solo: arriba y abajo se miden desde el mismo */
     --para-gap:9.5svh;
   }
   @media (min-width:768px){
@@ -1530,12 +1530,17 @@
     margin:0;
     text-align:center;
     font-size:clamp(14px,3.75vw,20px);
-    line-height:1.9;
+    /* --aire: el interlineado que se suma. Al crecer el interlineado, también
+       crece el medio espacio de arriba y abajo de cada bloque; se descuenta
+       en el anclaje, así la distancia al renglón del medio no se mueve: el
+       párrafo 1 crece hacia arriba y el 3 hacia abajo */
+    --aire:.4;
+    line-height:calc(1.9 + var(--aire));
     text-shadow:0 0 4px rgba(13,13,13,.95), 0 0 10px rgba(13,13,13,.8),
                 0 0 20px rgba(13,13,13,.55), 0 1px 2px rgba(0,0,0,.85);
   }
-  .hist-top{ bottom:calc(100% - var(--mid-first) + var(--para-gap)); }
-  .hist-close{ top:calc(var(--mid-last) + var(--para-gap)); }
+  .hist-top{ bottom:calc(100% - var(--mid-first) + var(--para-gap) - var(--aire) * .5em); }
+  .hist-close{ top:calc(var(--mid-last) + var(--para-gap) - var(--aire) * .5em); }
 
   /* ---- ajustes solo para compu ----
      En el celu la pantalla es angosta y alta, y el texto escalado por ancho
@@ -1546,9 +1551,10 @@
      Va después de las reglas base a propósito: a igual especificidad, en CSS
      gana la que viene última. */
   @media (min-width:768px){
-    .hist-top, .hist-close{ font-size:clamp(12px, 2.7svh, 20px); line-height:1.55; }
+    .hist-top, .hist-close{ font-size:clamp(12px, 2.7svh, 20px); --aire:0; line-height:1.55; }
     .hist-row{ font-size:clamp(12px, 2.4svh, 21px); }
     .hist-cta{ font-size:clamp(9.5px, 1.5svh, 13px); }
+    .hist-entra-txt{ font-size:clamp(8.5px, 1.3svh, 11.5px); }
   }
 
   /* abanico arriba, centrado. base f2f2f2; los flashes violentos al bordo de
@@ -1622,24 +1628,36 @@
     color:rgba(var(--white-rgb),.8);
     text-shadow:0 1px 3px rgba(0,0,0,.75);
   }
-  /* chevron que late hacia abajo: sugiere seguir scrolleando */
+  /* "entrá" y el chevron, juntos, laten hacia abajo: sugieren seguir
+     scrolleando. Es el latido que antes tenía el chevron solo, ahora para
+     los dos, y un poco más chicos que la frase de arriba */
+  .hist-entra{
+    display:flex; flex-direction:column; align-items:center;
+    margin-top:12px;
+    opacity:0;
+  }
+  .hist-entra-txt{
+    font-size:clamp(10px,2.6vw,12px);
+    letter-spacing:.12em;
+    text-indent:.12em;   /* el tracking del final, que si no descentra */
+    color:rgba(var(--white-rgb),.8);
+    text-shadow:0 1px 3px rgba(0,0,0,.75);
+  }
   .hist-chevron{
     display:block;
     width:1em; height:1em;
-    margin:14px auto 0;
+    margin-top:7px;
     font-style:normal;
-    font-size:15px;
+    font-size:13px;
     line-height:1;
     color:rgba(var(--white-rgb),.7);
-    opacity:0;
     transform:rotate(90deg);
   }
-  /* fade propio (con la rotación adentro, si no el fade genérico la pisa) y después late */
-  .historia.active .hist-chevron{ animation:chevronIn 1.8s ease both 2.5s, chevronBob 2.4s ease-in-out infinite 4.3s; }
-  @keyframes chevronIn{ from{opacity:0; transform:rotate(90deg) translateX(-4px);} to{opacity:.7; transform:rotate(90deg);} }
-  @keyframes chevronBob{
-    0%,100%{ transform:rotate(90deg) translateX(0); opacity:.7; }
-    50%{ transform:rotate(90deg) translateX(5px); opacity:1; }
+  .historia.active .hist-entra{ animation:entraIn 1.8s ease both 2.5s, entraBob 2.4s ease-in-out infinite 4.3s; }
+  @keyframes entraIn{ from{opacity:0; transform:translateY(-4px);} to{opacity:.7; transform:none;} }
+  @keyframes entraBob{
+    0%,100%{ transform:translateY(0); opacity:.7; }
+    50%{ transform:translateY(5px); opacity:1; }
   }
 
   /* el texto aparece con un fade lento, escalonado apenas */
@@ -1812,19 +1830,17 @@
 
   <div class="hist-text">
     <div class="hist-fan" aria-hidden="true"></div>
-    <p class="hist-top hist-fade"><span>nadie sabe cuándo se acaba el mundo,</span><br><span>a veces existe..</span><br><span>a veces se vuelve a acabar</span><br><span>la sekta decidió:</span><br><span>un rito para cada mundo</span></p>
+    <p class="hist-top hist-fade"><span>a veces existe un mundo,</span><br><span>a veces no.</span><br><span>la sekta tiene un rito</span><br><span>para cada uno...</span></p>
 
     <div class="hist-mid hist-fade">
-      <div class="hist-row" style="--p:46.5%"><span class="hist-seki-line">acá está todo</span><span class="hist-colapso-line">afuera, nada</span></div>
-      <div class="hist-row" style="--p:49.5%"><span class="hist-seki-line">provocá</span><span class="hist-colapso-line">resistí</span></div>
-      <div class="hist-row" style="--p:52.5%"><span class="hist-seki-line">deseá</span><span class="hist-colapso-line">ensuciate</span></div>
+      <div class="hist-row" style="--p:49.5%"><span class="hist-seki-line">acá está todo</span><span class="hist-colapso-line">afuera, nada</span></div>
     </div>
 
-    <p class="hist-close hist-fade"><span>lxs devotxs quedamos adentro,</span><br><span>somos el sékito</span><br><span>que sigue celebrando,</span><br><span>con mundo, o sin...</span></p>
+    <p class="hist-close hist-fade"><span>adentro quedamos</span><br><span>lxs que seguimos resistiendo,</span><br><span>con mundo o sin...</span></p>
 
     <div class="hist-bottom">
-      <p class="hist-cta hist-fade">el portal está abierto...</p>
-      <span class="hist-chevron" aria-hidden="true">&gt;</span>
+      <p class="hist-cta hist-fade">el portal está abierto</p>
+      <div class="hist-entra"><span class="hist-entra-txt">entrá</span><span class="hist-chevron" aria-hidden="true">&gt;</span></div>
     </div>
   </div>
 </section>

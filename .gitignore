@@ -1,2 +1,8 @@
 # basura que crea macOS en cada carpeta
 .DS_Store
+
+# material de trabajo: flyers, videos y fotos originales. Vive acá para que
+# quede todo junto, pero no se sube nunca — lo que entra al repo se publica
+# en sekito.ar, y un teaser o una foto a tamaño completo no pueden aparecer
+# ahí antes de tiempo.
+/material/
