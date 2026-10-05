@@ -315,7 +315,7 @@
     transition:opacity .3s ease;
   }
   .gate-aviso.show{ opacity:1; }
-  /* ---------- perdí mi llave ---------- */
+  /* ---------- no tengo mi llave ---------- */
   .gate-perdida{
     display:block; margin:34px auto 0;
     background:none; border:none;
@@ -1864,10 +1864,10 @@
         </div>
       </form>
       <div class="gate-aviso" id="gateAviso"></div>
-      <button type="button" class="gate-perdida" id="gatePerdida">perdí mi llave</button>
+      <button type="button" class="gate-perdida" id="gatePerdida">no tengo mi llave</button>
       <div class="gate-rogar" id="gateRogar" hidden>
         <p>Se le pide a la sekta, por privado.</p>
-        <p class="gr-frase" id="grFrase">vengo a rogar: perdí mi llave</p>
+        <p class="gr-frase" id="grFrase">quiero mi llave para el portal</p>
         <a class="gr-ir" id="grIr" href="https://ig.me/m/sekito.gde" target="_blank" rel="noopener">ir a instagram</a>
         <div class="gr-copiado" id="grCopiado"></div>
       </div>
@@ -4389,11 +4389,15 @@ reveal();
   });
 })();
 
-/* ---------- perdí mi llave ----------
-   No se la devuelve el sistema: hay que pedírsela a alguien. Es a propósito.
+/* ---------- no tengo mi llave ----------
+   Sirve para las dos cosas: la que se perdió y la que nunca se tuvo (decía
+   "perdí mi llave", y la gente que llegaba por la historia de ig lo usaba
+   para pedir entrar). Dice lo mismo que la rendija de /s7, y la frase que se
+   copia es la misma. La llave no la da el sistema: hay que pedírsela a la
+   sekta. Es a propósito.
    Instagram no deja precargar el texto de un privado, así que lo copiamos al
    portapapeles y que lo peguen. */
-(function perdiMiLlave(){
+(function noTengoMiLlave(){
   const boton  = document.getElementById('gatePerdida');
   const caja   = document.getElementById('gateRogar');
   const frase  = document.getElementById('grFrase');
