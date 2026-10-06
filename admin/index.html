@@ -80,6 +80,26 @@ nav button[aria-selected="true"]{color:var(--white); border-bottom-color:var(--a
 main{padding:20px; flex:1}
 .vista{display:none}
 .vista.activa{display:block}
+/* "quién lo trajo": se busca tipeando, no recorriendo una lista de cien */
+.elige-resultados{margin-top:2px}
+.elige-op{
+  display:flex;justify-content:space-between;gap:10px;
+  padding:9px 2px;cursor:pointer;font-size:13px;
+  border-bottom:1px solid rgba(147,168,172,.12);
+}
+.elige-op:hover,.elige-op.primero{color:#fff}
+.elige-elegido{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border:1px solid rgba(217,161,30,.5);padding:9px 12px;font-size:13px;
+}
+/* display:flex le gana al atributo hidden: hay que decirlo */
+.elige-elegido[hidden],.elige-buscar[hidden]{display:none}
+.elige-cambiar{
+  background:none;border:none;padding:0;cursor:pointer;
+  font:inherit;font-size:11px;color:var(--gray);text-decoration:underline;
+}
+.elige-cambiar:hover{color:var(--white)}
+
 .barra{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px}
 .barra input[type="search"]{
   background:transparent; border:1px solid var(--linea); color:var(--white);
@@ -200,7 +220,7 @@ td.apretado{white-space:normal; min-width:150px}
   <main>
     <div class="vista activa" id="v-miembros">
       <div class="barra">
-        <input type="search" id="buscar" placeholder="buscar por nombre, llave o mail…">
+        <input type="search" id="buscar" placeholder="buscar por apodo, nombre, código, llave o mail…">
         <button class="btn" id="btnCrear">+ llave nueva</button>
         <button class="btn" id="btnCSV">exportar csv</button>
       </div>
@@ -278,8 +298,13 @@ td.apretado{white-space:normal; min-width:150px}
         <input id="notaNueva" placeholder="escribió por IG, amiga de Maia…">
       </div>
       <div class="campo">
-        <label for="invitadorNuevo">quién lo trajo</label>
-        <select id="invitadorNuevo"><option value="">— sin definir —</option></select>
+        <label for="invitadorNuevoBuscar">quién lo trajo</label>
+        <div data-elige="invitadorNuevo">
+          <input type="hidden" id="invitadorNuevo">
+          <input id="invitadorNuevoBuscar" class="elige-buscar" placeholder="buscá por apodo, nombre, apellido o código" autocomplete="off" spellcheck="false">
+          <div class="elige-elegido" hidden><span></span><button type="button" class="elige-cambiar">cambiar</button></div>
+          <div class="elige-resultados"></div>
+        </div>
       </div>
       <p class="tenue" style="font-size:12px">
         El nombre, el mail y el teléfono los completa la propia persona
@@ -315,8 +340,13 @@ td.apretado{white-space:normal; min-width:150px}
       <div class="campo"><label for="edTelefono">teléfono</label><input id="edTelefono"></div>
       <div class="campo"><label for="edNota">nota</label><input id="edNota"></div>
       <div class="campo">
-        <label for="edInvitador">quién lo trajo</label>
-        <select id="edInvitador"></select>
+        <label for="edInvitadorBuscar">quién lo trajo</label>
+        <div data-elige="edInvitador">
+          <input type="hidden" id="edInvitador">
+          <input id="edInvitadorBuscar" class="elige-buscar" placeholder="buscá por apodo, nombre, apellido o código" autocomplete="off" spellcheck="false">
+          <div class="elige-elegido" hidden><span></span><button type="button" class="elige-cambiar">cambiar</button></div>
+          <div class="elige-resultados"></div>
+        </div>
       </div>
       <p class="aviso" id="avisoEditar"></p>
       <div class="pie">
@@ -449,19 +479,45 @@ async function cargarTodo(){
   MIEMBROS = r.datos || [];
   pintarMiembros();
   pintarSinUsar();
-  llenarInvitadores();
   cargarLinaje();
   cargarValidaciones();
   cargarRegistro();
 }
 
+/* ---------- cómo se busca a alguien ----------
+   La misma regla que usa la base (supabase/migracion-buscador.sql), para que
+   el panel y el portal encuentren a la misma gente con lo mismo: apodo,
+   nombre, apellido o código sektario; sin mayúsculas ni tildes (la ñ sigue
+   siendo ñ), y el código sin separadores: "mau000" encuentra a MAU·000. */
+const CON_TILDE = 'áàäâãéèëêíìïîóòöôõúùüûç', SIN_TILDE = 'aaaaaeeeeiiiiooooouuuuc';
+function paraBuscar(t){
+  return String(t ?? '').toLowerCase()
+    .replace(/[áàäâãéèëêíìïîóòöôõúùüûç]/g, c => SIN_TILDE[CON_TILDE.indexOf(c)])
+    .replace(/\s+/g, ' ').trim();
+}
+const codigoParaBuscar = t => paraBuscar(t).replace(/[^a-z0-9]/g, '');
+function coincide(q, m){
+  const t = paraBuscar(q), c = codigoParaBuscar(q);
+  return (!!t && [m.apodo, m.nombre_real, m.apellido,
+                  [m.nombre_real, m.apellido].filter(Boolean).join(' '), m.nombre_sektario]
+                 .some(v => paraBuscar(v).includes(t)))
+      || (!!c && codigoParaBuscar(m.nombre_sektario).includes(c));
+}
+function empieza(q, m){
+  const t = paraBuscar(q), c = codigoParaBuscar(q);
+  return (!!t && (paraBuscar(m.apodo).startsWith(t) || paraBuscar(m.nombre_real).startsWith(t)))
+      || (!!c && codigoParaBuscar(m.nombre_sektario).startsWith(c));
+}
+
 function filtrados(){
   const q = $('#buscar').value.trim().toLowerCase();
   if (!q) return MIEMBROS;
-  return MIEMBROS.filter(m => [
-    m.nombre_sektario, m.codigo_acceso, m.nombre_real, m.apellido,
-    m.email, m.telefono, m.nota_admin, m.como_llegaste,
-  ].some(v => v && String(v).toLowerCase().includes(q)));
+  // la persona (apodo, nombre, apellido, código) y además lo que sólo ve el
+  // panel: la llave, el contacto y las notas
+  const t = paraBuscar(q);
+  return MIEMBROS.filter(m => coincide(q, m) || [
+    m.codigo_acceso, m.email, m.telefono, m.nota_admin, m.como_llegaste,
+  ].some(v => v && paraBuscar(v).includes(t)));
 }
 
 function pintarMiembros(){
@@ -477,8 +533,9 @@ function pintarMiembros(){
   cuerpo.innerHTML = lista.map(m => {
     const contacto = [m.email, m.telefono].filter(Boolean).join('<br>') ||
                      '<span class="tenue">—</span>';
-    const nombre = [m.nombre_real, m.apellido].filter(Boolean).join(' ') ||
-                   '<span class="tenue">sin registrar</span>';
+    const nombre = ([m.nombre_real, m.apellido].filter(Boolean).map(esc).join(' ') ||
+                    '<span class="tenue">sin registrar</span>') +
+                   (m.apodo ? ' <span class="tenue">· ' + esc(m.apodo) + '</span>' : '');
     // a los simbólicos (LA SEKTA) no se les cambia el estado ni se los edita
     const botones = m.estado_codigo === 'simbolico' ? '' :
       '<div class="acciones">' +
@@ -635,16 +692,73 @@ document.addEventListener('click', async e => {
   cargarTodo();
 });
 
-// ---------------------------------------------------------------- crear
-function llenarInvitadores(){
-  // a LA SEKTA sí se la puede elegir: es la opción "no lo trajo nadie en particular"
-  const opciones = MIEMBROS
-    .filter(m => m.estado_codigo === 'activo' || m.estado_codigo === 'simbolico')
-    .map(m => '<option value="' + m.id + '">' + esc(m.nombre_sektario || m.codigo_acceso) +
-              (m.nombre_real ? ' · ' + esc(m.nombre_real) : '') + '</option>').join('');
-  $('#invitadorNuevo').innerHTML = '<option value="">— sin definir —</option>' + opciones;
-  $('#edInvitador').innerHTML = '<option value="">— sin invitador —</option>' + opciones;
+// ---------------------------------------------------------------- quién lo trajo
+/* Se tipea y aparecen hasta ocho. Enter elige el primero, "cambiar" vuelve a
+   buscar. Lo elegido queda en un input oculto con el mismo id que tenía el
+   select, así el resto del panel lo lee igual que antes. Busca en la lista
+   que el panel ya tiene: no va a la base por cada letra. */
+function etiquetaPersona(m){
+  const nombre = [m.nombre_real, m.apellido].filter(Boolean).join(' ');
+  return esc(nombre || m.nombre_sektario || '—') +
+         (m.apodo ? ' <span class="tenue">· ' + esc(m.apodo) + '</span>' : '');
 }
+function elige(campo, ademas){
+  const caja    = document.querySelector('[data-elige="' + campo + '"]');
+  const valor   = $('#' + campo);
+  const busca   = caja.querySelector('.elige-buscar');
+  const res     = caja.querySelector('.elige-resultados');
+  const elegido = caja.querySelector('.elige-elegido');
+  let lista = [];
+
+  // a LA SEKTA sí se la puede elegir: es "no lo trajo nadie en particular"
+  const candidatos = () => MIEMBROS.filter(m =>
+    (m.estado_codigo === 'activo' || m.estado_codigo === 'simbolico') && (!ademas || ademas(m)));
+
+  function pintar(){
+    const m = MIEMBROS.find(x => x.id === valor.value);
+    elegido.hidden = !m;
+    busca.hidden = !!m;
+    if (m) elegido.querySelector('span').innerHTML =
+      etiquetaPersona(m) + ' <span class="tenue">' + esc(m.nombre_sektario || '') + '</span>';
+    res.innerHTML = '';
+  }
+  function elegir(id){ valor.value = id || ''; busca.value = ''; pintar(); }
+
+  busca.addEventListener('input', () => {
+    const q = busca.value;
+    if (!paraBuscar(q)){ res.innerHTML = ''; lista = []; return; }
+    lista = candidatos().filter(m => coincide(q, m))
+      .sort((a, b) => (empieza(q, b) - empieza(q, a)) ||
+                      String(a.nombre_real || '~').localeCompare(String(b.nombre_real || '~')))
+      .slice(0, 8);
+    res.innerHTML = lista.length
+      ? lista.map((m, i) =>
+          '<div class="elige-op' + (i === 0 ? ' primero' : '') + '" data-id="' + m.id + '">' +
+            '<span>' + etiquetaPersona(m) + '</span>' +
+            '<span class="tenue">' + esc(m.nombre_sektario || '') + '</span>' +
+          '</div>').join('')
+      : '<div class="tenue" style="padding:8px 2px;font-size:12px">nadie con eso</div>';
+  });
+  busca.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();                 // en editar, si no, se manda el formulario
+    if (lista[0]) elegir(lista[0].id);
+  });
+  res.addEventListener('click', e => {
+    const op = e.target.closest('[data-id]');
+    if (op) elegir(op.dataset.id);
+  });
+  elegido.querySelector('.elige-cambiar').addEventListener('click', () => {
+    elegir(null);
+    busca.focus();
+  });
+  return { poner: elegir };
+}
+const eligeNuevo  = elige('invitadorNuevo');
+// a una persona no la puede haber traído ella misma
+const eligeEditar = elige('edInvitador', m => m.id !== editandoId);
+
+// ---------------------------------------------------------------- crear
 
 function abrir(id){ $(id).classList.add('abierta'); }
 function cerrar(id){ $(id).classList.remove('abierta'); }
@@ -660,7 +774,7 @@ document.addEventListener('keydown', e => {
 
 $('#btnCrear').addEventListener('click', () => {
   $('#notaNueva').value = '';
-  $('#invitadorNuevo').value = '';
+  eligeNuevo.poner(null);
   $('#crearPaso1').hidden = false;
   $('#crearPaso2').hidden = true;
   abrir('#modalCrear');
@@ -727,7 +841,7 @@ document.addEventListener('click', e => {
   $('#edEmail').value    = m.email || '';
   $('#edTelefono').value = m.telefono || '';
   $('#edNota').value     = m.nota_admin || '';
-  $('#edInvitador').value = m.invitado_por || '';
+  eligeEditar.poner(m.invitado_por);
   $('#avisoEditar').textContent = '';
   abrir('#modalEditar');
 });

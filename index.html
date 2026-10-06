@@ -1916,7 +1916,7 @@
 
       <div class="bv-campo bv-busca" id="bvCampoTrajo">
         <label for="bvTrajo">¿quién te trajo al sékito?</label>
-        <input id="bvTrajo" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="buscá por nombre" enterkeyhint="search">
+        <input id="bvTrajo" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="buscá por apodo, nombre o código" enterkeyhint="search">
         <div class="bv-elegido" id="bvElegido" hidden>
           <span id="bvElegidoNombre"></span>
           <button type="button" class="bv-cambiar" id="bvCambiar">cambiar</button>
@@ -2003,7 +2003,7 @@
       <div class="padron">
         <input class="padron-input" type="text" autocomplete="off"
                autocapitalize="off" spellcheck="false" enterkeyhint="search"
-               placeholder="buscá por nombre o código">
+               placeholder="buscá por apodo, nombre o código">
         <div class="padron-resultados"></div>
       </div>
     </div>
@@ -3608,7 +3608,7 @@ reveal();
              '<div class="declarar-regla">tienen que ser <strong>dos</strong></div>' +
              '<div class="slots">' + slots + '</div>' +
              (declarando.elegidos.length < 2
-               ? '<input class="buscar-testigo" placeholder="buscá por nombre" ' +
+               ? '<input class="buscar-testigo" placeholder="buscá por apodo, nombre o código" ' +
                  'autocomplete="off" spellcheck="false">' +
                  '<div id="opTestigos"></div>'
                : '') +
@@ -3718,7 +3718,7 @@ reveal();
     const caja = document.createElement('div');
     caja.className = 'declarar';
     caja.innerHTML = '<div class="declarar-label">¿quién reemplaza a ' + esc(saliente.nombre) + '?</div>' +
-      '<input class="buscar-testigo" placeholder="buscá por nombre" autocomplete="off" spellcheck="false">' +
+      '<input class="buscar-testigo" placeholder="buscá por apodo, nombre o código" autocomplete="off" spellcheck="false">' +
       '<div id="opTestigos"></div>' +
       '<div class="rito-acciones"><button class="rito-btn" data-cancelar="1">cancelar</button></div>';
     fila.appendChild(caja);
