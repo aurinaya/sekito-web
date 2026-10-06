@@ -2702,7 +2702,9 @@ reveal();
   const tituloLista = document.getElementById('invListaTitulo');
   const lista       = document.getElementById('invLista');
 
-  const TOPE_ABIERTAS = 5;
+  // tiene que decir lo mismo que public.tope_invitaciones() en la base. Si
+  // algún día cambia allá, cambia acá.
+  const TOPE_ABIERTAS = 7;
 
   let cameFromScreen = null;
   let currentProfile = null;
@@ -2744,8 +2746,9 @@ reveal();
     const alTope = invitaciones.length ? invitaciones[0].al_tope : false;
 
     btnNuevo.disabled = alTope;
-    avisoTope.textContent = alTope
-      ? 'llegaste a ' + TOPE_ABIERTAS + '.. dá de baja alguna para generar otra'
+    avisoTope.innerHTML = alTope
+      ? 'llegaste a ' + TOPE_ABIERTAS + '.. dá de baja alguna, o pedile más a ' +
+        '<a href="https://ig.me/m/sekito.gde" target="_blank" rel="noopener">la sekta</a>'
       : 'usalo con cuidado';
 
     tituloLista.hidden = invitaciones.length === 0;
