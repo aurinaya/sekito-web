@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SEKI 7 — 14 de noviembre</title>
+<title>SEKI SÉPTIMA — 14 de noviembre</title>
 
 <!-- la tarjeta que se ve al pegar el link en whatsapp o instagram -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.sekito.ar/s7">
-<meta property="og:title" content="SEKI 7">
-<meta property="og:description" content="Sábado 14 de noviembre · Palermo, Buenos Aires. Preventa desde el portal.">
-<meta property="og:image" content="https://www.sekito.ar/images/tarjeta-s7.jpg">
+<meta property="og:title" content="SEKI SÉPTIMA">
+<meta property="og:description" content="Sábado 14 de noviembre · Palermo, Buenos Aires. Tanda sekreta desde el portal.">
+<meta property="og:image" content="https://www.sekito.ar/images/tarjeta-s7.jpg?v=s7">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -101,14 +101,40 @@
             mask:var(--fan-mask) center / contain no-repeat;
   }
 
-  /* se escribe a máquina, una letra por vez */
+  /* ---------- el S7: blanco que brilla ----------
+     El tamaño y el lugar de siempre. Aparece de una (no se escribe), y queda
+     con un halo blanco que respira despacio. */
   .nombre{
     font-size:clamp(34px, 13vw, 58px);
     font-weight:500;
-    letter-spacing:.22em;
     margin:70px 0 0;
-    text-indent:.22em;   /* el tracking del final, que si no descentra */
+    line-height:1.2;
     min-height:1.2em;
+    opacity:0;
+  }
+  /* el tracking va solo entre letras: el espacio de más que deja después de
+     la última se compensa a la izquierda, y el S7 queda centrado de verdad */
+  .nombre .piedra{
+    display:inline-block;
+    letter-spacing:.22em;
+    padding-left:.22em;
+    /* el "7" carga la tinta a la izquierda de su lugar: medido, el S7 queda
+       1 px corrido a 58 px de letra. Se compensa para que se vea centrado */
+    position:relative; left:.022em;
+    color:var(--white);
+    filter:drop-shadow(0 0 8px rgba(255,255,255,.3));
+  }
+  .nombre.cayo{ opacity:1; animation:asoma .5s ease-out both; }
+  @keyframes asoma{
+    0%  { opacity:0; transform:scale(1.04); filter:blur(3px); }
+    100%{ opacity:1; transform:scale(1);    filter:blur(0); }
+  }
+  .nombre.cayo .piedra{
+    animation:respira 4.2s ease-in-out .5s infinite;
+  }
+  @keyframes respira{
+    0%,100%{ filter:drop-shadow(0 0 7px rgba(255,255,255,.26)); }
+    50%    { filter:drop-shadow(0 0 18px rgba(255,255,255,.55)); }
   }
   .fecha{
     font-size:12px;
@@ -204,6 +230,8 @@
   [hidden]{ display:none !important; }
 
   @media (prefers-reduced-motion: reduce){
+    .nombre{ opacity:1; }
+    .nombre.cayo, .nombre.cayo .piedra{ animation:none; }
     .preventa, .aparece{ transition:none; }
     #tela{ transition:none; }
     html.inundado #chispa{ animation:none; }
@@ -217,12 +245,12 @@
 <div id="tela" aria-hidden="true"></div>
 <div id="chispa" aria-hidden="true"></div>
 
-<div class="abanico" id="abanico" role="img" aria-label="SEKI 7"></div>
+<div class="abanico" id="abanico" role="img" aria-label="S7"></div>
 
-<h1 class="nombre" id="nombre"></h1>
+<h1 class="nombre" id="nombre"><span class="piedra">S7</span></h1>
 <div class="fecha aparece" id="fecha">SÁBADO 14 · NOVIEMBRE</div>
 <div class="lugar aparece" id="lugar">PALERMO, BUENOS AIRES</div>
-<a class="preventa" id="preventa" href="https://www.sekito.ar">preventa desde el portal</a>
+<a class="preventa" id="preventa" href="https://www.sekito.ar/?ir=preventa">tanda sekreta desde el portal</a>
 
 <div class="rendija">
   <button type="button" id="sinCodigo">no tengo mi llave</button>
@@ -250,7 +278,6 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const BLANCO = 'var(--white)';
   const inundar = () => document.documentElement.classList.add('inundado');
 
-  const TITULO = 'SEKI 7';
 
   function mostrarResto(){
     document.getElementById('fecha').classList.add('llego');
@@ -258,27 +285,22 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setTimeout(() => document.getElementById('preventa').classList.add('llego'), 650);
   }
 
-  // se teclea una sola cosa, y despacio: el nombre. Lo demás aparece.
-  function escribir(){
-    const el = document.getElementById('nombre');
-    let n = 0;
-    (function letra(){
-      el.textContent = TITULO.slice(0, ++n);
-      if (n < TITULO.length){ setTimeout(letra, 105); return; }
-      setTimeout(mostrarResto, 880);
-    })();
+  // el S7 no se escribe: aparece, un momento después de la inundación
+  function aparecer(){
+    document.getElementById('nombre').classList.add('cayo');
+    setTimeout(mostrarResto, 900);
   }
 
   function terminar(){
     inundar();
     fan.style.background = BLANCO;
-    escribir();
+    setTimeout(aparecer, 450);
   }
 
   if (reduced){
     inundar();
     fan.style.background = BLANCO;
-    document.getElementById('nombre').textContent = TITULO;
+    document.getElementById('nombre').classList.add('cayo');
     mostrarResto();
     return;
   }
