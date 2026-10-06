@@ -107,6 +107,13 @@ main{padding:20px; flex:1}
 }
 .barra input[type="search"]:focus{border-color:var(--gray)}
 
+.ver-todos{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:11.5px;opacity:.6;cursor:pointer;white-space:nowrap;
+}
+.ver-todos:hover{opacity:1}
+#conteoMiembros strong{font-size:15px;color:#F2F2F2}
+
 /* ---------- tablas ---------- */
 .tabla-scroll{overflow-x:auto; border:1px solid var(--linea); border-radius:2px}
 table{border-collapse:collapse; width:100%; min-width:720px; font-size:13px}
@@ -116,6 +123,14 @@ th{
   letter-spacing:.14em; text-transform:uppercase;
 }
 tbody tr:last-child td{border-bottom:none}
+/* las columnas que se ordenan: un clic, de menor a mayor; otro, al revés */
+th[data-orden]{cursor:pointer; user-select:none}
+th[data-orden]:hover{color:var(--white)}
+th[data-orden].orden-sube::after{content:" ▲"; font-size:9px}
+th[data-orden].orden-baja::after{content:" ▼"; font-size:9px}
+.pendientes{margin-top:44px}
+.pendientes h3{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--gray); font-weight:400; margin:26px 0 6px}
+.pendientes h3 strong{color:var(--white); font-weight:500}
 tbody tr:hover{background:rgba(147,168,172,.05)}
 td.apretado{white-space:normal; min-width:150px}
 .pastilla{
@@ -211,7 +226,6 @@ td.apretado{white-space:normal; min-width:150px}
 
   <nav role="tablist">
     <button role="tab" data-vista="miembros" aria-selected="true">miembros</button>
-    <button role="tab" data-vista="sinusar" aria-selected="false">llaves sin usar</button>
     <button role="tab" data-vista="validaciones" aria-selected="false">validaciones<span id="contaVal"></span></button>
     <button role="tab" data-vista="linaje" aria-selected="false">linaje</button>
     <button role="tab" data-vista="registro" aria-selected="false">registro</button>
@@ -223,35 +237,46 @@ td.apretado{white-space:normal; min-width:150px}
         <input type="search" id="buscar" placeholder="buscar por apodo, nombre, código, llave o mail…">
         <button class="btn" id="btnCrear">+ llave nueva</button>
         <button class="btn" id="btnCSV">exportar csv</button>
+        <label class="ver-todos">
+          <input type="checkbox" id="verTodos"> ver también los dados de baja
+        </label>
       </div>
       <div class="tabla-scroll">
         <table>
           <thead><tr>
-            <th>sektario</th><th>llave</th><th>nombre</th><th>contacto</th>
-            <th>quién lo trajo</th><th>nota</th><th>estado</th><th>ingreso</th>
-            <th>cómo llegó</th><th></th>
+            <th data-orden="sektario">sektario</th><th>llave</th><th data-orden="nombre">nombre</th><th>contacto</th>
+            <th data-orden="trajo">quién lo trajo</th><th>nota</th><th data-orden="estado">estado</th>
+            <th data-orden="ingreso">entró</th><th>cómo llegó</th><th></th>
           </tr></thead>
           <tbody id="filasMiembros"></tbody>
         </table>
       </div>
       <p class="tenue" id="conteoMiembros" style="margin-top:12px"></p>
-    </div>
 
-    <div class="vista" id="v-sinusar">
-      <p class="tenue" style="margin-top:0">
-        Códigos entregados que todavía nadie usó para completar el registro.
-        No vencen.
-      </p>
-      <div class="tabla-scroll">
-        <table>
-          <thead><tr>
-            <th>llave</th><th>nota</th><th>quién lo trajo</th>
-            <th>creado</th><th>estado</th><th></th>
-          </tr></thead>
-          <tbody id="filasSinUsar"></tbody>
-        </table>
+      <!-- lo que todavía no es nadie: llaves y links que andan dando vueltas -->
+      <div class="pendientes">
+        <h3>llaves del panel sin usar · <strong id="cuantasSinUsar">0</strong></h3>
+        <p class="tenue" style="margin-top:0">Se entregaron y nadie las usó todavía. No vencen: se revocan a mano.</p>
+        <div class="tabla-scroll">
+          <table>
+            <thead><tr>
+              <th>llave</th><th>nota</th><th>quién lo trajo</th><th>creada</th><th>estado</th><th></th>
+            </tr></thead>
+            <tbody id="filasSinUsar"></tbody>
+          </table>
+        </div>
+
+        <h3>invitaciones dando vueltas · <strong id="cuantasInvitaciones">0</strong></h3>
+        <p class="tenue" style="margin-top:0">Los links que generaron los miembros y todavía nadie usó. Vencen solos.</p>
+        <div class="tabla-scroll">
+          <table>
+            <thead><tr><th>de</th><th>para</th><th>creada</th><th>le quedan</th></tr></thead>
+            <tbody id="filasInvitaciones"></tbody>
+          </table>
+        </div>
       </div>
     </div>
+
 
     <div class="vista" id="v-validaciones">
       <p class="tenue" style="margin-top:0">
@@ -479,6 +504,7 @@ async function cargarTodo(){
   MIEMBROS = r.datos || [];
   pintarMiembros();
   pintarSinUsar();
+  cargarInvitaciones();
   cargarLinaje();
   cargarValidaciones();
   cargarRegistro();
@@ -509,19 +535,61 @@ function empieza(q, m){
       || (!!c && codigoParaBuscar(m.nombre_sektario).startsWith(c));
 }
 
+/* LA SEKTA no es una persona y los dados de baja no son el padrón: los dos
+   ensucian la lista que se mira todos los días. Siguen a un clic de
+   distancia, porque esconderlos del todo sería no poder reactivar a nadie.
+   Y una llave que nadie usó todavía no es un miembro: va abajo, aparte. */
+function visibles(){
+  const registrados = MIEMBROS.filter(m => m.registro_completo && m.estado_codigo !== 'simbolico');
+  if ($('#verTodos') && $('#verTodos').checked) return registrados;
+  return registrados.filter(m => m.estado_codigo === 'activo');
+}
+
+// el orden: por defecto, los que entraron último arriba
+let ORDEN = { campo: 'ingreso', sube: false };
+const CLAVE_ORDEN = {
+  sektario: m => m.nombre_sektario || '',
+  nombre:   m => paraBuscar(m.apodo || m.nombre_real || ''),
+  trajo:    m => m.invitado_por_nombre || '',
+  estado:   m => m.estado_codigo || '',
+  ingreso:  m => m.registrado_en || m.fecha_ingreso || '',
+};
+function ordenar(lista){
+  const k = CLAVE_ORDEN[ORDEN.campo];
+  return lista.slice().sort((a, b) => {
+    const x = k(a), y = k(b);
+    return (x < y ? -1 : x > y ? 1 : 0) * (ORDEN.sube ? 1 : -1);
+  });
+}
+document.querySelectorAll('#v-miembros th[data-orden]').forEach(th => {
+  th.addEventListener('click', () => {
+    ORDEN = { campo: th.dataset.orden,
+              sube: ORDEN.campo === th.dataset.orden ? !ORDEN.sube : th.dataset.orden !== 'ingreso' };
+    pintarMiembros();
+  });
+});
+function marcarOrden(){
+  document.querySelectorAll('#v-miembros th[data-orden]').forEach(th => {
+    th.classList.toggle('orden-sube', th.dataset.orden === ORDEN.campo && ORDEN.sube);
+    th.classList.toggle('orden-baja', th.dataset.orden === ORDEN.campo && !ORDEN.sube);
+  });
+}
+
 function filtrados(){
   const q = $('#buscar').value.trim().toLowerCase();
-  if (!q) return MIEMBROS;
+  const base = visibles();
+  if (!q) return base;
   // la persona (apodo, nombre, apellido, código) y además lo que sólo ve el
   // panel: la llave, el contacto y las notas
   const t = paraBuscar(q);
-  return MIEMBROS.filter(m => coincide(q, m) || [
+  return base.filter(m => coincide(q, m) || [
     m.codigo_acceso, m.email, m.telefono, m.nota_admin, m.como_llegaste,
   ].some(v => v && paraBuscar(v).includes(t)));
 }
 
 function pintarMiembros(){
-  const lista = filtrados();
+  const lista = ordenar(filtrados());
+  marcarOrden();
   const cuerpo = $('#filasMiembros');
 
   if (!lista.length){
@@ -554,7 +622,7 @@ function pintarMiembros(){
       '<td class="apretado tenue">' + esc(m.nota_admin || '') + '</td>' +
       '<td><span class="pastilla e-' + esc(m.estado_codigo) + '">' +
           esc(m.estado_codigo) + '</span></td>' +
-      '<td class="tenue">' + fecha(m.fecha_ingreso) + '</td>' +
+      '<td class="tenue">' + fecha(m.registrado_en || m.fecha_ingreso) + '</td>' +
       // lo que escribió la propia persona, distinto de nuestra nota. Va al
       // final porque es lo más largo: en el medio empujaba todo lo demás
       '<td class="apretado dicho">' + esc(m.como_llegaste || '') + '</td>' +
@@ -562,18 +630,27 @@ function pintarMiembros(){
     '</tr>';
   }).join('');
 
-  const reg = MIEMBROS.filter(m => m.registro_completo).length;
-  $('#conteoMiembros').textContent =
-    MIEMBROS.length + ' miembros · ' + reg + ' registrados · ' +
-    (MIEMBROS.length - reg) + ' sin registrar';
+  pintarConteo();
+}
+
+// miembros son los que ya entraron; las llaves sin usar se cuentan abajo
+function pintarConteo(){
+  const miembros = MIEMBROS.filter(m => m.registro_completo && m.estado_codigo === 'activo').length;
+  const fuera    = MIEMBROS.filter(m => m.registro_completo &&
+                     (m.estado_codigo === 'suspendido' || m.estado_codigo === 'revocado')).length;
+  $('#conteoMiembros').innerHTML =
+    '<strong>' + miembros + '</strong> miembros' +
+    (fuera ? ' · ' + fuera + ' dados de baja' : '');
 }
 
 $('#buscar').addEventListener('input', pintarMiembros);
+$('#verTodos').addEventListener('change', pintarMiembros);
 
 function pintarSinUsar(){
   const lista = MIEMBROS.filter(m =>
     !m.registro_completo && m.estado_codigo !== 'simbolico');
   const cuerpo = $('#filasSinUsar');
+  $('#cuantasSinUsar').textContent = lista.filter(m => m.estado_codigo === 'activo').length;
 
   if (!lista.length){
     cuerpo.innerHTML = '<tr><td colspan="6" class="vacio">todas las llaves fueron usadas</td></tr>';
@@ -585,7 +662,7 @@ function pintarSinUsar(){
       '<td class="mono-codigo">' + esc(m.codigo_acceso) + '</td>' +
       '<td class="apretado tenue">' + esc(m.nota_admin || '') + '</td>' +
       '<td class="tenue">' + esc(m.invitado_por_nombre || '—') + '</td>' +
-      '<td class="tenue">' + fecha(m.creado_en) + '</td>' +
+      '<td class="tenue">' + fecha(m.creado_en) + ' <span class="tenue">· hace ' + hace(m.creado_en) + '</span></td>' +
       '<td><span class="pastilla e-' + esc(m.estado_codigo) + '">' +
           esc(m.estado_codigo) + '</span></td>' +
       '<td><div class="acciones">' +
@@ -594,6 +671,27 @@ function pintarSinUsar(){
           : '<button data-estado="activo" data-id="' + m.id + '">reactivar</button>') +
       '</div></td>' +
     '</tr>').join('');
+}
+
+const hace = f => { const d = Math.floor((Date.now() - new Date(f)) / 86400000);
+                   return d === 0 ? 'hoy' : d === 1 ? '1 día' : d + ' días'; };
+
+// los links de invitación que andan dando vueltas, con los días que les quedan
+async function cargarInvitaciones(){
+  const cuerpo = $('#filasInvitaciones');
+  const r = await rpc('admin_invitaciones_vigentes', { p_codigo: CODIGO });
+  if (!r.ok){ cuerpo.innerHTML = '<tr><td colspan="4" class="vacio">' + esc(enCastellano(r.motivo)) + '</td></tr>'; return; }
+  const lista = r.datos || [];
+  $('#cuantasInvitaciones').textContent = lista.length;
+  if (!lista.length){ cuerpo.innerHTML = '<tr><td colspan="4" class="vacio">no hay ninguna dando vueltas</td></tr>'; return; }
+  cuerpo.innerHTML = lista.map(i => '<tr>' +
+    '<td>' + esc(i.de || '—') + ' <span class="tenue">' + esc(i.de_sektario || '') + '</span></td>' +
+    '<td class="apretado tenue">' + esc(i.para || '—') + '</td>' +
+    '<td class="tenue">' + fecha(i.creado_en) + '</td>' +
+    '<td class="' + (i.dias_restantes <= 1 ? 'est-pide' : '') + '">' +
+      (i.vence_en ? (i.dias_restantes <= 0 ? 'vence hoy' : i.dias_restantes + (i.dias_restantes === 1 ? ' día' : ' días')) : 'no vence') +
+    '</td>' +
+  '</tr>').join('');
 }
 
 async function cargarLinaje(){

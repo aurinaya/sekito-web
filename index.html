@@ -858,18 +858,33 @@
   .padron-input::placeholder{ color:rgba(var(--gray-rgb),.55); letter-spacing:.06em; }
 
   .padron-resultados:not(:empty){ margin-top:8px; }
+  /* cada persona: la foto chiquita (o el abanico), cómo le dicen, y abajo,
+     más chico, nombre, apellido y código sektario */
   .padron-op{
-    display:flex; align-items:baseline; justify-content:center;
-    gap:10px;
-    padding:11px 4px;
+    display:flex; align-items:center; gap:12px;
+    padding:10px 4px;
     border-bottom:1px solid rgba(var(--gray-rgb),.14);
-    cursor:pointer;
+    cursor:pointer; text-align:left;
     transition:color .2s ease;
   }
   .padron-op:last-child{ border-bottom:none; }
   .padron-op:hover .po-nombre{ color:var(--white); }
+  .po-cara{
+    flex:0 0 34px; width:34px; height:34px; border-radius:50%;
+    background:#151515 center 30% / cover no-repeat;
+    border:1px solid rgba(var(--gray-rgb),.25);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .po-cara.sin-foto::before{
+    content:""; width:18px; aspect-ratio:516.569/335.754;
+    background:rgba(var(--white-rgb),.75);
+    -webkit-mask:var(--fan-mask) center / contain no-repeat;
+            mask:var(--fan-mask) center / contain no-repeat;
+  }
+  .po-texto{ display:flex; flex-direction:column; gap:3px; min-width:0; }
   .po-nombre{ font-size:13px; color:rgba(var(--white-rgb),.86); }
-  .po-cod{ font-size:10px; color:rgba(var(--gray-rgb),.8); }
+  .po-cod{ font-size:10px; color:rgba(var(--gray-rgb),.8); letter-spacing:.04em;
+           white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .padron-nada{
     text-align:center; font-size:10.5px;
     color:rgba(var(--gray-rgb),.7);
@@ -3937,11 +3952,22 @@ reveal();
           caja.innerHTML = '<div class="padron-nada">nadie con ese nombre</div>';
           return;
         }
-        caja.innerHTML = lista.map(d =>
-          '<div class="padron-op" data-sektario="' + esc(d.sektario) + '">' +
-            '<span class="po-nombre">' + esc(d.nombre || d.sektario) + '</span>' +
-            (d.nombre ? '<span class="po-cod">' + esc(d.sektario) + '</span>' : '') +
-          '</div>').join('');
+        caja.innerHTML = lista.map(d => {
+          const foto = fotoPrincipal(d.sektario);
+          // abajo, lo secundario: nombre y apellido (si dicen algo más que
+          // el título) y el código sektario
+          const titulo = d.nombre || d.sektario;
+          const completo = d.nombre_completo && d.nombre_completo.toLowerCase() !== String(titulo).toLowerCase()
+            ? d.nombre_completo : null;
+          return '<div class="padron-op" data-sektario="' + esc(d.sektario) + '">' +
+            '<span class="po-cara' + (foto ? '' : ' sin-foto') + '"' +
+              (foto ? ' style="background-image:url(\'' + foto + '\')"' : '') + '></span>' +
+            '<span class="po-texto">' +
+              '<span class="po-nombre">' + esc(titulo) + '</span>' +
+              (d.nombre ? '<span class="po-cod">' + [completo, d.sektario].filter(Boolean).map(esc).join(' · ') + '</span>' : '') +
+            '</span>' +
+          '</div>';
+        }).join('');
       }, 250);
     });
 
