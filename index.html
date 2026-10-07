@@ -832,11 +832,20 @@
     -webkit-mask:var(--fan-mask) center / contain no-repeat;
             mask:var(--fan-mask) center / contain no-repeat;
   }
+  /* S7, como en sekito.ar/s7: blanco, con el halo que respira */
   .s7-nombre{
     font-size:33px; letter-spacing:.26em; text-indent:.26em;
+    left:.022em;   /* el "7" carga la tinta a la izquierda: se compensa */
     color:var(--white);
     text-shadow:0 0 22px rgba(0,0,0,.55);
+    filter:drop-shadow(0 0 8px rgba(255,255,255,.3));
+    animation:s7Respira 4.2s ease-in-out infinite;
   }
+  @keyframes s7Respira{
+    0%,100%{ filter:drop-shadow(0 0 7px rgba(255,255,255,.26)); }
+    50%    { filter:drop-shadow(0 0 18px rgba(255,255,255,.55)); }
+  }
+  @media (prefers-reduced-motion: reduce){ .s7-nombre{ animation:none; } }
   .s7-fecha{
     font-size:10px; letter-spacing:.24em; text-indent:.24em;
     color:rgba(var(--white-rgb),.78); margin-top:16px;
@@ -2176,7 +2185,7 @@
 
     <div class="s7-cartel pv-abrir rv-d" role="button" tabindex="0">
       <div class="s7-abanico" aria-hidden="true"></div>
-      <div class="s7-nombre">SEKI 7</div>
+      <div class="s7-nombre">S7</div>
       <div class="s7-fecha">14 DE NOVIEMBRE</div>
       <div class="s7-estado">—</div>
     </div>
