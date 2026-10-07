@@ -620,6 +620,22 @@
     color:rgba(var(--gray-rgb),.6);
   }
 
+  /* ---------- mi rama: el árbol en miniatura ----------
+     es sekito.ar/arbol?mini adentro de un iframe; a los costados las ramas
+     se esfuman */
+  .arbol-mini{
+    position:relative; width:100%; height:300px; cursor:pointer;
+    -webkit-mask:linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+            mask:linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+  }
+  .arbol-mini:focus-visible{ outline:1px solid var(--gray); outline-offset:8px; }
+  .arbol-mini iframe{ width:100%; height:100%; border:0; display:block; pointer-events:none; }
+  .arbol-dato{ font-size:10.5px; letter-spacing:.1em; color:var(--gray); margin-top:4px; min-height:1.2em; }
+  /* el árbol entero, encima de todo */
+  #arbolPantalla{ position:fixed; inset:0; z-index:80; background:#0D0D0D; display:none; }
+  #arbolPantalla.abierta{ display:block; }
+  #arbolPantalla iframe{ width:100%; height:100%; border:0; display:block; }
+
   /* ---------- mi rama del árbol ---------- */
   .rama-guia{
     text-align:center;
@@ -2005,12 +2021,11 @@
 
     <div class="seccion rv-d">
       <div class="seccion-titulo"><span>mi rama</span></div>
-      <div class="rama-preview rama-abrir" role="button" tabindex="0">
-        <div class="rp-origen"></div>
-        <div class="rp-yo">—</div>
-        <div class="rp-hijos"></div>
-      </div>
-      <button class="seccion-btn rama-abrir">ver mi rama</button>
+      <!-- el árbol en miniatura: sekito.ar/arbol?mini, quieto; lo carga
+           entrarAlSitio() con la persona que entró -->
+      <div class="arbol-mini arbol-abrir" role="button" tabindex="0" aria-label="ver el árbol"></div>
+      <div class="arbol-dato" id="arbolDato"></div>
+      <button class="seccion-btn arbol-abrir">ver el árbol</button>
     </div>
 
     <div class="seccion rv-d">
@@ -2421,6 +2436,7 @@ function entrarAlSitio(miembro){
   if (window.__marcarPantalla) window.__marcarPantalla();
   if (window.__refrescarRitos)    window.__refrescarRitos();
   if (window.__refrescarRama)     window.__refrescarRama();
+  if (window.__arbolMini)         window.__arbolMini();
   if (window.__refrescarSusurros) window.__refrescarSusurros();
 
   // el nombre sektario ya no va debajo del nombre de pila: lo muestra el
@@ -4526,6 +4542,60 @@ reveal();
   if (window.__prepararBienvenida) await window.__prepararBienvenida();
   document.getElementById('bienvenida').classList.add('active');
   scrollToTop();
+})();
+</script>
+<!-- el árbol entero (sekito.ar/arbol?portal), encima del perfil -->
+<div id="arbolPantalla"></div>
+<script>
+(function arbol(){
+  const pantalla = document.getElementById('arbolPantalla');
+  const mini     = document.querySelector('.arbol-mini');
+  const dato     = document.getElementById('arbolDato');
+
+  // cada vez que alguien entra: la miniatura de su lugar, y el árbol entero
+  // se arma de nuevo la próxima vez que lo abra
+  window.__arbolMini = function(){
+    pantalla.innerHTML = '';
+    dato.textContent = '';
+    if (!mini) return;
+    mini.innerHTML = '<iframe src="/arbol/?mini" tabindex="-1" aria-hidden="true" title="mi rama"></iframe>';
+  };
+
+  function abrir(){
+    if (!codigoActual) return;
+    if (!pantalla.firstChild) pantalla.innerHTML = '<iframe src="/arbol/?portal" title="el árbol del sékito"></iframe>';
+    pantalla.classList.add('abierta');
+    document.body.style.overflow = 'hidden';
+  }
+  function cerrar(){
+    pantalla.classList.remove('abierta');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('.arbol-abrir').forEach(el => {
+    el.addEventListener('click', abrir);
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); abrir(); }
+    });
+  });
+
+  // lo que pide el árbol: la llave (si el navegador no la guardó), volver,
+  // la ficha de alguien, y el dato de abajo de la miniatura
+  addEventListener('message', e => {
+    if (e.origin !== location.origin || !e.data) return;
+    const d = e.data;
+    if (d.tipo === 'sekito:pido-llave' && e.source){
+      e.source.postMessage({ tipo: 'sekito:llave', codigo: codigoActual || null }, location.origin);
+    } else if (d.tipo === 'sekito:volver'){
+      cerrar();
+    } else if (d.tipo === 'sekito:ficha' && d.sektario){
+      cerrar();
+      if (window.__abrirFicha) window.__abrirFicha(d.sektario, document.getElementById('member'));
+    } else if (d.tipo === 'sekito:dato'){
+      dato.textContent = d.hijos
+        ? 'trajiste a ' + d.hijos + (d.rama > d.hijos ? ' · de tu rama cuelgan ' + d.rama : '')
+        : 'todavía no trajiste a nadie';
+    }
+  });
 })();
 </script>
 </body>

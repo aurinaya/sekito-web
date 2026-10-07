@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0D0D0D">
+<title>SÉKITO · el árbol</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3-hierarchy@3.1.2/dist/d3-hierarchy.min.js"></script>
+<script src="/images/perfiles/perfiles.js"></script>
+<style>
+/* ===========================================================================
+   EL ÁRBOL DEL SÉKITO — sekito.ar/arbol
+
+   Arriba de todo, el abanico grande, con el efecto de la puerta: respira, se
+   quiebra apenas, y cada tanto le pega el golpe bordo y amarillo. De él
+   salen cuatro ramas: LA SEKTA y los tres fundadores. LA SEKTA es una más:
+   trae gente como cualquiera.
+
+   La copa cae dada vuelta, en abanico. Las ramas son curvas, se afinan
+   hacia la punta y son más gruesas cuanta más gente cuelga de ellas.
+
+   Arranca abierto solo lo tuyo: tu camino hasta arriba y quiénes trajiste.
+   Las demás ramas están plegadas, con un "+N" de cuánta gente esconden; se
+   tocan y se abren. "Ver todo" abre todo (y "ver menos" lo deshace). El
+   buscador viaja hasta alguien.
+
+   Vive adentro del portal: ?mini es la miniatura de "mi rama" en el perfil
+   (quieta, sin nombres) y ?portal es el árbol entero, con "volver". Los
+   datos salen de el_arbol(llave) (supabase/migracion-arbol.sql): la llave
+   está guardada en el navegador, o se la pide al portal que lo contiene.
+   =========================================================================== */
+:root{ --negro:#0D0D0D; --blanco:#F2F2F2; --gris:#93A8AC; --bordo:#800020; --bordo-claro:#C9566E; --amarillo:#D9A11E; }
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; height:100%; background:var(--negro); color:var(--blanco); overflow:hidden;
+  font-family:'IBM Plex Mono', ui-monospace, Menlo, monospace; }
+#grano{ position:fixed; inset:0; width:100vw; height:100vh; opacity:.05; mix-blend-mode:overlay; pointer-events:none; image-rendering:pixelated; z-index:2; }
+#tela{ position:fixed; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(120% 90% at 50% 40%, transparent 45%, rgba(0,0,0,.55) 100%); }
+svg{ position:fixed; inset:0; width:100vw; height:100vh; touch-action:none; cursor:grab; }
+svg.arrastrando{ cursor:grabbing; }
+
+.rama{ fill:rgba(236,232,226,.34); transition:fill .35s ease; }
+.rama.camino{ fill:rgba(201,86,110,.85); }
+.nudo{ cursor:pointer; }
+.nudo .toque{ fill:transparent; }
+.nudo .aro{ fill:#141414; stroke:rgba(242,242,242,.32); stroke-width:1.2; transition:stroke .3s ease; }
+.nudo.camino .aro{ stroke:var(--bordo-claro); stroke-width:2; }
+.nudo.elegido .aro{ stroke:var(--blanco); stroke-width:2.4; }
+.nudo .nombre{ font-size:11px; letter-spacing:.14em; fill:rgba(242,242,242,.84); text-transform:uppercase;
+  paint-order:stroke; stroke:#0D0D0D; stroke-width:4px; stroke-linejoin:round; }
+.nudo.camino .nombre, .nudo.elegido .nombre{ fill:var(--blanco); }
+.nudo.yo .nombre{ font-weight:500; }
+.nudo .halo{ fill:none; stroke:rgba(242,242,242,0); stroke-width:10; }
+.nudo.yo .halo{ stroke:rgba(201,86,110,.28); animation:latir 3.2s ease-in-out infinite; }
+@keyframes latir{ 0%,100%{ stroke-opacity:.25; } 50%{ stroke-opacity:.9; } }
+.nudo.sekta .nombre{ letter-spacing:.24em; font-weight:500; }
+/* lo que una rama plegada esconde */
+.mas circle{ fill:var(--bordo); stroke:#0D0D0D; stroke-width:2; }
+.mas text{ font-size:9.5px; fill:var(--blanco); text-anchor:middle; font-weight:500; }
+
+/* ---------- el abanico de arriba: el de la puerta, tal cual ----------
+   respira 5 s, se quiebra cada 1,3 s, y cada tanto el golpe: bordo .19 s y
+   amarillo .2 s a saltos, y el blanco vuelve recién al final */
+.corona{ cursor:pointer; }
+.corona .hebilla-fondo{ fill:#0D0D0D; }
+.corona .hebilla{ fill:none; stroke:rgba(242,242,242,.88); stroke-width:3.5; }
+/* lo que pasa adentro de la hebilla, detrás del abanico (data-fondo; hay
+   tres, se pueden sumar, y quedó "latido golpe"):
+   latido  — una brasa bordo que respira con el abanico
+   barrido — una luz que cruza de lado a lado, como el escáner de la puerta
+   golpe   — cuando le pega el golpe, el fondo también salta: bordo, amarillo */
+.corona .fondo > *{ opacity:0; }
+[data-fondo~="latido"] .corona .latido{ animation:latidoFondo 5s ease-in-out infinite alternate; }
+@keyframes latidoFondo{ from{ opacity:.3; } to{ opacity:.95; } }
+[data-fondo~="barrido"] .corona .barrido{ animation:barrer 7s linear infinite; }
+@keyframes barrer{ 0%{ opacity:1; transform:translateX(0); } 18%{ opacity:1; transform:translateX(250px); } 18.01%,100%{ opacity:0; transform:translateX(250px); } }
+[data-fondo~="golpe"] .corona.golpe .destello{ animation:destello .27s steps(1) 1; }
+@keyframes destello{ 0%{ opacity:.34; fill:#800020; } 35%{ opacity:0; } 55%{ opacity:.13; fill:#F2F2F2; } 70%,100%{ opacity:0; } }
+.corona .respira{ animation:breathe 5s ease-in-out infinite alternate; transform-box:fill-box; transform-origin:center; }
+.corona .blanco{ animation:microGlitch 1.3s steps(1) infinite; }
+.corona .capa-bordo, .corona .capa-amarillo{ opacity:0; }
+.corona.golpe .capa-bordo{ animation:glitchBordo .19s steps(1) 1; }
+.corona.golpe .capa-amarillo{ animation:glitchAmarillo .2s steps(1) 1; }
+.corona.golpe .blanco{ animation:blancoGolpe .27s steps(1) 1; }
+@keyframes breathe{ from{ transform:scale(1); } to{ transform:scale(1.015); } }
+@keyframes microGlitch{
+  0%,15%{ opacity:1; transform:translate(0,0); } 16%{ opacity:.94; transform:translate(.75px,-.5px); }
+  17%{ opacity:1; transform:translate(-.5px,.6px); } 18%,47%{ opacity:1; transform:translate(0,0); }
+  48%{ opacity:.95; transform:translate(-.7px,.5px); } 49%{ opacity:1; transform:translate(.5px,-.65px); }
+  50%,74%{ opacity:1; transform:translate(0,0); } 75%{ opacity:.96; transform:translate(.5px,.5px); }
+  76%{ opacity:1; transform:translate(-.6px,-.4px); } 77%,100%{ opacity:1; transform:translate(0,0); }
+}
+@keyframes blancoGolpe{ 0%,70%{ opacity:0; } 100%{ opacity:1; } }
+@keyframes glitchBordo{
+  0%{ opacity:0; transform:translate(0,0); } 12%{ opacity:1; transform:translate(-12px,7px); }
+  26%{ opacity:.1; transform:translate(10px,-6px); } 40%{ opacity:1; transform:translate(-9px,0); }
+  55%{ opacity:.08; transform:translate(8px,8px); } 70%{ opacity:1; transform:translate(-7px,-5px); }
+  85%{ opacity:.25; transform:translate(5px,3px); } 100%{ opacity:0; transform:translate(0,0); }
+}
+@keyframes glitchAmarillo{
+  0%{ opacity:0; transform:translate(0,0); } 15%{ opacity:.85; transform:translate(9px,-8px); }
+  30%{ opacity:.1; transform:translate(-8px,5px); } 46%{ opacity:1; transform:translate(6px,9px); }
+  62%{ opacity:.15; transform:translate(-9px,-3px); } 78%{ opacity:1; transform:translate(5px,-5px); }
+  92%{ opacity:.2; transform:translate(-3px,3px); } 100%{ opacity:0; transform:translate(0,0); }
+}
+
+/* arriba: el título, el buscador y los botones */
+.arriba{ position:fixed; left:0; right:0; top:0; z-index:3; padding:calc(14px + env(safe-area-inset-top)) 16px 10px;
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  background:linear-gradient(var(--negro) 60%, transparent); pointer-events:none; }
+.arriba > *{ pointer-events:auto; }
+.titulo{ flex:1; min-width:0; font-size:10px; letter-spacing:.24em; color:var(--gris); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+@media (max-width:430px){ .titulo{ display:none; } .arriba{ justify-content:flex-end; } }
+/* adentro del portal (?portal): en vez del título, "volver" */
+.volver{ display:none; background:none; border:none; color:var(--gris); font:inherit; font-size:11px; letter-spacing:.16em; cursor:pointer; padding:9px 0; }
+.portal .volver{ display:block; }
+.portal .titulo{ display:none; }
+.portal .arriba{ justify-content:space-between; }
+/* la miniatura del perfil (?mini): solo el dibujo, quieto, sin botones */
+.mini .arriba, .mini .buscar, .mini #tarjeta{ display:none; }
+.mini svg{ pointer-events:none; }
+.aviso{ position:fixed; left:16px; right:16px; top:45%; text-align:center; font-size:11px; letter-spacing:.14em; color:var(--gris); z-index:3; }
+.mini, .mini body{ background:transparent; }
+.mini #grano, .mini #tela, .mini .nombre, .mini .mas{ display:none; }
+.botones{ flex:0 0 auto; display:flex; gap:8px; }
+.botones button{ background:rgba(13,13,13,.75); border:1px solid rgba(147,168,172,.35); color:var(--blanco);
+  font:inherit; font-size:10px; letter-spacing:.14em; text-transform:uppercase; padding:9px 11px; cursor:pointer; }
+.buscar{ position:fixed; left:16px; right:16px; top:calc(58px + env(safe-area-inset-top)); z-index:3; max-width:420px; margin:0 auto; display:none; }
+.buscar.abierto{ display:block; }
+.buscar input{ width:100%; background:rgba(13,13,13,.92); border:1px solid rgba(147,168,172,.4); color:var(--blanco);
+  font:inherit; font-size:16px; padding:11px 12px; outline:none; letter-spacing:.04em; }
+.buscar .lista{ background:rgba(16,16,16,.96); border:1px solid rgba(147,168,172,.25); border-top:none; }
+.buscar .lista:empty{ display:none; }
+.buscar .op{ display:flex; align-items:baseline; gap:10px; padding:10px 12px; cursor:pointer; border-bottom:1px solid rgba(147,168,172,.12); font-size:13px; }
+.buscar .op span{ color:var(--gris); font-size:11px; }
+.buscar .op:hover{ background:rgba(147,168,172,.08); }
+
+/* abajo: la tarjetita de la persona tocada */
+#tarjeta{ position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); z-index:4;
+  max-width:420px; margin:0 auto; background:rgba(16,16,16,.94); border:1px solid rgba(147,168,172,.3);
+  padding:14px; transform:translateY(140%); transition:transform .3s ease; }
+#tarjeta.abierta{ transform:none; }
+/* en la compu, en la esquina: que tape lo menos posible del árbol */
+@media (min-width:760px){ #tarjeta{ left:16px; right:auto; width:360px; margin:0; } }
+#tarjeta .fila{ display:flex; gap:14px; align-items:center; }
+#tarjeta .cara{ flex:0 0 58px; height:58px; border-radius:50%; background:#151515 center 30%/cover no-repeat; border:1px solid rgba(147,168,172,.3);
+  display:flex; align-items:center; justify-content:center; }
+#tarjeta .cara.sin::before{ content:""; width:28px; aspect-ratio:516.569/335.754; background:rgba(242,242,242,.8);
+  -webkit-mask:url(/images/abanico-seki.svg) center/contain no-repeat; mask:url(/images/abanico-seki.svg) center/contain no-repeat; }
+#tarjeta .t1{ font-size:15px; letter-spacing:.12em; text-transform:uppercase; }
+#tarjeta .t2{ font-size:12px; color:rgba(242,242,242,.75); margin-top:3px; }
+#tarjeta .t3{ font-size:11px; color:var(--gris); margin-top:5px; letter-spacing:.06em; }
+#tarjeta .cerrar{ margin-left:auto; align-self:flex-start; background:none; border:none; color:var(--gris); font:inherit; font-size:16px; cursor:pointer; }
+#tarjeta .acciones{ display:flex; gap:8px; margin-top:12px; }
+#tarjeta .acciones button{ flex:1; background:none; border:1px solid rgba(147,168,172,.35); color:var(--blanco);
+  font:inherit; font-size:10px; letter-spacing:.14em; text-transform:uppercase; padding:10px; cursor:pointer; }
+#tarjeta .acciones button[hidden]{ display:none; }
+</style>
+</head>
+<body>
+<canvas id="grano" aria-hidden="true"></canvas>
+<div id="tela" aria-hidden="true"></div>
+<svg id="lienzo">
+  <defs>
+    <!-- el abanico en bordo y en amarillo: el mismo dibujo, otra tinta -->
+    <filter id="tintaBordo"><feFlood flood-color="#800020"/><feComposite in2="SourceAlpha" operator="in"/></filter>
+    <filter id="tintaAmarillo"><feFlood flood-color="#D9A11E"/><feComposite in2="SourceAlpha" operator="in"/></filter>
+    <radialGradient id="brasa"><stop offset="0" stop-color="#9A0A2E"/><stop offset=".6" stop-color="#800020" stop-opacity=".75"/><stop offset="1" stop-color="#800020" stop-opacity="0"/></radialGradient>
+    <linearGradient id="franja"><stop offset="0" stop-color="#F2F2F2" stop-opacity="0"/><stop offset=".5" stop-color="#F2F2F2" stop-opacity=".22"/><stop offset="1" stop-color="#F2F2F2" stop-opacity="0"/></linearGradient>
+  </defs>
+  <g id="mundo"><g id="ramas"></g><g id="nudos"></g></g>
+</svg>
+
+<div class="arriba">
+  <div class="titulo">EL ÁRBOL DEL SÉKITO</div>
+  <button class="volver" id="volver">volver</button>
+  <div class="botones">
+    <button id="btnBuscar">buscar</button>
+    <button id="aMi">yo</button>
+    <button id="todo">ver todo</button>
+  </div>
+</div>
+<div class="buscar" id="buscar">
+  <input id="busca" placeholder="apodo, nombre o código" autocomplete="off" spellcheck="false" autocapitalize="off">
+  <div class="lista" id="lista"></div>
+</div>
+
+<div id="tarjeta">
+  <div class="fila"><div class="cara"></div><div><div class="t1"></div><div class="t2"></div><div class="t3"></div></div>
+    <button class="cerrar" aria-label="cerrar">×</button></div>
+  <div class="acciones"><button id="btnPlegar">plegar su rama</button><button id="btnFicha">ver su ficha</button></div>
+</div>
+
+<script>
+let YO = null;   // tu código sektario: lo dice la base
+document.documentElement.dataset.fondo = 'latido golpe';
+const MINI = new URLSearchParams(location.search).has('mini');
+if (MINI) document.documentElement.classList.add('mini');
+if (new URLSearchParams(location.search).has('portal')) document.documentElement.classList.add('portal');
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+const el = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+
+function foto(sektario){
+  const p = window.PERFILES && window.PERFILES[sektario];
+  return p && p.fotos ? '/images/perfiles/' + sektario.toLowerCase().replace(/·/g, '-') + '/1.jpg' : null;
+}
+function semilla(txt){ let h = 2166136261; for (const c of String(txt)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967295; }
+// la misma regla de búsqueda que el portal: sin mayúsculas ni tildes, el código sin el punto
+const CON = 'áàäâãéèëêíìïîóòöôõúùüûç', SIN = 'aaaaaeeeeiiiiooooouuuuc';
+const norma = t => String(t ?? '').toLowerCase().replace(/[áàäâãéèëêíìïîóòöôõúùüûç]/g, c => SIN[CON.indexOf(c)]).replace(/\s+/g, ' ').trim();
+const codigo = t => norma(t).replace(/[^a-z0-9]/g, '');
+
+// ---------------------------------------------------------------- el grano
+(function(){
+  const c = $('#grano'), x = c.getContext('2d'); c.width = 200; c.height = 200;
+  const pinta = () => { const d = x.createImageData(200, 200), b = new Uint32Array(d.data.buffer);
+    for (let i = 0; i < b.length; i++) b[i] = Math.random() < .5 ? 0xffffffff : 0; x.putImageData(d, 0, 0); };
+  pinta(); setInterval(pinta, 140);
+})();
+
+// ---------------------------------------------------------------- los datos
+let RAIZ, TODOS = [], porId = {}, porSektario = {};
+// las cuatro ramas de arriba, en este orden: la sekta y los tres fundadores
+const ARRIBA = ['sekta', 'MAU·000', 'NYA·000', 'FLR·000'];
+const SUPABASE_URL = 'https://imhbhkknpgtwmwzflqlk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_7KAttE0ISGm_BQHswIH3hg_NCQWelFs';
+const PORTAL = parent !== window;
+
+// la llave: la que guardó el portal en este navegador; si no está, se la
+// pide al portal que contiene al árbol (nunca viaja en la dirección)
+function llave(){
+  let g = null;
+  try { g = localStorage.getItem('sekito.llave'); } catch (e) {}
+  if (g || !PORTAL) return Promise.resolve(g);
+  return new Promise(listo => {
+    addEventListener('message', function oir(e){
+      if (e.origin !== location.origin || !e.data || e.data.tipo !== 'sekito:llave') return;
+      removeEventListener('message', oir); listo(e.data.codigo || null);
+    });
+    parent.postMessage({ tipo: 'sekito:pido-llave' }, location.origin);
+    setTimeout(() => listo(null), 4000);
+  });
+}
+async function traer(){
+  const codigo = await llave();
+  if (!codigo){ if (!PORTAL) location.replace('/'); throw new Error('sin llave'); }
+  const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/el_arbol', {
+    method: 'POST',
+    headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_codigo: codigo }),
+  });
+  if (!res.ok) throw new Error('http ' + res.status);
+  return res.json();
+}
+
+async function cargar(){
+  const { yo, nodos: datos } = await traer();
+  datos.forEach(d => { d.hijos = []; porId[d.id] = d; if (d.sektario) porSektario[d.sektario] = d; });
+  RAIZ = datos.find(d => d.tipo === 'raiz');
+  const sekta = datos.find(d => d.tipo === 'sekta') || RAIZ;
+  // si alguien quedara colgado de quien no está, va a LA SEKTA
+  datos.forEach(d => { if (d === RAIZ) return; const p = porId[d.padre] || sekta; p.hijos.push(d); d.arriba = p; });
+  YO = porId[yo] ? porId[yo].sektario : null;
+  // cuánta gente cuelga de cada uno (incluido): el grosor de su rama
+  (function contar(d){ d.total = 1 + d.hijos.reduce((a, h) => a + contar(h), 0); return d.total; })(RAIZ);
+  // las ramas grandes primero; las demás por nombre
+  datos.forEach(d => d.hijos.sort((a, b) => b.total - a.total || (a.titulo || '').localeCompare(b.titulo || '')));
+  const lugar = d => { const i = ARRIBA.indexOf(d.tipo === 'sekta' ? 'sekta' : d.sektario); return i < 0 ? 99 : i; };
+  RAIZ.hijos.sort((a, b) => lugar(a) - lugar(b));
+  TODOS = datos;
+  // arranca abierto solo lo tuyo: los cuatro de arriba, tu camino, y vos
+  RAIZ.abierta = true;
+  for (let d = porSektario[YO]; d; d = d.arriba) d.abierta = true;
+}
+
+// ---------------------------------------------------------------- la forma
+/* La copa dada vuelta: cada generación sobre un arco más abajo, abierto en
+   abanico. Se calcula sobre lo que está abierto: al abrir una rama, el árbol
+   se reacomoda (y se anima hasta su lugar nuevo). */
+const ABANICO = 164 * Math.PI / 180;
+const PASO = d => 470 * Math.pow(d, .86);
+function acomodar(){
+  const h = d3.hierarchy(RAIZ, d => d.abierta && d.hijos.length ? d.hijos : null);
+  d3.tree().size([ABANICO, 1]).separation((a, b) => (a.parent === b.parent ? 1 : 1.5) / a.depth)(h);
+  const visibles = [];
+  h.each(n => {
+    const d = n.data;
+    // el primero a la izquierda
+    d.ang = Math.PI / 2 + ABANICO / 2 - n.x;
+    d.rad = n.depth ? PASO(n.depth) : 0;
+    d.tx = d.rad * Math.cos(d.ang); d.ty = d.rad * Math.sin(d.ang);
+    visibles.push(d);
+  });
+  return visibles;
+}
+
+// ---------------------------------------------------------------- dibujar
+const ancho = d => 1.2 + 4.2 * Math.sqrt(d.total);
+const RADIO = 24;
+const ANCHO_ABANICO = 132, ALTO_ABANICO = ANCHO_ABANICO * 335.754 / 516.569;
+// la hebilla: un óvalo acostado alrededor del abanico, como la de un cinturón
+const HEBILLA = { rx: 96, ry: 62 };
+const MANGO = HEBILLA.ry;   // de dónde salen las ramas: el borde de abajo de la hebilla
+
+// la rama: una curva (de a, por c1 y c2, hasta b) con un ancho de w0 a w1
+function forma(a, c1, c2, b, w0, w1){
+  const P = t => { const u = 1 - t;
+    return [u*u*u*a[0] + 3*u*u*t*c1[0] + 3*u*t*t*c2[0] + t*t*t*b[0], u*u*u*a[1] + 3*u*u*t*c1[1] + 3*u*t*t*c2[1] + t*t*t*b[1]]; };
+  const izq = [], der = [], N = 26;
+  for (let i = 0; i <= N; i++){
+    const t = i / N, p = P(t), q = P(Math.min(1, t + .01)), r = P(Math.max(0, t - .01));
+    let nx = -(q[1] - r[1]), ny = q[0] - r[0]; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
+    // se afina más rápido al principio, como una rama de verdad
+    const w = (w0 + (w1 - w0) * Math.pow(t, .65)) / 2;
+    izq.push([p[0] + nx * w, p[1] + ny * w]); der.push([p[0] - nx * w, p[1] - ny * w]);
+  }
+  return 'M' + izq.concat(der.reverse()).map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L') + 'Z';
+}
+// la rama de d hasta quien lo trajo, con los dos en su lugar de este cuadro
+function curva(d){
+  const p = d.arriba, s = (semilla(d.sektario) - .5) * .08;
+  const w0 = ancho(d), w1 = Math.max(1.2, ancho(d) * .4);
+  if (p.tipo === 'raiz'){
+    // del mango del abanico: baja primero, y después se abre hacia su lugar
+    const a = [p.x, p.y + MANGO];
+    return forma(a, [a[0], a[1] + (d.y - a[1]) * .5], [d.x - (d.x - a[0]) * .25, d.y - (d.y - a[1]) * .45], [d.x, d.y], w0, w1);
+  }
+  const rm = (p.rad + d.rad) / 2, sube = d.rad - rm, baja = rm - p.rad;
+  const c1 = [p.x + Math.cos(p.ang + s) * baja, p.y + Math.sin(p.ang + s) * baja];
+  const c2 = [d.x - Math.cos(d.ang - s) * sube, d.y - Math.sin(d.ang - s) * sube];
+  return forma([p.x, p.y], c1, c2, [d.x, d.y], w0, w1);
+}
+
+function crearNudo(d){
+  if (d.tipo === 'raiz'){
+    // el abanico de la puerta: blanco, y el golpe en bordo y amarillo
+    const g = el('g', { class:'corona' }), w = ANCHO_ABANICO, h = ALTO_ABANICO;
+    const img = f => { const i = el('image', { href:'/images/abanico-seki.svg', x: -w / 2, y: -h / 2 + 2, width: w, height: h }); if (f) i.setAttribute('filter', f); return i; };
+    const resp = el('g', { class:'respira' });
+    const b = el('g', { class:'blanco' }); b.appendChild(img());
+    const cb = el('g', { class:'capa-bordo' }); cb.appendChild(img('url(#tintaBordo)'));
+    const ca = el('g', { class:'capa-amarillo' }); ca.appendChild(img('url(#tintaAmarillo)'));
+    resp.append(b, cb, ca);
+    const { rx, ry } = HEBILLA, dentro = el('clipPath', { id:'dentro' });
+    dentro.appendChild(el('ellipse', { rx, ry }));
+    const fondo = el('g', { class:'fondo', 'clip-path':'url(#dentro)' });
+    fondo.append(el('ellipse', { class:'latido', rx, ry, fill:'url(#brasa)' }),
+                 el('rect', { class:'barrido', x: -rx - 60, y: -ry, width: 60, height: ry * 2, fill:'url(#franja)' }),
+                 el('ellipse', { class:'destello', rx, ry }));
+    g.append(dentro, el('ellipse', { class:'hebilla-fondo', rx, ry }), fondo, resp, el('ellipse', { class:'hebilla', rx, ry }));
+    return g;
+  }
+  const r = RADIO;
+  const g = el('g', { class:'nudo' + (d.tipo === 'sekta' ? ' sekta' : '') + (d.sektario === YO ? ' yo' : '') });
+  g.dataset.id = d.id;
+  g.appendChild(el('circle', { class:'toque', r: r + 14 }));   // invisible: para no errarle con el dedo
+  g.appendChild(el('circle', { class:'halo', r: r + 7 }));
+  g.appendChild(el('circle', { class:'aro', r }));
+  const f = d.tipo === 'persona' ? foto(d.sektario) : null;
+  if (f){
+    const id = 'c' + d.id.replace(/[^a-z0-9]/gi, '');
+    const clip = el('clipPath', { id }); clip.appendChild(el('circle', { r: r - 1.5 }));
+    g.append(clip, el('image', { href: f, x: -r, y: -r, width: r * 2, height: r * 2, 'clip-path': `url(#${id})`, preserveAspectRatio:'xMidYMid slice' }));
+  } else {
+    const w = 24, h = w * 335.754 / 516.569;
+    g.appendChild(el('image', { href:'/images/abanico-seki.svg', x: -w / 2, y: -h / 2 - 1, width: w, height: h, opacity: d.tipo === 'sekta' ? .95 : .7 }));
+  }
+  d.texto = el('text', { class:'nombre' });
+  d.texto.textContent = d.titulo || d.sektario;
+  g.appendChild(d.texto);
+  // lo que esconde una rama plegada
+  d.mas = el('g', { class:'mas', transform:`translate(${r * .74},${-r * .74})` });
+  d.mas.append(el('circle', { r: 10.5 }), el('text', { y: 3.4 }));
+  g.appendChild(d.mas);
+  return g;
+}
+
+// el nombre va hacia afuera de la copa: abajo al medio, al costado en los lados
+function ponerNombre(d){
+  if (!d.texto) return;
+  const cx = Math.cos(d.ang), lado = cx > .3 ? 1 : cx < -.3 ? -1 : 0;
+  if (lado){ d.texto.setAttribute('x', lado * (RADIO + 10)); d.texto.setAttribute('y', 4); d.texto.setAttribute('text-anchor', lado > 0 ? 'start' : 'end'); }
+  else { d.texto.setAttribute('x', 0); d.texto.setAttribute('y', RADIO + 18 + d.escalon); d.texto.setAttribute('text-anchor', 'middle'); }
+  const escondidos = d.abierta ? 0 : d.total - 1;
+  d.mas.style.display = escondidos ? '' : 'none';
+  d.mas.querySelector('text').textContent = '+' + escondidos;
+}
+
+// si el nombre de abajo choca con el del hermano de al lado, baja un renglón
+const largo = d => (d.titulo || d.sektario || '').length * 8.1;
+function escalonar(ahora){
+  for (const p of ahora){
+    if (!p.abierta) continue;
+    let antes = null;
+    for (const d of p.hijos){
+      d.escalon = 0;
+      if (Math.abs(Math.cos(d.ang)) > .3){ antes = null; continue; }
+      const y = d.ty + RADIO + 18;
+      if (antes){
+        const ya = antes.ty + RADIO + 18 + antes.escalon;
+        if (Math.abs(d.tx - antes.tx) < (largo(d) + largo(antes)) / 2 + 8 && Math.abs(y - ya) < 13) d.escalon = ya + 14 - y;
+      }
+      antes = d;
+    }
+  }
+}
+
+let VISIBLES = [];
+// cada nudo en su (x, y) de este cuadro, y su rama hasta quien lo trajo
+function pintar(alfa){
+  for (const d of VISIBLES){
+    d.g.setAttribute('transform', `translate(${d.x.toFixed(1)},${d.y.toFixed(1)})`);
+    if (d.forma) d.forma.setAttribute('d', curva(d));
+    const a = alfa && alfa.has(d) ? alfa.get(d) : 1;
+    d.g.style.opacity = a; if (d.forma) d.forma.style.opacity = a;
+  }
+}
+
+/* reacomodar: lo que aparece nace donde está quien lo trajo y crece hasta
+   su lugar; lo que se pliega vuelve a quien lo trajo y se apaga */
+let enCurso = null;
+function reacomodar(rapido){
+  if (enCurso) enCurso();   // si algo se estaba moviendo, que termine ya
+  const antes = new Set(VISIBLES), ahora = acomodar(), quedan = new Set(ahora);
+  const nuevos = ahora.filter(d => !antes.has(d)), idos = VISIBLES.filter(d => !quedan.has(d));
+  for (const d of nuevos){   // vienen de arriba para abajo: quien lo trajo ya tiene lugar
+    d.g = crearNudo(d); $('#nudos').appendChild(d.g);
+    if (d.arriba){ d.forma = el('path', { class:'rama' }); $('#ramas').appendChild(d.forma); }
+    d.x = d.arriba ? d.arriba.x : d.tx; d.y = d.arriba ? d.arriba.y : d.ty;
+  }
+  escalonar(ahora); ahora.forEach(ponerNombre);
+  for (const d of idos){ let a = d.arriba; while (!quedan.has(a)) a = a.arriba; d.hacia = a; }
+  const todos = ahora.concat(idos), de = new Map(todos.map(d => [d, [d.x, d.y]])), aparece = new Set(nuevos);
+  VISIBLES = todos;
+  return new Promise(listo => {
+    let raf = null;
+    const fin = () => {
+      enCurso = null; if (raf) cancelAnimationFrame(raf);
+      for (const d of idos){ d.g.remove(); if (d.forma) d.forma.remove(); d.g = d.forma = d.texto = d.mas = null; }
+      VISIBLES = ahora; pintar(); marcarCamino(); listo();
+    };
+    if (rapido){ for (const d of ahora){ d.x = d.tx; d.y = d.ty; } fin(); return; }
+    enCurso = fin;
+    const t0 = performance.now(), dura = 560;
+    (function paso(t){
+      const p = Math.min(1, (t - t0) / dura), e = 1 - Math.pow(1 - p, 3), alfa = new Map();
+      for (const d of todos){
+        const [x0, y0] = de.get(d), meta = d.hacia && !quedan.has(d) ? d.hacia : d;
+        d.x = x0 + (meta.tx - x0) * e; d.y = y0 + (meta.ty - y0) * e;
+        if (aparece.has(d)) alfa.set(d, e); else if (!quedan.has(d)) alfa.set(d, 1 - e);
+      }
+      pintar(alfa);
+      if (p < 1) raf = requestAnimationFrame(paso); else fin();
+    })(t0);
+  });
+}
+
+// ---------------------------------------------------------------- el camino
+let ELEGIDO = null;
+function marcarCamino(){
+  for (const d of VISIBLES){ if (d.tipo === 'raiz') continue;
+    d.g.classList.remove('camino', 'elegido'); if (d.forma) d.forma.classList.remove('camino'); }
+  // el de quien tocaste, o si no el tuyo
+  for (let d = ELEGIDO || porSektario[YO]; d && d.tipo !== 'raiz'; d = d.arriba){
+    if (!d.g) continue; d.g.classList.add('camino'); if (d.forma) d.forma.classList.add('camino'); }
+  if (ELEGIDO && ELEGIDO.g) ELEGIDO.g.classList.add('elegido');
+}
+
+// ---------------------------------------------------------------- tocar a alguien
+async function tocar(d){
+  ELEGIDO = d;
+  // si su rama estaba plegada, se abre
+  if (d.hijos.length && !d.abierta){ d.abierta = true; await reacomodar(); }
+  marcarCamino(); mostrarTarjeta(d);
+  ir(d.tx, d.ty, Math.max(vista.k, innerWidth < 600 ? .6 : .85));
+}
+function mostrarTarjeta(d){
+  const tj = $('#tarjeta'), f = d.tipo === 'persona' ? foto(d.sektario) : null;
+  const cara = tj.querySelector('.cara'); cara.className = 'cara' + (f ? '' : ' sin'); cara.style.backgroundImage = f ? `url('${f}')` : '';
+  tj.querySelector('.t1').textContent = d.titulo || d.sektario;
+  tj.querySelector('.t2').textContent = d.tipo === 'sekta' ? 'no es nadie, y somos todos' : [d.nombre, d.sektario].filter(Boolean).join(' · ');
+  const hijos = d.hijos.length, todos = d.total - 1;
+  tj.querySelector('.t3').textContent = hijos ? 'trajo a ' + hijos + (todos > hijos ? ' · de su rama cuelgan ' + todos : '') : 'todavía no trajo a nadie';
+  $('#btnPlegar').hidden = !(hijos && d.abierta);
+  $('#btnFicha').hidden = d.tipo !== 'persona' || !PORTAL;
+  tj.classList.add('abierta');
+}
+$('#tarjeta .cerrar').addEventListener('click', () => { $('#tarjeta').classList.remove('abierta'); ELEGIDO = null; marcarCamino(); });
+$('#btnPlegar').addEventListener('click', async () => {
+  const d = ELEGIDO; if (!d) return;
+  (function plegar(x){ x.abierta = false; x.hijos.forEach(plegar); })(d);
+  await reacomodar(); mostrarTarjeta(d);
+});
+// la ficha es del portal: se la pide al que lo contiene
+$('#btnFicha').addEventListener('click', () => { if (ELEGIDO) parent.postMessage({ tipo: 'sekito:ficha', sektario: ELEGIDO.sektario }, location.origin); });
+
+// el abanico: un toque, un golpe; y solo, cada tanto
+function golpe(){
+  const c = document.querySelector('.corona'); if (!c) return;
+  c.classList.remove('golpe'); void c.getBoundingClientRect(); c.classList.add('golpe');
+  clearTimeout(golpe.t); golpe.t = setTimeout(() => c.classList.remove('golpe'), 320);
+}
+setTimeout(function cadaTanto(){ golpe(); setTimeout(cadaTanto, 6000 + Math.random() * 6000); }, 1600);
+
+// ---------------------------------------------------------------- buscar
+$('#btnBuscar').addEventListener('click', () => {
+  const b = $('#buscar'); b.classList.toggle('abierto'); if (b.classList.contains('abierto')) $('#busca').focus();
+});
+$('#busca').addEventListener('input', () => {
+  const q = norma($('#busca').value), c = codigo($('#busca').value), lista = $('#lista');
+  lista.textContent = '';
+  if (!q) return;
+  const hay = TODOS.filter(d => d.tipo !== 'raiz' && (
+      [d.titulo, d.nombre].some(v => norma(v).includes(q)) || (c && codigo(d.sektario).includes(c)))).slice(0, 8);
+  if (!hay.length){ const o = document.createElement('div'); o.className = 'op'; o.innerHTML = '<span>nadie con eso</span>'; lista.appendChild(o); return; }
+  for (const d of hay){
+    const o = document.createElement('div'), s = document.createElement('span');
+    o.className = 'op'; o.dataset.id = d.id; o.textContent = d.titulo || d.sektario;
+    s.textContent = d.tipo === 'sekta' ? '' : [d.nombre, d.sektario].filter(Boolean).join(' · ');
+    o.appendChild(s); lista.appendChild(o);
+  }
+});
+$('#lista').addEventListener('click', async e => {
+  const op = e.target.closest('[data-id]'); if (!op) return;
+  const d = porId[op.dataset.id];
+  $('#buscar').classList.remove('abierto'); $('#busca').value = ''; $('#lista').textContent = '';
+  // se abre todo el camino hasta esa persona, y el árbol viaja
+  for (let a = d.arriba; a; a = a.arriba) a.abierta = true;
+  await reacomodar();
+  tocar(d);
+});
+
+// ---------------------------------------------------------------- moverse
+const lienzo = $('#lienzo'), mundo = $('#mundo');
+let vista = { x: 0, y: 0, k: 1 }, viaje = null;
+function aplicar(){ mundo.setAttribute('transform', `translate(${vista.x},${vista.y}) scale(${vista.k})`); }
+// llevar el punto (wx, wy) del mundo a la pantalla, un poco arriba del medio
+function ir(wx, wy, k, rapido){ animarVista({ k, x: innerWidth / 2 - wx * k, y: innerHeight * .42 - wy * k }, rapido); }
+function animarVista(meta, rapido){
+  if (viaje) cancelAnimationFrame(viaje);
+  if (rapido){ vista = meta; aplicar(); return; }
+  const de = { ...vista }, t0 = performance.now();
+  (function paso(t){ const p = Math.min(1, (t - t0) / 650), e = 1 - Math.pow(1 - p, 3);
+    vista = { x: de.x + (meta.x - de.x) * e, y: de.y + (meta.y - de.y) * e, k: de.k + (meta.k - de.k) * e };
+    aplicar(); viaje = p < 1 ? requestAnimationFrame(paso) : null; })(t0);
+}
+/* "ver todo" abre todo; queda "ver menos", que vuelve a como estaba: las
+   mismas ramas abiertas y el mismo lugar */
+let antesDeTodo = null;
+async function verTodo(rapido){
+  antesDeTodo = { abiertas: TODOS.filter(d => d.abierta), vista: { ...vista } };
+  $('#todo').textContent = 'ver menos';
+  TODOS.forEach(d => { if (d.hijos.length) d.abierta = true; });
+  await reacomodar(rapido);
+  const xs = VISIBLES.map(d => d.tx), ys = VISIBLES.map(d => d.ty);
+  const x0 = Math.min(...xs) - 90, x1 = Math.max(...xs) + 90, y0 = Math.min(...ys) - 90, y1 = Math.max(...ys) + 90;
+  const k = Math.min(innerWidth / (x1 - x0), (innerHeight - 90) / (y1 - y0), 1.2);
+  animarVista({ k, x: innerWidth / 2 - (x0 + x1) / 2 * k, y: 70 + (innerHeight - 70) / 2 - (y0 + y1) / 2 * k }, rapido);
+}
+async function verMenos(){
+  const a = antesDeTodo; antesDeTodo = null;
+  $('#todo').textContent = 'ver todo';
+  TODOS.forEach(d => d.abierta = false); a.abiertas.forEach(d => d.abierta = true);
+  // si quien está elegido quedó plegado adentro de otra rama, se suelta
+  if (ELEGIDO && ELEGIDO.arriba){ for (let x = ELEGIDO.arriba; x; x = x.arriba) if (!x.abierta){ ELEGIDO = null; $('#tarjeta').classList.remove('abierta'); break; } }
+  await reacomodar();
+  if (ELEGIDO) mostrarTarjeta(ELEGIDO);
+  animarVista(a.vista);
+}
+$('#todo').addEventListener('click', () => antesDeTodo ? verMenos() : verTodo());
+/* vos, con lo que hay arriba tuyo: si el abanico entra en la pantalla (de alto y de ancho), va
+   arriba de todo y vos abajo; si no (estás muy abajo en la copa), vos al
+   medio y quien te trajo arriba */
+function aVos(rapido){
+  const yo = porSektario[YO] || RAIZ, k = innerWidth < 600 ? .5 : .8;
+  const arriba = 76 + HEBILLA.ry * k;          // el abanico, debajo de los botones
+  if (arriba + yo.ty * k <= innerHeight - 160 && Math.abs(yo.tx * k) < innerWidth / 2 - 60) animarVista({ k, x: innerWidth / 2 - yo.tx * k, y: arriba }, rapido);
+  else {
+    // vos, quien te trajo y a quienes trajiste, todo en la pantalla
+    const pts = [yo, yo.arriba, ...(yo.abierta ? yo.hijos : [])];
+    const xs = pts.map(d => d.tx), ys = pts.map(d => d.ty);
+    const x0 = Math.min(...xs) - 110, x1 = Math.max(...xs) + 110, y0 = Math.min(...ys) - 60, y1 = Math.max(...ys) + 70;
+    const kk = Math.max(.3, Math.min(k, innerWidth / (x1 - x0), (innerHeight - 160) / (y1 - y0)));
+    animarVista({ k: kk, x: innerWidth / 2 - (x0 + x1) / 2 * kk, y: 70 + (innerHeight - 70) / 2 - (y0 + y1) / 2 * kk }, rapido);
+  }
+}
+$('#aMi').addEventListener('click', async () => {
+  for (let a = porSektario[YO]; a; a = a.arriba) a.abierta = true;
+  ELEGIDO = null; $('#tarjeta').classList.remove('abierta');
+  await reacomodar(); aVos();
+});
+
+// arrastrar con un dedo (o el mouse); pellizcar con dos; la rueda acerca.
+// El dedo se "agarra" recién cuando se mueve: así un toque llega al nudo.
+const punteros = new Map(); let movido = false, inicio = null;
+const anotar = () => { inicio = { vista: { ...vista }, pts: [...punteros.values()].map(p => [...p]) }; };
+/* Un toque es apoyar y soltar sin arrastrar. Se decide acá y no con "click":
+   el click se pierde si entre apoyar y soltar el árbol se movió debajo del
+   dedo (una rama que se abre, la cámara que viaja). */
+let toque = null;
+lienzo.addEventListener('pointerdown', e => {
+  punteros.set(e.pointerId, [e.clientX, e.clientY]);
+  if (punteros.size === 1){
+    movido = false;
+    const sobre = e.target.closest('.nudo, .corona');
+    toque = sobre ? { id: e.pointerId, sobre } : null;
+  } else toque = null;
+  if (viaje){ cancelAnimationFrame(viaje); viaje = null; }
+  anotar();
+});
+lienzo.addEventListener('pointermove', e => {
+  if (!punteros.has(e.pointerId)) return;
+  punteros.set(e.pointerId, [e.clientX, e.clientY]);
+  const pts = [...punteros.values()];
+  if (pts.length === 1 && inicio.pts.length === 1){
+    const dx = pts[0][0] - inicio.pts[0][0], dy = pts[0][1] - inicio.pts[0][1];
+    if (!movido && Math.hypot(dx, dy) < (e.pointerType === 'mouse' ? 5 : 10)) return;
+    if (!movido){ movido = true; lienzo.setPointerCapture(e.pointerId); lienzo.classList.add('arrastrando'); }
+    vista = { ...inicio.vista, x: inicio.vista.x + dx, y: inicio.vista.y + dy }; aplicar();
+  } else if (pts.length === 2 && inicio.pts.length === 2){
+    if (!movido){ movido = true; for (const id of punteros.keys()) try { lienzo.setPointerCapture(id); } catch(_){} }
+    const d0 = Math.hypot(inicio.pts[0][0] - inicio.pts[1][0], inicio.pts[0][1] - inicio.pts[1][1]);
+    const d1 = Math.hypot(pts[0][0] - pts[1][0], pts[0][1] - pts[1][1]);
+    const m0 = [(inicio.pts[0][0] + inicio.pts[1][0]) / 2, (inicio.pts[0][1] + inicio.pts[1][1]) / 2];
+    const m1 = [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2];
+    const k = Math.min(2.5, Math.max(.15, inicio.vista.k * d1 / d0)), r = k / inicio.vista.k;
+    vista = { k, x: m1[0] - (m0[0] - inicio.vista.x) * r, y: m1[1] - (m0[1] - inicio.vista.y) * r }; aplicar();
+  }
+});
+// se escucha en la ventana: si el dedo se suelta afuera del árbol, igual se entera
+const soltar = e => {
+  if (!punteros.has(e.pointerId)) return;
+  punteros.delete(e.pointerId); anotar();
+  if (!punteros.size) lienzo.classList.remove('arrastrando');
+  if (e.type === 'pointerup' && toque && toque.id === e.pointerId && !movido){
+    const sobre = toque.sobre; toque = null;
+    if (sobre.classList.contains('corona')) golpe(); else if (porId[sobre.dataset.id]) tocar(porId[sobre.dataset.id]);
+  }
+  if (e.type === 'pointercancel') toque = null;
+};
+addEventListener('pointerup', soltar); addEventListener('pointercancel', soltar);
+lienzo.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (viaje){ cancelAnimationFrame(viaje); viaje = null; }
+  const k = Math.min(2.5, Math.max(.15, vista.k * Math.exp(-e.deltaY * .0016))), r = k / vista.k;
+  vista = { k, x: e.clientX - (e.clientX - vista.x) * r, y: e.clientY - (e.clientY - vista.y) * r }; aplicar();
+}, { passive:false });
+
+// ---------------------------------------------------------------- arrancar
+$('#volver').addEventListener('click', () => parent.postMessage({ tipo: 'sekito:volver' }, location.origin));
+
+/* la miniatura: de la hebilla hasta vos y quienes trajiste, todo adentro */
+function encuadrarMini(){
+  const yo = porSektario[YO] || RAIZ, pts = [];
+  for (let d = yo; d; d = d.arriba) pts.push(d);
+  if (yo.abierta) pts.push(...yo.hijos);
+  const xs = pts.map(d => d.tx), ys = pts.map(d => d.ty);
+  // se encuadra de alto; a los costados las ramas se van y se esfuman (lo hace el portal)
+  const y0 = Math.min(...ys) - (pts.includes(RAIZ) ? HEBILLA.ry + 10 : 50), y1 = Math.max(...ys) + 34;
+  const k = Math.min(innerHeight / (y1 - y0), 1);
+  animarVista({ k, x: innerWidth / 2 - yo.tx * k, y: innerHeight / 2 - (y0 + y1) / 2 * k }, true);
+}
+
+cargar().then(async () => {
+  await reacomodar(true);
+  if (MINI){
+    // el dato de abajo de la miniatura lo escribe el portal
+    const yo = porSektario[YO];
+    if (yo && PORTAL) parent.postMessage({ tipo: 'sekito:dato', hijos: yo.hijos.length, rama: yo.total - 1 }, location.origin);
+    return encuadrarMini();
+  }
+  aVos(true);
+}).catch(() => {
+  if (MINI) return;
+  const a = document.createElement('div'); a.className = 'aviso';
+  a.textContent = 'el portal no responde.. probá de nuevo'; document.body.appendChild(a);
+});
+</script>
+</body>
+</html>
