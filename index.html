@@ -146,7 +146,7 @@
     scroll-padding-top:0;
   }
   /* Solo la historia y el perfil se enganchan. Las pantallas de adentro
-     —ritos, rama, invitar— son de scroleo libre: son más altas que la
+     —ritos, fichas, invitar— son de scroleo libre: son más altas que la
      pantalla y el enganche no dejaba llegar al final. */
   .historia.active,
   .member-screen.active{ scroll-snap-align:start; }
@@ -577,49 +577,6 @@
   }
   .share-feedback.show{ opacity:1; }
 
-  /* ---------- la rama, adentro del perfil ---------- */
-  .rama-preview{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    text-align:center;
-    cursor:pointer;
-  }
-  .rama-preview:focus-visible,
-  .ritos-preview:focus-visible{ outline:1px solid var(--gray); outline-offset:8px; }
-
-  .rp-origen{
-    font-size:10px; letter-spacing:.16em; color:var(--gray);
-  }
-  /* el hilo que une los tres niveles; solo aparece si hay algo que unir */
-  .rp-origen:not(:empty)::after,
-  .rp-hijos:not(:empty)::before{
-    content:"";
-    display:block;
-    width:1px; height:13px;
-    margin:7px auto;
-    background:rgba(var(--gray-rgb),.35);
-  }
-  .rp-yo{
-    font-size:23px;
-    letter-spacing:.18em;
-    padding-left:.18em;   /* centrado óptico: el espaciado sobra a la derecha */
-    color:var(--white);
-    text-shadow:0 0 16px rgba(var(--white-rgb),.3);
-  }
-  .rp-hijos{
-    font-size:10.5px; letter-spacing:.1em; color:var(--gray);
-  }
-  .rp-hijos-lista{
-    display:flex; flex-wrap:wrap; justify-content:center;
-    gap:5px 14px;
-  }
-  .rp-mas{ color:rgba(var(--gray-rgb),.65); }
-  .rp-nadie{
-    font-size:10px; letter-spacing:.08em;
-    color:rgba(var(--gray-rgb),.6);
-  }
-
   /* ---------- mi rama: el árbol en miniatura ----------
      es sekito.ar/arbol?mini adentro de un iframe; a los costados las ramas
      se esfuman */
@@ -636,72 +593,6 @@
   #arbolPantalla.abierta{ display:block; }
   #arbolPantalla iframe{ width:100%; height:100%; border:0; display:block; }
 
-  /* ---------- mi rama del árbol ---------- */
-  .rama-guia{
-    text-align:center;
-    margin:64px 0 44px;
-  }
-  .rama-guia .etiqueta{
-    font-size:10px; letter-spacing:.16em; text-transform:uppercase;
-    color:var(--gray); margin-bottom:12px;
-  }
-  .rama-guia .quien{
-    font-size:17px; letter-spacing:.14em; color:var(--white);
-  }
-  .rama-cuenta{
-    text-align:center;
-    border-top:1px solid rgba(var(--gray-rgb),.25);
-    padding-top:34px;
-    margin-bottom:38px;
-  }
-  .rama-numero{
-    font-size:58px; line-height:1;
-    letter-spacing:.06em;
-    color:var(--white);
-    text-shadow:0 0 22px rgba(var(--white-rgb),.28);
-  }
-  .rama-leyenda{
-    font-size:11px; letter-spacing:.08em; color:var(--gray); margin-top:14px;
-  }
-  .rama-leyenda b{ color:var(--white); font-weight:400; }
-  .rama-lista{ font-size:12.5px; }
-  .rama-nodo{
-    display:flex; align-items:baseline; gap:9px;
-    padding:10px 0;
-    border-bottom:1px solid rgba(var(--gray-rgb),.12);
-  }
-  .rama-nodo:last-child{ border-bottom:none; }
-  /* quien no trajo a nadie no tiene flecha, pero se alinea igual que quien sí */
-  .rama-flecha{
-    flex:none; width:11px;
-    color:var(--gray); font-size:9px;
-    transition:transform .2s ease;
-  }
-  .rama-nodo.abierto .rama-flecha{ transform:rotate(90deg); }
-  .rama-sekt{ color:var(--white); letter-spacing:.06em; }
-  .rama-real{ color:var(--gray); font-size:11px; }
-  .rama-cuantos{
-    margin-left:auto; flex:none;
-    color:rgba(var(--gray-rgb),.7); font-size:10.5px;
-  }
-  .rama-tocable{ cursor:pointer; }
-  /* la línea de la izquierda es lo que hace ver que cuelgan de arriba */
-  .rama-hijos{
-    margin-left:5px;
-    padding-left:15px;
-    border-left:1px solid rgba(var(--gray-rgb),.2);
-  }
-  .rama-sub{
-    font-size:10px; letter-spacing:.18em;
-    color:rgba(var(--gray-rgb),.7);
-    text-align:center;
-    margin-top:-24px; margin-bottom:34px;
-  }
-  .rama-vacio{
-    text-align:center; color:var(--gray); font-size:12px;
-    line-height:1.9; padding:10px 0 0;
-  }
-
   /* ---------- las secciones del perfil ---------- */
   .seccion{ margin:40px 0; text-align:center; }
   /* la foto de fondo levanta el brillo detrás del texto: una sombra apenas
@@ -714,7 +605,6 @@
   }
   /* el gris de siempre se apaga contra el humo: en el perfil sube un escalón */
   body.en-perfil .member-screen .seccion-titulo span,
-  body.en-perfil .member-screen .rp-hijos,
   body.en-perfil .member-screen .rt-leyenda,
   body.en-perfil .member-screen .seccion-btn{
     color:rgba(var(--white-rgb),.82);
@@ -2150,15 +2040,7 @@
     <div id="fichaCuerpo"><div class="ritos-cargando">buscando...</div></div>
   </section>
 
-  <section id="rama-screen" class="screen">
-    <div class="top-row">
-      <button class="exit-link" id="exitRama">volver</button>
-    </div>
 
-    <div class="ritos-titulo">mi rama</div>
-
-    <div id="ramaCuerpo"><div class="ritos-cargando">buscando...</div></div>
-  </section>
 
 
 
@@ -2435,12 +2317,9 @@ function entrarAlSitio(miembro){
   document.body.classList.add('en-perfil');
   if (window.__marcarPantalla) window.__marcarPantalla();
   if (window.__refrescarRitos)    window.__refrescarRitos();
-  if (window.__refrescarRama)     window.__refrescarRama();
   if (window.__arbolMini)         window.__arbolMini();
   if (window.__refrescarSusurros) window.__refrescarSusurros();
 
-  // el nombre sektario ya no va debajo del nombre de pila: lo muestra el
-  // preview de la rama, grande y en el lugar que ocupa en el árbol
   memberNombre.textContent = tituloDe(miembro);
   if (window.__pintarApodo) window.__pintarApodo();
   pintarFotos(miembro.nombre_sektario);
@@ -2471,7 +2350,7 @@ function resetToGate(){
   document.getElementById('codigo-nuevo').classList.remove('active');
   document.getElementById('invite-screen').classList.remove('active');
   document.getElementById('ritos-screen').classList.remove('active');
-  document.getElementById('rama-screen').classList.remove('active');
+  if (window.__cerrarArbol) window.__cerrarArbol();
   historiaScreen.classList.remove('active');
   scrollToTop();
   memberScreen.classList.remove('active');
@@ -3792,7 +3671,6 @@ reveal();
   });
 })();
 
-/* ---------- mi rama del árbol ---------- */
 /* ---------- lxs devotxs: buscar a alguien y ver quién es ----------
    El código sektario todavía no se aprendió. Poner el nombre al lado del
    código en cada pantalla es un parche por lugar; esto es el lugar donde
@@ -4210,198 +4088,6 @@ reveal();
   });
 })();
 
-(function rama(){
-  const pantalla = document.getElementById('rama-screen');
-  const salir    = document.getElementById('exitRama');
-  const cuerpo   = document.getElementById('ramaCuerpo');
-
-  let volverA = null;
-
-  const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
-    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-  let datos = null;   // lo que devolvió mi_rama la última vez
-
-  async function abrir(desde){
-    if (!miembroActual || !codigoActual) return;
-    volverA = desde.closest('.member-screen');
-    volverA.classList.remove('active');
-    historiaScreen.classList.remove('active');
-    pantalla.classList.add('active');
-    scrollToTop();
-
-    // si ya lo trajimos para el preview, se pinta sin esperar la red
-    if (datos) pintar(datos);
-    else cuerpo.innerHTML = '<div class="ritos-cargando">buscando...</div>';
-
-    const r = await llamarRPC('mi_rama', { p_codigo: codigoActual });
-    if (!r.ok || !r.datos){
-      if (!datos) cuerpo.innerHTML = '<div class="ritos-cargando">el portal no responde.. probá de nuevo</div>';
-      return;
-    }
-    datos = r.datos;
-    pintar(datos);
-    pintarPreview();
-  }
-
-  document.querySelectorAll('.rama-abrir').forEach(el => {
-    el.addEventListener('click', () => abrir(el));
-    el.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); abrir(el); }
-    });
-  });
-
-  // --- el resumen que se ve en el perfil ---
-  const TOPE = 4;   // más de esto no entra en un teléfono angosto
-
-  function pintarPreview(){
-    if (!datos) return;
-    const d = datos;
-
-    // los fundadores no tienen a nadie arriba: son la semilla, y quedó
-    // decidido que ahí no vaya ningún texto
-    const origen = (d.fundador || !d.guia) ? '' : esc(d.guia);
-
-    const hijos = (d.rama || []).filter(x => x.profundidad === 1);
-    let abajo;
-    if (!hijos.length){
-      abajo = '<span class="rp-nadie">todavía no trajiste a nadie</span>';
-    } else if (hijos.length <= TOPE){
-      abajo = hijos.map(x => '<span>' + esc(x.nombre || '—') + '</span>').join('');
-    } else {
-      abajo = hijos.slice(0, 3).map(x => '<span>' + esc(x.nombre || '—') + '</span>').join('') +
-              '<span class="rp-mas">y ' + (hijos.length - 3) + ' más</span>';
-    }
-
-    document.querySelectorAll('.rama-preview').forEach(box => {
-      box.querySelector('.rp-origen').innerHTML = origen;
-      box.querySelector('.rp-yo').textContent   = (miembroActual && miembroActual.nombre_sektario) || '—';
-      box.querySelector('.rp-hijos').innerHTML  = '<div class="rp-hijos-lista">' + abajo + '</div>';
-    });
-  }
-
-  // al entrar al sitio se trae una vez y alcanza para el preview y la pantalla
-  window.__refrescarRama = async function(){
-    if (!codigoActual) return;
-    const r = await llamarRPC('mi_rama', { p_codigo: codigoActual });
-    if (!r.ok || !r.datos) return;
-    datos = r.datos;
-    pintarPreview();
-  };
-
-  salir.addEventListener('click', () => {
-    pantalla.classList.remove('active');
-    historiaScreen.classList.add('active');
-    if (volverA){
-      volverA.classList.add('active');
-      volverA.scrollIntoView({ block:'start' });
-    }
-  });
-
-  function pintar(d){
-    indexar(d);
-    // de dónde venís. Sin invitador cargado no quiere decir fundador: son dos
-    // cosas distintas y el texto tiene que distinguirlas.
-    let etiqueta, quien;
-    if (d.fundador){
-      // los fundadores no cuelgan de nadie: arriba no va nada, igual que en el
-      // preview del perfil
-      etiqueta = null;
-      quien    = null;
-    } else if (!d.guia){
-      etiqueta = 'viniste por';
-      quien    = 'no figura quién te trajo';
-    } else if (d.guia === 'LA SEKTA'){
-      etiqueta = 'viniste por';
-      quien    = 'LA SEKTA';
-    } else {
-      etiqueta = 'viniste por';
-      quien    = d.guia;
-    }
-
-    const total = d.total || 0, directos = d.directos || 0;
-
-    let cuenta;
-    if (total === 0){
-      cuenta = '<div class="rama-cuenta">' +
-                 '<div class="rama-vacio">todavía no trajiste a nadie.<br>' +
-                 'el sékito crece por invitación.</div>' +
-               '</div>';
-    } else {
-      // si todos los que colgás son los que trajiste vos, no hay dos números
-      // que contar: sería decir lo mismo dos veces
-      const leyenda = (total === directos)
-        ? (total === 1 ? 'persona entró por vos' : 'personas entraron por vos')
-        : 'personas cuelgan de vos.. <b>' + directos + '</b> las trajiste en persona';
-      cuenta = '<div class="rama-cuenta">' +
-                 '<div class="rama-numero">' + total + '</div>' +
-                 '<div class="rama-leyenda">' + leyenda + '</div>' +
-               '</div>';
-    }
-
-    const arriba = quien
-      ? '<div class="rama-guia">' +
-          '<div class="etiqueta">' + etiqueta + '</div>' +
-          '<div class="quien">' + esc(quien) + '</div>' +
-        '</div>'
-      : '';
-
-    cuerpo.innerHTML =
-      '<div class="rama-sub">dentro del árbol de la sekta</div>' +
-      arriba +
-      cuenta +
-      '<div class="rama-lista">' + dibujarNivel(1, null) + '</div>';
-  }
-
-  // quién cuelga de quién, para poder plegar
-  let porPadre = {};
-  const abiertos = new Set();
-
-  function indexar(d){
-    porPadre = {};
-    (d.rama || []).forEach(x => {
-      const clave = x.profundidad === 1 ? 'raiz' : x.de;
-      (porPadre[clave] = porPadre[clave] || []).push(x);
-    });
-  }
-
-  // cuántos cuelgan de alguien contando toda su descendencia, no solo los suyos
-  function cuantosCuelgan(id){
-    const hijos = porPadre[id] || [];
-    return hijos.reduce((n, h) => n + 1 + cuantosCuelgan(h.id), 0);
-  }
-
-  function dibujarNivel(nivel, padre){
-    const hijos = porPadre[nivel === 1 ? 'raiz' : padre] || [];
-    return hijos.map(x => {
-      const cuantos = cuantosCuelgan(x.id);
-      const tiene = cuantos > 0;
-      const abierto = abiertos.has(x.id);
-
-      const fila =
-        '<div class="rama-nodo' + (tiene ? ' rama-tocable' : '') + (abierto ? ' abierto' : '') + '"' +
-             (tiene ? ' data-abrir="' + x.id + '"' : '') + '>' +
-          '<span class="rama-flecha">' + (tiene ? '❯' : '') + '</span>' +
-          '<span class="rama-sekt">' + esc(x.nombre || '—') + '</span>' +
-          (x.nombre_real ? '<span class="rama-real">' + esc(x.nombre_real) + '</span>' : '') +
-          (tiene ? '<span class="rama-cuantos">' + cuantos + '</span>' : '') +
-        '</div>' +
-        (tiene && abierto
-          ? '<div class="rama-hijos">' + dibujarNivel(nivel + 1, x.id) + '</div>'
-          : '');
-      return fila;
-    }).join('');
-  }
-
-  cuerpo.addEventListener('click', e => {
-    const n = e.target.closest('[data-abrir]');
-    if (!n || !datos) return;
-    const id = n.dataset.abrir;
-    if (abiertos.has(id)) abiertos.delete(id); else abiertos.add(id);
-    pintar(datos);
-  });
-})();
-
 /* ---------- el "atrás" del navegador ----------
    La gente usa el gesto de atrás y eso, en un sitio de una sola página, te
    saca afuera. Cada vez que se abre una pantalla dejamos una marca en el
@@ -4411,7 +4097,6 @@ reveal();
   const SALIDAS = {
     'invite-screen': 'exitInvite',
     'ritos-screen':  'exitRitos',
-    'rama-screen':   'exitRama',
     'ficha-screen':  'exitFicha',
     'susurros-screen': 'exitSusurros',
   };
@@ -4419,10 +4104,12 @@ reveal();
   function marcar(){ history.pushState({ sekito:true }, ''); }
   window.__marcarPantalla = marcar;
 
-  document.querySelectorAll('.invite-trigger, .ritos-abrir, .rama-abrir, .sus-abrir')
+  document.querySelectorAll('.invite-trigger, .ritos-abrir, .arbol-abrir, .sus-abrir')
     .forEach(el => el.addEventListener('click', marcar));
 
   window.addEventListener('popstate', () => {
+    // el árbol va encima de todo: el atrás lo cierra primero
+    if (window.__cerrarArbol && window.__cerrarArbol()) return;
     const abierta = Object.keys(SALIDAS)
       .find(id => document.getElementById(id).classList.contains('active'));
 
@@ -4557,6 +4244,7 @@ reveal();
   window.__arbolMini = function(){
     pantalla.innerHTML = '';
     dato.textContent = '';
+    fichaDesdeArbol = false;
     if (!mini) return;
     mini.innerHTML = '<iframe src="/arbol/?mini" tabindex="-1" aria-hidden="true" title="mi rama"></iframe>';
   };
@@ -4568,9 +4256,30 @@ reveal();
     document.body.style.overflow = 'hidden';
   }
   function cerrar(){
+    const estaba = pantalla.classList.contains('abierta');
     pantalla.classList.remove('abierta');
     document.body.style.overflow = '';
+    return estaba;
   }
+  window.__cerrarArbol = cerrar;
+
+  // la ficha de alguien, desde el árbol: el perfil se aparta (si no, queda
+  // encima y la ficha no se ve) y su "volver" trae de nuevo al árbol
+  let fichaDesdeArbol = false;
+  function verFicha(sektario){
+    if (!window.__abrirFicha) return;
+    const perfil = document.getElementById('member');
+    cerrar();
+    perfil.classList.remove('active');
+    fichaDesdeArbol = true;
+    if (window.__marcarPantalla) window.__marcarPantalla();
+    window.__abrirFicha(sektario, perfil);
+  }
+  document.getElementById('exitFicha').addEventListener('click', () => {
+    if (!fichaDesdeArbol) return;
+    fichaDesdeArbol = false;
+    abrir();
+  });
   document.querySelectorAll('.arbol-abrir').forEach(el => {
     el.addEventListener('click', abrir);
     el.addEventListener('keydown', e => {
@@ -4588,8 +4297,7 @@ reveal();
     } else if (d.tipo === 'sekito:volver'){
       cerrar();
     } else if (d.tipo === 'sekito:ficha' && d.sektario){
-      cerrar();
-      if (window.__abrirFicha) window.__abrirFicha(d.sektario, document.getElementById('member'));
+      verFicha(d.sektario);
     } else if (d.tipo === 'sekito:dato'){
       dato.textContent = d.hijos
         ? 'trajiste a ' + d.hijos + (d.rama > d.hijos ? ' · de tu rama cuelgan ' + d.rama : '')
