@@ -151,22 +151,10 @@ create index if not exists invitaciones_generada_por_idx on public.invitaciones 
 -- ----------------------------------------------------------------------------
 -- entradas
 -- ----------------------------------------------------------------------------
--- comprobante: guardá acá la URL del archivo (Supabase Storage), no el archivo.
-create table if not exists public.entradas (
-  id             uuid primary key default gen_random_uuid(),
-  miembro_id     uuid not null references public.miembros(id) on delete cascade,
-  fiesta_id      uuid not null references public.fiestas(id)  on delete cascade,
-  cantidad       integer not null default 1 check (cantidad > 0),
-  monto          numeric(12,2) check (monto >= 0),
-  estado_pago    text not null default 'pendiente'
-                   check (estado_pago in ('pendiente', 'pagado', 'cancelado')),
-  comprobante    text,
-  link_passline  text,
-  creado_en      timestamptz not null default now()
-);
-
-create index if not exists entradas_miembro_idx on public.entradas (miembro_id);
-create index if not exists entradas_fiesta_idx  on public.entradas (fiesta_id);
+-- Acá había un boceto que nunca se usó: la entrada pegada al que la compraba,
+-- sin forma de que cambiara de manos, y el comprobante como una URL suelta.
+-- La versión que se usa vive en migracion-preventa.sql, que además separa la
+-- compra (la plata) de la entrada (la persona).
 
 
 -- ============================================================================

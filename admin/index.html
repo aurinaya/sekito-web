@@ -72,14 +72,82 @@ nav button{
 }
 nav button[aria-selected="true"]{color:var(--white); border-bottom-color:var(--amarillo)}
 /* el contador solo aparece si hay algo esperando */
-#contaVal{
+/* el contador de cada pestaña. Sin la píldora, el número se lee pegado al
+   nombre y "entradas s7" con un 1 al lado pasa a ser "entradas s71". */
+#contaVal, #contaS7{
   display:none; margin-left:7px; padding:1px 6px; border-radius:8px;
   background:var(--amarillo); color:var(--black); font-size:10px;
 }
-#contaVal.hay{display:inline-block}
+#contaVal.hay, #contaS7.hay{display:inline-block}
 main{padding:20px; flex:1}
 .vista{display:none}
 .vista.activa{display:block}
+
+/* las tandas: el precio se cambia acá, no publicando el sitio */
+.tandas{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 20px}
+.tanda{
+  display:flex;flex-direction:column;gap:4px;align-items:flex-start;
+  background:none;border:1px solid rgba(255,255,255,.18);
+  color:inherit;font:inherit;padding:12px 16px;cursor:pointer;text-align:left;
+}
+.tanda:hover{border-color:rgba(255,255,255,.45)}
+.tanda.activa{border-color:#D9A11E}
+.tanda-nombre{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.65}
+.tanda.activa .tanda-nombre{color:#D9A11E;opacity:1}
+.tanda-precio{font-size:19px}
+.tanda-vendidas{font-size:10px;opacity:.45}
+
+.est-espera{opacity:.6}
+.est-ok{color:#D9A11E}
+.est-mal{color:#C24}
+.est-pide{color:#E5843F}
+
+/* los números de arriba: lo que hay que poder mirar sin contar filas */
+.numeros{margin:0 0 22px}
+.suma{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;margin-bottom:10px}
+.signo{display:flex;align-items:center;opacity:.35;font-size:16px}
+.numero.total{border-color:rgba(255,255,255,.35)}
+.numero.total .numero-dato{color:#F2F2F2}
+.numero{
+  border:1px solid rgba(255,255,255,.12);
+  padding:12px 18px;min-width:120px;
+}
+.numero.pide{border-color:rgba(229,132,63,.55)}
+.numero-dato{font-size:22px}
+.numero.pide .numero-dato{color:#E5843F}
+.numero-rotulo{font-size:10px;letter-spacing:.1em;opacity:.5;margin-top:5px}
+
+.barra-s7{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 26px}
+.titulo-tabla{
+  font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  opacity:.55;margin:32px 0 6px;font-weight:400;
+}
+
+/* el tipo de entrada se ve de un vistazo: en la puerta no es lo mismo una
+   preventa que un free */
+.sello{
+  display:inline-block;padding:2px 8px;font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase;border:1px solid;
+}
+.sello-preventa{border-color:rgba(147,168,172,.45);color:#93A8AC}
+.sello-early{border-color:rgba(147,168,172,.45);color:#93A8AC}
+.sello-final{border-color:rgba(147,168,172,.45);color:#93A8AC}
+.sello-staff{border-color:rgba(217,161,30,.7);color:#D9A11E}
+.sello-free{border-color:rgba(128,0,32,.9);color:#C9566E}
+
+.dar-resultados{margin:4px 0 8px}
+.dar-op{
+  display:flex;justify-content:space-between;gap:10px;
+  padding:10px 0;cursor:pointer;font-size:13px;
+  border-bottom:1px solid rgba(147,168,172,.12);
+}
+.dar-op:hover{color:#fff}
+.ya-tiene{color:#D9A11E;font-size:11px}
+.dar-elegido{
+  border:1px solid rgba(217,161,30,.5);padding:10px 12px;
+  margin:4px 0 10px;font-size:13px;
+}
+
 /* "quién lo trajo": se busca tipeando, no recorriendo una lista de cien */
 .elige-resultados{margin-top:2px}
 .elige-op{
@@ -100,12 +168,23 @@ main{padding:20px; flex:1}
 }
 .elige-cambiar:hover{color:var(--white)}
 
-.barra{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px}
-.barra input[type="search"]{
-  background:transparent; border:1px solid var(--linea); color:var(--white);
-  padding:9px 12px; border-radius:2px; outline:none; min-width:180px; flex:1;
+/* + entradas: tres caminos para "para quién" */
+.segmento{display:flex;gap:6px;flex-wrap:wrap}
+.segmento button{
+  background:none;border:1px solid var(--linea);color:var(--gray);
+  font:inherit;font-size:12px;padding:8px 12px;cursor:pointer;
 }
-.barra input[type="search"]:focus{border-color:var(--gray)}
+.segmento button.activo{border-color:#D9A11E;color:#D9A11E}
+.fila-campos{display:grid;grid-template-columns:90px 1fr 1fr;gap:10px}
+.fila-campos .campo{margin-bottom:14px}
+.en-resumen{font-size:12.5px;color:var(--gray);margin:4px 0 0}
+.en-resumen strong{color:var(--white);font-weight:500}
+/* la tarjeta, para mandársela por WhatsApp a alguien de afuera */
+.tarjeta-img{width:100%;max-width:300px;display:block;margin:0 auto 14px;box-shadow:0 0 30px rgba(128,0,32,.35)}
+.codigo-grande{font-size:22px;letter-spacing:.14em;text-align:center;margin:0 0 6px}
+a.btn{text-decoration:none;display:inline-block}
+.fila-anulada td{opacity:.4}
+.sello-sekreta,.sello-hermética,.sello-abierta{border-color:rgba(147,168,172,.45);color:#93A8AC}
 
 .ver-todos{
   display:inline-flex;align-items:center;gap:7px;
@@ -113,6 +192,28 @@ main{padding:20px; flex:1}
 }
 .ver-todos:hover{opacity:1}
 #conteoMiembros strong{font-size:15px;color:#F2F2F2}
+
+/* 250 entradas a mano: cada tecla que no hay que apretar cuenta */
+.copiable{cursor:pointer;border-bottom:1px dotted rgba(255,255,255,.3)}
+.copiable:hover{border-bottom-color:#fff}
+.copiable.copiado{color:#D9A11E;border-bottom-color:#D9A11E}
+
+/* un comprobante es una captura de celular: alto y flaco. Entra entero y se
+   recorre, pero la barra de cerrar se queda pegada arriba — si se va con el
+   scroll, quedás encerrado en la foto. */
+.caja-comprobante{max-width:560px;width:92vw;max-height:88vh;overflow:auto}
+.comp-barra{
+  display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;z-index:2;
+  background:var(--black);padding:2px 0 12px;
+}
+#imgComprobante{width:100%;height:auto;display:block;background:#000}
+.barra{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px}
+.barra input[type="search"]{
+  background:transparent; border:1px solid var(--linea); color:var(--white);
+  padding:9px 12px; border-radius:2px; outline:none; min-width:180px; flex:1;
+}
+.barra input[type="search"]:focus{border-color:var(--gray)}
 
 /* ---------- tablas ---------- */
 .tabla-scroll{overflow-x:auto; border:1px solid var(--linea); border-radius:2px}
@@ -204,6 +305,8 @@ td.apretado{white-space:normal; min-width:150px}
   header, nav{padding-left:14px; padding-right:14px}
 }
 </style>
+<!-- la tarjeta de la entrada de SEKI 7, la misma que dibuja el portal -->
+<script src="/entrada.js"></script>
 </head>
 <body>
 
@@ -227,6 +330,7 @@ td.apretado{white-space:normal; min-width:150px}
   <nav role="tablist">
     <button role="tab" data-vista="miembros" aria-selected="true">miembros</button>
     <button role="tab" data-vista="validaciones" aria-selected="false">validaciones<span id="contaVal"></span></button>
+    <button role="tab" data-vista="s7" aria-selected="false">entradas s7<span id="contaS7"></span></button>
     <button role="tab" data-vista="linaje" aria-selected="false">linaje</button>
     <button role="tab" data-vista="registro" aria-selected="false">registro</button>
   </nav>
@@ -293,6 +397,66 @@ td.apretado{white-space:normal; min-width:150px}
       </div>
     </div>
 
+    <div class="vista" id="v-s7">
+      <div class="numeros" id="numerosS7"></div>
+
+      <div class="tandas" id="tandas"></div>
+
+      <div class="barra-s7">
+        <button class="btn btn-principal" id="btnEntradas">+ entradas</button>
+      </div>
+
+      <h3 class="titulo-tabla">las transferencias</h3>
+      <p class="tenue" style="margin-top:0">
+        Abrí el comprobante; si está bien, confirmá. Ahí nacen las entradas:
+        la de quien compró ya con su código, y le llega el mail. Se abren de
+        a uno: cada comprobante lleva el CBU y el nombre completo de alguien.
+      </p>
+      <div class="tabla-scroll">
+        <table>
+          <thead><tr>
+            <th>quién</th><th>cuántas</th><th>cuánto</th><th>tanda</th>
+            <th>cuándo</th><th>estado</th><th></th>
+          </tr></thead>
+          <tbody id="filasCompras"></tbody>
+        </table>
+      </div>
+
+      <h3 class="titulo-tabla">las entradas</h3>
+      <p class="tenue" style="margin-top:0">
+        Todas, siempre: ninguna fila desaparece. Cada entrada asignada tiene
+        su código, que es lo que se muestra en la puerta. Tocá el código o el
+        nombre para copiarlo.
+      </p>
+      <div class="tabla-scroll">
+        <table>
+          <thead><tr>
+            <th>código</th><th>quién</th><th>contacto</th><th>tipo</th><th>precio</th>
+            <th>de dónde</th><th>estado</th><th></th>
+          </tr></thead>
+          <tbody id="filasEntradas"></tbody>
+        </table>
+      </div>
+
+      <h3 class="titulo-tabla">la puerta</h3>
+      <p class="tenue" style="margin-top:0">
+        Se acredita en <strong>sekito.ar/puerta</strong>, desde uno o varios
+        celus a la vez. Cada persona que acredita tiene su llave de puerta:
+        solo sirve para escanear, buscar y marcar; no ve mails, teléfonos ni
+        llaves de nadie. Por si se corta internet, la lista para imprimir.
+      </p>
+      <div class="barra-s7">
+        <button class="btn" id="btnPuertaNueva">+ llave de puerta</button>
+        <button class="btn" id="btnLista">lista para imprimir</button>
+      </div>
+      <div class="tabla-scroll">
+        <table>
+          <thead><tr><th>quién</th><th>llave</th><th>marcó</th><th>último uso</th><th>estado</th><th></th></tr></thead>
+          <tbody id="filasPuertas"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="vista" id="v-linaje">
       <p class="tenue" style="margin-top:0">
         Cada quien debajo de quien lo trajo. Para cambiar un invitador, usá
@@ -312,6 +476,100 @@ td.apretado{white-space:normal; min-width:150px}
     </div>
   </main>
 </section>
+
+<!-- + entradas: margen total. También sirve para asignar una sin dueño -->
+<div class="fondo" id="modalEntradas">
+  <div class="ventana">
+    <h2 id="enTitulo">+ entradas</h2>
+
+    <div id="enPaso1">
+      <div class="fila-campos" id="enQueCampos">
+        <div class="campo">
+          <label for="enCuantas">cuántas</label>
+          <input id="enCuantas" type="number" min="1" max="50" value="1">
+        </div>
+        <div class="campo">
+          <label for="enTipo">tipo</label>
+          <select id="enTipo"></select>
+        </div>
+        <div class="campo">
+          <label for="enPrecio">precio c/u</label>
+          <input id="enPrecio" type="number" min="0" step="1" value="0">
+        </div>
+      </div>
+
+      <div class="campo">
+        <label>para quién</label>
+        <div class="segmento" id="enPara">
+          <button type="button" data-para="portal" class="activo">alguien del portal</button>
+          <button type="button" data-para="afuera">alguien de afuera</button>
+          <button type="button" data-para="nadie">sin asignar</button>
+        </div>
+      </div>
+
+      <div id="enPortal">
+        <div class="campo">
+          <input id="enBuscar" placeholder="buscá por apodo, nombre, apellido o código" autocomplete="off" spellcheck="false">
+        </div>
+        <div id="enResultados" class="dar-resultados"></div>
+        <div id="enElegido" class="dar-elegido" hidden></div>
+      </div>
+
+      <div id="enAfuera" hidden>
+        <div class="campo"><label for="enNombre">nombre</label><input id="enNombre" autocomplete="off"></div>
+        <div class="campo"><label for="enApellido">apellido</label><input id="enApellido" autocomplete="off"></div>
+        <div class="campo"><label for="enApodo">apodo (opcional)</label><input id="enApodo" autocomplete="off"></div>
+        <div class="campo"><label for="enContacto">teléfono o mail (opcional)</label><input id="enContacto" autocomplete="off"></div>
+      </div>
+
+      <p class="tenue" id="enNadie" hidden style="font-size:12.5px">
+        Quedan en manos de LA SEKTA. Cuando sepas de quién son, las asignás
+        desde la lista.
+      </p>
+
+      <div class="campo" id="enNotaCampo">
+        <label for="enNota">nota</label>
+        <input id="enNota" placeholder="pagó por transferencia a Flor · toca a las 3 · +1 de Naya">
+      </div>
+
+      <p class="en-resumen" id="enResumen"></p>
+      <p class="aviso" id="enAviso"></p>
+      <div class="pie">
+        <button class="btn" type="button" data-cerrar>cancelar</button>
+        <button class="btn btn-principal" type="button" id="enConfirmar">generar</button>
+      </div>
+    </div>
+
+    <div id="enPaso2" hidden>
+      <div id="enListo"></div>
+      <div class="pie">
+        <button class="btn" type="button" data-cerrar>listo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- la tarjeta de una entrada: para mandarla por WhatsApp -->
+<div class="fondo" id="modalTarjeta">
+  <div class="ventana">
+    <h2>la entrada</h2>
+    <div id="tarjetaCuerpo"></div>
+    <div class="pie">
+      <button class="btn" type="button" data-cerrar>cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- el comprobante, de a uno -->
+<div class="fondo" id="modalComprobante">
+  <div class="ventana caja-comprobante">
+    <div class="comp-barra">
+      <span class="tenue">comprobante</span>
+      <button class="btn" data-cerrar>cerrar</button>
+    </div>
+    <img id="imgComprobante" alt="comprobante de transferencia">
+  </div>
+</div>
 
 <!-- crear una llave -->
 <div class="fondo" id="modalCrear">
@@ -427,10 +685,29 @@ function enCastellano(motivo){
   if (motivo === 'sin_conexion')          return 'el portal no responde.. probá de nuevo';
   // un mail, una persona (supabase/migracion-un-mail.sql)
   if (motivo === 'mail_ya_esta')          return 'ese mail ya es de otra persona activa del portal';
+  // las de SEKI 7
+  const S7 = {
+    ya_tiene_entrada:  'esa persona ya tiene su entrada',
+    ya_tiene_duenio:   'esa entrada ya tiene dueño',
+    persona_invalida:  'esa persona no está activa en el portal',
+    externo_una_sola:  'alguien de afuera lleva una sola entrada',
+    para_uno_solo:     'elegí alguien del portal o alguien de afuera, no los dos',
+    cantidad_invalida: 'la cantidad tiene que ser entre 1 y 50',
+    precio_invalido:   'el precio no puede ser negativo',
+    tipo_invalido:     'ese tipo de entrada no existe',
+    compra_no_revisable: 'esa compra ya se resolvió',
+    falta_motivo:      'falta el motivo',
+    no_estaba_asignada:'esa entrada no tenía dueño',
+    entrada_invalida:  'esa entrada ya no está',
+    falta_nombre:      'falta el nombre',
+    puerta_invalida:   'esa llave de puerta ya estaba revocada',
+  };
+  for (const k in S7) if (String(motivo || '').indexOf(k) !== -1) return S7[k];
   return motivo || 'algo salió mal';
 }
 
 const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fecha = f => f ? new Date(f).toLocaleDateString('es-AR',
@@ -510,6 +787,7 @@ async function cargarTodo(){
   cargarLinaje();
   cargarValidaciones();
   cargarRegistro();
+  refrescarS7();
 }
 
 /* ---------- cómo se busca a alguien ----------
@@ -752,6 +1030,528 @@ document.addEventListener('click', async e => {
   const r = await rpc('admin_dar_fe_sekta', { p_codigo: CODIGO, p_validacion: b.dataset.darfe });
   if (!r.ok){ alert(enCastellano(r.motivo)); b.disabled = false; return; }
   cargarTodo();
+});
+
+/* ---------------------------------------------------------------------------
+   ENTRADAS S7
+
+   Una sola pestaña y dos tablas, porque son dos cosas distintas: la
+   transferencia es de quien compró, y la entrada es de quien va a entrar.
+   Una compra de cuatro es una transferencia y cuatro personas.
+
+   Ninguna fila desaparece nunca. Una lista que se vacía a medida que
+   resolvés sirve para trabajar pero no para revisar, y llegando a la fiesta
+   lo que hace falta es poder revisar.
+--------------------------------------------------------------------------- */
+const DICE_COMPRA = {
+  a_revisar:  ['pide',   'a confirmar'],
+  confirmada: ['ok',     'confirmada'],
+  rechazada:  ['mal',    'rechazada'],
+};
+
+const DICE_ENTRADA = {
+  sin_asignar: ['pide',   'sin asignar'],
+  asignada:    ['ok',     'asignada'],
+  adentro:     ['ok',     'adentro'],
+  anulada:     ['mal',    'anulada'],
+};
+
+const plata = n => '$' + Number(n || 0).toLocaleString('es-AR');
+const TIPOS = ['sekreta', 'hermética', 'abierta', 'staff', 'free'];
+let TANDAS = [];
+let ENTRADAS = [];
+
+async function cargarResumenS7(){
+  const r = await rpc('admin_resumen_s7', { p_codigo: CODIGO });
+  const caja = $('#numerosS7');
+  if (!r.ok || !r.datos || !r.datos[0]){ caja.innerHTML = ''; return; }
+  const n = r.datos[0];
+
+  const uno = (valor, rotulo, fuerte, gordo) =>
+    '<div class="numero' + (fuerte && valor ? ' pide' : '') + (gordo ? ' total' : '') + '">' +
+      '<div class="numero-dato">' + valor + '</div>' +
+      '<div class="numero-rotulo">' + rotulo + '</div>' +
+    '</div>';
+
+  // primero la cuenta que cierra: vendidas + staff + free = total. Los tres
+  // sumandos y el resultado juntos, para poder controlarla de un vistazo.
+  caja.innerHTML =
+    '<div class="suma">' +
+      uno(n.vendidas, 'vendidas') +
+      '<span class="signo">+</span>' +
+      uno(n.staff, 'staff') +
+      '<span class="signo">+</span>' +
+      uno(n.free, 'free') +
+      '<span class="signo">=</span>' +
+      uno(n.total, 'total', false, true) +
+    '</div>' +
+    '<div class="suma">' +
+      uno(plata(n.recaudado), 'recaudado') +
+      uno(n.a_confirmar, 'a confirmar', true) +
+      uno(n.sin_asignar, 'sin asignar', true) +
+      uno(n.adentro, 'adentro') +
+    '</div>';
+
+  // lo que espera a alguien del panel: los comprobantes por mirar
+  const conta = $('#contaS7');
+  conta.textContent = n.a_confirmar || '';
+  conta.classList.toggle('hay', n.a_confirmar > 0);
+}
+
+// El precio vive acá y no en el código: cambiar de tanda es tocar un botón,
+// no publicar el sitio. Una sola prendida a la vez, y eso lo garantiza la
+// base, no esta pantalla.
+async function cargarTandas(){
+  const caja = $('#tandas');
+  const r = await rpc('admin_tandas', { p_codigo: CODIGO });
+  if (!r.ok || !r.datos){ caja.innerHTML = ''; return; }
+  TANDAS = r.datos;
+  caja.innerHTML = r.datos.map(t =>
+    '<button class="tanda' + (t.activa ? ' activa' : '') + '" data-tanda="' + t.tanda_id + '">' +
+      '<span class="tanda-nombre">tanda ' + esc(t.nombre) + '</span>' +
+      '<span class="tanda-precio">' + plata(t.precio) + '</span>' +
+      '<span class="tanda-vendidas">' + t.vendidas + ' vendidas</span>' +
+    '</button>').join('');
+}
+
+async function cargarCompras(){
+  const cuerpo = $('#filasCompras');
+  const r = await rpc('admin_compras', { p_codigo: CODIGO, p_estado: null });
+
+  if (!r.ok){
+    cuerpo.innerHTML = '<tr><td colspan="7" class="vacio">' + esc(enCastellano(r.motivo)) + '</td></tr>';
+    return;
+  }
+  const lista = r.datos || [];
+  if (!lista.length){
+    cuerpo.innerHTML = '<tr><td colspan="7" class="vacio">todavía no compró nadie</td></tr>';
+    return;
+  }
+
+  cuerpo.innerHTML = lista.map(c => {
+    const d = DICE_COMPRA[c.estado] || ['espera', c.estado];
+    const falta = c.estado === 'confirmada' && c.sin_asignar
+      ? '<div class="tenue" style="font-size:11px">' + c.sin_asignar + ' sin asignar</div>' : '';
+    return '<tr>' +
+      '<td>' + esc(c.comprador || '') + falta + '</td>' +
+      '<td>' + c.cantidad + '</td>' +
+      '<td>' + plata(c.total) + '</td>' +
+      '<td class="tenue">' + esc(c.tanda) + '</td>' +
+      '<td class="tenue">' + fecha(c.creada_en) + '</td>' +
+      '<td class="est-' + d[0] + '">' + d[1] + '</td>' +
+      '<td><div class="acciones">' +
+        (c.tiene_comprobante
+          ? '<button data-vercomp="' + c.compra_id + '">ver comprobante</button>'
+          : '<span class="tenue" style="font-size:11px">sin comprobante</span>') +
+        (c.estado === 'a_revisar'
+          ? '<button data-okcompra="' + c.compra_id + '">confirmar</button>' +
+            '<button data-nocompra="' + c.compra_id + '">rechazar</button>' : '') +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+async function cargarEntradasS7(){
+  const cuerpo = $('#filasEntradas');
+  const r = await rpc('admin_entradas_s7', { p_codigo: CODIGO });
+
+  if (!r.ok){
+    cuerpo.innerHTML = '<tr><td colspan="8" class="vacio">' + esc(enCastellano(r.motivo)) + '</td></tr>';
+    return;
+  }
+  ENTRADAS = r.datos || [];
+  if (!ENTRADAS.length){
+    cuerpo.innerHTML = '<tr><td colspan="8" class="vacio">todavía no hay entradas</td></tr>';
+    return;
+  }
+
+  const copiable = t => '<span class="copiable" data-copiar="' + esc(t) + '">' + esc(t) + '</span>';
+
+  cuerpo.innerHTML = ENTRADAS.map(e => {
+    const d = DICE_ENTRADA[e.estado] || ['espera', e.estado];
+    const quien = e.nombre
+      ? copiable(e.nombre) +
+        (e.apodo ? ' <span class="tenue">· ' + esc(e.apodo) + '</span>' : '') +
+        (e.de_afuera ? ' <span class="tenue">(de afuera)</span>' : '') +
+        (e.sektario ? '<div class="tenue" style="font-size:11px">' + esc(e.sektario) + '</div>' : '')
+      : '<span class="tenue">la tiene ' + esc(e.tenedor || '—') + '</span>';
+    const contacto = [e.email, e.contacto].filter(Boolean).map(esc).join('<br>') || '<span class="tenue">—</span>';
+    const deDonde = (e.compro ? 'la compró ' + esc(e.compro) : 'panel') +
+      (e.nota ? '<div class="tenue" style="font-size:11px">' + esc(e.nota) + '</div>' : '');
+    const estado = e.estado === 'adentro' && e.adentro_en
+      ? 'adentro · ' + new Date(e.adentro_en).toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit', hour12:false })
+      : d[1];
+
+    const botones = e.estado === 'anulada' ? '' :
+      (e.estado === 'sin_asignar' ? '<button data-asignar="' + e.entrada_id + '">asignar</button>' : '') +
+      (e.estado === 'asignada'
+        ? '<button data-tarjeta="' + e.entrada_id + '">tarjeta</button>' +
+          '<button data-soltar="' + e.entrada_id + '">soltar</button>' : '') +
+      '<button data-anular="' + e.entrada_id + '">anular</button>';
+
+    return '<tr' + (e.estado === 'anulada' ? ' class="fila-anulada"' : '') + '>' +
+      '<td class="mono-codigo">' + (e.codigo ? copiable(e.codigo) : '<span class="tenue">—</span>') + '</td>' +
+      '<td>' + quien + '</td>' +
+      '<td class="apretado tenue">' + contacto + '</td>' +
+      '<td><span class="sello sello-' + esc(e.tipo) + '">' + esc(e.tipo) + '</span></td>' +
+      '<td>' + plata(e.precio) + '</td>' +
+      '<td class="apretado tenue">' + deDonde + '</td>' +
+      '<td class="est-' + d[0] + '">' + estado + '</td>' +
+      '<td><div class="acciones">' + botones + '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function refrescarS7(){
+  cargarResumenS7(); cargarTandas(); cargarCompras(); cargarEntradasS7(); cargarPuertas();
+}
+
+/* --- la puerta: llaves para quienes acreditan, y la lista de papel --- */
+async function cargarPuertas(){
+  const cuerpo = $('#filasPuertas');
+  const r = await rpc('admin_puertas', { p_codigo: CODIGO });
+  if (!r.ok){ cuerpo.innerHTML = '<tr><td colspan="6" class="vacio">' + esc(enCastellano(r.motivo)) + '</td></tr>'; return; }
+  const lista = r.datos || [];
+  if (!lista.length){ cuerpo.innerHTML = '<tr><td colspan="6" class="vacio">todavía no hay llaves de puerta</td></tr>'; return; }
+  cuerpo.innerHTML = lista.map(p => '<tr' + (p.estado === 'revocada' ? ' class="fila-anulada"' : '') + '>' +
+    '<td>' + esc(p.nombre) + '</td>' +
+    '<td class="mono-codigo"><span class="copiable" data-copiar="' + esc(p.llave) + '">' + esc(p.llave) + '</span></td>' +
+    '<td>' + p.marcadas + '</td>' +
+    '<td class="tenue">' + (p.ultimo_uso ? new Date(p.ultimo_uso).toLocaleString('es-AR') : '—') + '</td>' +
+    '<td class="' + (p.estado === 'activa' ? 'est-ok' : 'est-mal') + '">' + esc(p.estado) + '</td>' +
+    '<td><div class="acciones">' + (p.estado === 'activa'
+      ? '<button data-msj-puerta="' + esc(p.llave) + '" data-nombre="' + esc(p.nombre) + '">copiar mensaje</button>' +
+        '<button data-revocar-puerta="' + p.puerta_id + '">revocar</button>' : '') + '</div></td>' +
+  '</tr>').join('');
+}
+
+function mensajePuerta(nombre, llave){
+  return 'Hola ' + nombre + '. Para acreditar en la puerta de SEKI 7:\n\n' +
+         'Entrá en sekito.ar/puerta con esta llave:\n\n' + llave + '\n\n' +
+         'Es solo para la puerta. Tocá "prender la cámara" y apuntá al QR de cada entrada, ' +
+         'o buscá a la persona por apodo, nombre o código.';
+}
+
+$('#btnPuertaNueva').addEventListener('click', async () => {
+  const nombre = prompt('¿Para quién es la llave de puerta? (por ejemplo: Vicky)');
+  if (!nombre || !nombre.trim()) return;
+  const r = await rpc('admin_crear_puerta', { p_codigo: CODIGO, p_nombre: nombre.trim() });
+  if (!r.ok || !r.datos || !r.datos[0]){ alert(enCastellano(r.motivo)); return; }
+  await cargarPuertas();
+  const b = document.querySelector('[data-msj-puerta="' + r.datos[0].llave + '"]');
+  if (b) b.click();
+});
+
+$('#btnLista').addEventListener('click', async () => {
+  // la ventana se abre ya, con el clic: si se abre después de esperar a la
+  // base, el navegador la bloquea
+  const v = window.open('', '_blank');
+  if (!v){ alert('el navegador bloqueó la ventana: permití las ventanas emergentes'); return; }
+  v.document.write('<p style="font-family:monospace">armando la lista...</p>');
+  const r = await rpc('admin_lista_puerta', { p_codigo: CODIGO });
+  if (!r.ok){ v.document.body.innerHTML = '<p>' + esc(enCastellano(r.motivo)) + '</p>'; return; }
+  const filas = (r.datos || []).map(e => '<tr><td class="caja"></td><td><b>' + esc(e.titulo) + '</b></td><td>' +
+    esc(e.nombre || '') + '</td><td>' + esc(e.sektario || 'de afuera') + '</td><td class="cod">' + esc(e.codigo) +
+    '</td><td>' + esc(e.tipo) + '</td></tr>').join('');
+  v.document.open();
+  v.document.write('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>SEKI 7 · lista de puerta</title>' +
+    '<style>body{font:12px/1.35 ui-monospace,Menlo,monospace;margin:24px;color:#000}h1{font-size:15px;letter-spacing:.2em;margin:0 0 4px}' +
+    'p{margin:0 0 14px;color:#555}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #bbb;padding:6px 8px;text-align:left}' +
+    'th{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#555}.caja{width:18px}.caja::before{content:"";display:inline-block;width:12px;height:12px;border:1px solid #000}' +
+    '.cod{letter-spacing:.1em}@media print{body{margin:10mm}tr{break-inside:avoid}}</style></head><body>' +
+    '<h1>SEKI 7 · LISTA DE PUERTA</h1><p>' + (r.datos || []).length + ' entradas · armada el ' + new Date().toLocaleString('es-AR') +
+    ' · en orden por como se le dice a cada uno</p>' +
+    '<table><thead><tr><th></th><th>apodo</th><th>nombre</th><th>código sektario</th><th>código</th><th>tipo</th></tr></thead><tbody>' +
+    filas + '</tbody></table><script>window.print()<\/script></body></html>');
+  v.document.close();
+});
+
+/* --- la tarjeta y el mensaje, para mandar por WhatsApp --- */
+function mensajeEntrada(codigo){
+  return 'Tu entrada para SEKI 7.\n\n' +
+         'Sábado 14 de noviembre, 23 h\nDorrego 1735, Palermo\n\n' +
+         'En la puerta mostrá la tarjeta o decí tu código: ' + codigo;
+}
+
+async function bloqueTarjeta(e){
+  const lienzo = await window.dibujarEntrada({
+    codigo: e.codigo, tipo: e.tipo, nombre: e.nombre, apellido: null,
+    apodo: e.apodo, sektario: e.sektario });
+  const url = lienzo.toDataURL('image/png');
+  const nombre = 'seki7-' + e.codigo.toLowerCase() + '.png';
+  return '<img class="tarjeta-img" alt="" src="' + url + '">' +
+    '<p class="codigo-grande">' + esc(e.codigo) + '</p>' +
+    '<div class="pie" style="justify-content:center;margin-top:10px">' +
+      '<button class="btn" type="button" data-copiar-msj="' + esc(e.codigo) + '">copiar mensaje</button>' +
+      '<a class="btn" href="' + url + '" download="' + esc(nombre) + '">descargar tarjeta</a>' +
+    '</div>';
+}
+
+/* --- + entradas y asignar: el mismo modal --- */
+let enModo = 'generar', enPara = 'portal', enQuien = null, enEntrada = null, enPrecioTocado = false;
+
+function precioDe(tipo){
+  if (tipo === 'staff' || tipo === 'free') return 0;
+  const t = TANDAS.find(x => x.nombre === tipo);
+  return t ? t.precio : 0;
+}
+
+function pintarPara(){
+  $$('#enPara button').forEach(b => b.classList.toggle('activo', b.dataset.para === enPara));
+  $('#enPara [data-para="nadie"]').hidden = enModo === 'asignar';
+  $('#enPortal').hidden = enPara !== 'portal';
+  $('#enAfuera').hidden = enPara !== 'afuera';
+  $('#enNadie').hidden  = enPara !== 'nadie';
+  // alguien de afuera tiene una sola: es su nombre en la puerta
+  if (enPara === 'afuera'){ $('#enCuantas').value = 1; }
+  $('#enCuantas').disabled = enPara === 'afuera';
+  resumir();
+}
+
+function resumir(){
+  if (enModo === 'asignar'){ $('#enResumen').innerHTML = ''; return; }
+  const n = Math.max(1, Number($('#enCuantas').value) || 1);
+  const tipo = $('#enTipo').value;
+  const precio = Math.max(0, Number($('#enPrecio').value) || 0);
+  const nombreTipo = (tipo === 'staff' || tipo === 'free') ? tipo : 'tanda ' + tipo;
+  $('#enResumen').innerHTML =
+    '<strong>' + n + (n === 1 ? ' entrada' : ' entradas') + '</strong> · ' + esc(nombreTipo) +
+    ' · suma <strong>' + plata(n * precio) + '</strong> al recaudado' +
+    (enPara === 'portal' && n > 1 ? '<br>Una es suya; las otras le quedan para repartir.' : '');
+}
+
+function abrirEntradas(modo, entrada){
+  enModo = modo; enEntrada = entrada || null; enQuien = null; enPrecioTocado = false;
+  enPara = 'portal';
+  $('#enTitulo').textContent = modo === 'asignar' ? 'asignar entrada' : '+ entradas';
+  $('#enQueCampos').hidden = modo === 'asignar';
+  $('#enNotaCampo').hidden = modo === 'asignar';
+  $('#enConfirmar').textContent = modo === 'asignar' ? 'asignar' : 'generar';
+  $('#enTipo').innerHTML = TIPOS.map(t => '<option value="' + t + '">' +
+    ((t === 'staff' || t === 'free') ? t : 'tanda ' + t) + '</option>').join('');
+  const activa = TANDAS.find(t => t.activa);
+  $('#enTipo').value = activa ? activa.nombre : 'sekreta';
+  $('#enPrecio').value = precioDe($('#enTipo').value);
+  $('#enCuantas').value = 1;
+  ['#enBuscar', '#enNombre', '#enApellido', '#enApodo', '#enContacto', '#enNota'].forEach(id => $(id).value = '');
+  $('#enResultados').innerHTML = '';
+  $('#enElegido').hidden = true;
+  $('#enAviso').textContent = '';
+  $('#enPaso1').hidden = false;
+  $('#enPaso2').hidden = true;
+  $('#enConfirmar').disabled = false;
+  pintarPara();
+  abrir('#modalEntradas');
+  $('#enBuscar').focus();
+}
+
+$('#btnEntradas').addEventListener('click', () => abrirEntradas('generar'));
+$('#enPara').addEventListener('click', e => {
+  const b = e.target.closest('[data-para]');
+  if (!b) return;
+  enPara = b.dataset.para;
+  pintarPara();
+});
+$('#enTipo').addEventListener('change', () => {
+  if (!enPrecioTocado) $('#enPrecio').value = precioDe($('#enTipo').value);
+  resumir();
+});
+$('#enPrecio').addEventListener('input', () => { enPrecioTocado = true; resumir(); });
+$('#enCuantas').addEventListener('input', resumir);
+
+let enDebounce = null;
+$('#enBuscar').addEventListener('input', () => {
+  clearTimeout(enDebounce);
+  const q = $('#enBuscar').value.trim();
+  enDebounce = setTimeout(async () => {
+    const caja = $('#enResultados');
+    if (q.length < 1){ caja.innerHTML = ''; return; }
+    const r = await rpc('admin_buscar_persona', { p_codigo: CODIGO, p_query: q });
+    const gente = (r.ok && r.datos) || [];
+    if (!gente.length){ caja.innerHTML = '<div class="tenue">nadie con eso</div>'; return; }
+    caja.innerHTML = gente.map(g =>
+      '<div class="dar-op" data-persona="' + g.id + '" data-nombre="' + esc(g.nombre || g.sektario) + '"' +
+        ' data-tiene="' + (g.ya_tiene ? 1 : 0) + '">' +
+        esc(g.nombre || g.sektario) +
+        (g.ya_tiene ? '<span class="ya-tiene">ya tiene</span>'
+                    : '<span class="tenue">' + esc(g.sektario || '') + '</span>') +
+      '</div>').join('');
+  }, 220);
+});
+
+$('#enResultados').addEventListener('click', e => {
+  const op = e.target.closest('[data-persona]');
+  if (!op) return;
+  enQuien = op.dataset.persona;
+  $('#enElegido').textContent = op.dataset.nombre +
+    (op.dataset.tiene === '1' ? ' · ya tiene la suya: estas le quedan para repartir' : '');
+  $('#enElegido').hidden = false;
+  $('#enResultados').innerHTML = '';
+  $('#enBuscar').value = '';
+});
+
+$('#enConfirmar').addEventListener('click', async () => {
+  const aviso = $('#enAviso');
+  aviso.textContent = '';
+  if (enPara === 'portal' && !enQuien){ aviso.textContent = 'elegí a alguien'; return; }
+  if (enPara === 'afuera' && !$('#enNombre').value.trim()){ aviso.textContent = 'falta el nombre'; return; }
+
+  const afuera = enPara === 'afuera' ? {
+    p_externo_nombre: $('#enNombre').value, p_externo_apellido: $('#enApellido').value,
+    p_externo_apodo: $('#enApodo').value, p_externo_contacto: $('#enContacto').value,
+  } : {};
+  const btn = $('#enConfirmar');
+  btn.disabled = true;
+
+  let r;
+  if (enModo === 'asignar'){
+    r = await rpc('admin_asignar_entrada', Object.assign({
+      p_codigo: CODIGO, p_entrada: enEntrada, p_para: enPara === 'portal' ? enQuien : null }, afuera));
+  } else {
+    r = await rpc('admin_generar_entradas', Object.assign({
+      p_codigo: CODIGO,
+      p_cantidad: Number($('#enCuantas').value) || 1,
+      p_tipo: $('#enTipo').value,
+      p_precio: Math.max(0, Number($('#enPrecio').value) || 0),
+      p_para: enPara === 'portal' ? enQuien : null,
+      p_nota: $('#enNota').value,
+    }, afuera));
+  }
+  if (!r.ok){ aviso.textContent = enCastellano(r.motivo); btn.disabled = false; return; }
+
+  refrescarS7();
+  // el resultado: a alguien del portal le llegó el mail; a alguien de
+  // afuera hay que mandársela, así que se muestra la tarjeta
+  const codigos = (r.datos || []).map(x => x.codigo).filter(Boolean);
+  let listo;
+  if (enPara === 'afuera' && codigos[0]){
+    listo = '<p class="tenue" style="margin-top:0">Mandásela por WhatsApp: la tarjeta y el mensaje.</p>' +
+      await bloqueTarjeta({ codigo: codigos[0], tipo: enModo === 'asignar'
+                              ? (ENTRADAS.find(x => x.entrada_id === enEntrada) || {}).tipo : $('#enTipo').value,
+                            nombre: [$('#enNombre').value, $('#enApellido').value].filter(Boolean).join(' '),
+                            apodo: $('#enApodo').value || null, sektario: null });
+  } else if (enPara === 'portal'){
+    listo = '<p>Listo. Le llegó un mail con su código, y la tiene en el portal.</p>';
+  } else {
+    listo = '<p>Listo. Quedaron en manos de LA SEKTA, sin asignar.</p>';
+  }
+  $('#enListo').innerHTML = listo;
+  $('#enPaso1').hidden = true;
+  $('#enPaso2').hidden = false;
+});
+
+document.addEventListener('click', async e => {
+  // copiar de un toque: son 250 entradas, cada tecla cuenta
+  const cop = e.target.closest('[data-copiar]');
+  if (cop){
+    navigator.clipboard.writeText(cop.dataset.copiar).then(() => {
+      cop.classList.add('copiado');
+      setTimeout(() => cop.classList.remove('copiado'), 1200);
+    }).catch(() => {});
+    return;
+  }
+
+  const mp = e.target.closest('[data-msj-puerta]');
+  if (mp){ copiar(mensajePuerta(mp.dataset.nombre, mp.dataset.msjPuerta), mp, 'copiar mensaje'); return; }
+
+  const rev = e.target.closest('[data-revocar-puerta]');
+  if (rev){
+    if (!confirm('¿Revocar esta llave de puerta? Deja de abrir la puerta en el acto.')) return;
+    const r = await rpc('admin_revocar_puerta', { p_codigo: CODIGO, p_puerta: rev.dataset.revocarPuerta });
+    if (!r.ok){ alert(enCastellano(r.motivo)); return; }
+    cargarPuertas();
+    return;
+  }
+
+  const msj = e.target.closest('[data-copiar-msj]');
+  if (msj){
+    copiar(mensajeEntrada(msj.dataset.copiarMsj), msj, 'copiar mensaje');
+    return;
+  }
+
+  const tanda = e.target.closest('[data-tanda]');
+  if (tanda){
+    if (tanda.classList.contains('activa')) return;
+    if (!confirm('¿Pasamos a esta tanda? Las compras que ya se hicieron mantienen su precio.')) return;
+    const r = await rpc('admin_activar_tanda', { p_codigo: CODIGO, p_tanda: Number(tanda.dataset.tanda) });
+    if (!r.ok){ alert(enCastellano(r.motivo)); return; }
+    cargarTandas();
+    return;
+  }
+
+  const ver = e.target.closest('[data-vercomp]');
+  if (ver){
+    const img = $('#imgComprobante');
+    img.removeAttribute('src');
+    abrir('#modalComprobante');
+    const r = await rpc('admin_comprobante', { p_codigo: CODIGO, p_compra: ver.dataset.vercomp });
+    if (r.ok && r.datos && r.datos[0]){
+      img.src = 'data:' + (r.datos[0].tipo || 'image/jpeg') + ';base64,' + r.datos[0].datos;
+    }
+    return;
+  }
+
+  const ok = e.target.closest('[data-okcompra]');
+  if (ok){
+    if (!confirm('¿Confirmamos? Nacen las entradas y le llega el mail con su código.')) return;
+    ok.disabled = true;
+    const r = await rpc('admin_confirmar_compra', { p_codigo: CODIGO, p_compra: ok.dataset.okcompra });
+    if (!r.ok){ alert(enCastellano(r.motivo)); ok.disabled = false; return; }
+    refrescarS7();
+    return;
+  }
+
+  const no = e.target.closest('[data-nocompra]');
+  if (no){
+    const motivo = prompt('¿Qué le decimos? Lo va a leer por mail.');
+    if (!motivo) return;
+    no.disabled = true;
+    const r = await rpc('admin_rechazar_compra',
+                        { p_codigo: CODIGO, p_compra: no.dataset.nocompra, p_motivo: motivo });
+    if (!r.ok){ alert(enCastellano(r.motivo)); no.disabled = false; return; }
+    refrescarS7();
+    return;
+  }
+
+  const asignar = e.target.closest('[data-asignar]');
+  if (asignar){ abrirEntradas('asignar', asignar.dataset.asignar); return; }
+
+  const tarjeta = e.target.closest('[data-tarjeta]');
+  if (tarjeta){
+    const en = ENTRADAS.find(x => x.entrada_id === tarjeta.dataset.tarjeta);
+    if (!en || !en.codigo) return;
+    $('#tarjetaCuerpo').innerHTML = '<p class="tenue">dibujando...</p>';
+    abrir('#modalTarjeta');
+    $('#tarjetaCuerpo').innerHTML = await bloqueTarjeta(en);
+    return;
+  }
+
+  const soltar = e.target.closest('[data-soltar]');
+  if (soltar){
+    if (!confirm('¿Soltar esta entrada? Su código deja de servir y vuelve a manos de quien la compró, sin dueño. Usalo cuando se la asignaron a la persona equivocada.')) return;
+    soltar.disabled = true;
+    const r = await rpc('admin_soltar_entrada', { p_codigo: CODIGO, p_entrada: soltar.dataset.soltar });
+    if (!r.ok){ alert(enCastellano(r.motivo)); soltar.disabled = false; return; }
+    refrescarS7();
+    return;
+  }
+
+  const anular = e.target.closest('[data-anular]');
+  if (anular){
+    const motivo = prompt('¿Por qué se anula? (error de carga, devolución...) La fila queda, pero no cuenta más y su código deja de servir.');
+    if (!motivo) return;
+    anular.disabled = true;
+    const r = await rpc('admin_anular_entrada', { p_codigo: CODIGO, p_entrada: anular.dataset.anular, p_motivo: motivo });
+    if (!r.ok){ alert(enCastellano(r.motivo)); anular.disabled = false; return; }
+    refrescarS7();
+    return;
+  }
+
+  // que la foto no se quede colgada en memoria después de cerrar
+  if (e.target.closest('[data-cerrar]') || e.target.id === 'modalComprobante'){
+    const img = $('#imgComprobante');
+    if (img) img.removeAttribute('src');
+  }
 });
 
 async function cargarRegistro(){

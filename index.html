@@ -28,6 +28,10 @@
     --gray: rgb(var(--gray-rgb));
     --white: rgb(var(--white-rgb));
     --bordo:#800020;
+    --bordo-rgb:128,0,32;
+    /* el bordo puro no se lee como texto sobre negro: esta es la
+       misma tinta, subida hasta donde se puede leer */
+    --bordo-claro:#C9566E;
     --amarillo:#D9A11E;
     --amarillo-rgb:217,161,30;
     --fan-mask: url("images/abanico-seki.svg");
@@ -749,6 +753,275 @@
     color:var(--amarillo);
     margin-top:14px; min-height:13px;
   }
+
+  /* ---------- la seki 7 ----------
+     No es una sección más del perfil: es lo que está pasando ahora. Por eso
+     no tiene el título con la línea al medio que tienen las otras, y por eso
+     respira en bordo — el color de SEKI. Cuando algo depende de vos, el
+     cartel lo dice él mismo en vez de esconderlo adentro. */
+  /* El cartel entra con el resto del perfil (.rv-d), y esa regla también usa
+     `animation`. Si el latido viviera acá, una de las dos animaciones pisaría
+     a la otra: o el cartel no aparece, o no late. Por eso el bordo y el brillo
+     viven en una capa propia, que tiene su animación para ella sola.
+     De paso sale gratis algo mejor: el panel late, las letras no. */
+  .s7-cartel{
+    position:relative;
+    padding:40px 22px 34px;
+    margin-bottom:54px;
+    text-align:center; cursor:pointer;
+  }
+  /* El panel se dibuja adentro de los límites del cartel y después se
+     desenfoca: el borde deja de existir en vez de quedar disimulado. Las
+     esquinas tienen cuatro radios distintos a propósito — con el desenfoque
+     encima, lo que se lee es un bloque pintado a mano y no una caja. */
+  .s7-cartel::before{
+    content:''; position:absolute; inset:13px 9px;
+    border-radius:10px 22px 12px 26px;
+    background:
+      radial-gradient(120% 140% at 50% 0%,
+        rgba(var(--bordo-rgb),1) 0%,
+        rgba(var(--bordo-rgb),.92) 45%,
+        rgba(var(--bordo-rgb),.72) 100%);
+    animation:arde 4.4s ease-in-out infinite;
+    pointer-events:none;
+  }
+  /* una segunda mancha, corrida y más desenfocada todavía, para que los
+     cuatro lados no se apaguen con la misma prolijidad */
+  .s7-cartel::after{
+    content:''; position:absolute; inset:6px 16px 20px 4px;
+    border-radius:30px 12px 26px 14px;
+    background:
+      radial-gradient(90% 120% at 38% 62%,
+        rgba(var(--bordo-rgb),.75) 0%,
+        rgba(var(--bordo-rgb),.4) 55%,
+        transparent 85%);
+    filter:blur(26px);
+    animation:arde 4.4s ease-in-out infinite;
+    pointer-events:none;
+  }
+  /* El latido NO aclara el bordo. Subirle el brillo al #800020 lo empuja al
+     rojo y deja de ser el color de SEKI: se convierte en otra marca.
+     Por eso el brillo nunca pasa de 1 — el tope es el bordo de verdad, y el
+     recorrido va hacia abajo. Lo que crece es el halo, que es luz alrededor
+     y no tinta encima. */
+  @keyframes arde{
+    0%,100%{
+      box-shadow:0 0 12px 0 rgba(var(--bordo-rgb),.3);
+      filter:blur(15px) brightness(.78);
+    }
+    50%{
+      box-shadow:0 0 54px 6px rgba(var(--bordo-rgb),.55),
+                 0 0 22px 0 rgba(var(--bordo-rgb),.45);
+      filter:blur(15px) brightness(1);
+    }
+  }
+  .s7-cartel:hover::before{ animation-duration:2.6s; }
+  .s7-cartel > *{ position:relative; z-index:1; }
+
+  @media (prefers-reduced-motion: reduce){
+    .s7-cartel::before{
+      animation:none; filter:blur(15px);
+      box-shadow:0 0 46px 6px rgba(var(--bordo-rgb),.7);
+    }
+    .s7-cartel::after{ animation:none; }
+  }
+
+  .s7-abanico{
+    width:62px; height:40px; margin:0 auto 22px;
+    background:var(--white);
+    -webkit-mask:var(--fan-mask) center / contain no-repeat;
+            mask:var(--fan-mask) center / contain no-repeat;
+  }
+  .s7-nombre{
+    font-size:33px; letter-spacing:.26em; text-indent:.26em;
+    color:var(--white);
+    text-shadow:0 0 22px rgba(0,0,0,.55);
+  }
+  .s7-fecha{
+    font-size:10px; letter-spacing:.24em; text-indent:.24em;
+    color:rgba(var(--white-rgb),.78); margin-top:16px;
+  }
+  .s7-estado{
+    font-size:9.5px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--white); margin-top:22px; min-height:12px;
+  }
+  /* cuando hay algo que resolver, el cartel deja de informar y pide */
+  .s7-estado.pide{ animation:latir 2.6s ease-in-out infinite; }
+
+  /* ---------- la preventa, adentro ---------- */
+  .pv-bloque{ margin-bottom:38px; }
+  .pv-rotulo{
+    font-size:9px; letter-spacing:.24em; text-transform:uppercase;
+    color:rgba(var(--gray-rgb),.6); margin-bottom:16px;
+  }
+  .pv-precio{
+    font-size:34px; letter-spacing:.04em; color:var(--white);
+  }
+  .pv-tanda{
+    font-size:9px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--bordo-claro); margin-top:8px;
+  }
+
+  /* la cantidad. El número va en una caja de ancho fijo y centrado: si crece
+     con el contenido, al pasar de 9 a 10 los botones se corren de lugar. */
+  .pv-cantidad{
+    display:flex; align-items:center; justify-content:center; gap:22px;
+    margin:26px 0 8px;
+  }
+  .pv-cantidad button{
+    width:38px; height:38px; flex:0 0 38px; border-radius:50%;
+    background:none; border:1px solid rgba(var(--gray-rgb),.45);
+    color:var(--white); font-family:inherit; font-size:17px;
+    cursor:pointer; line-height:1; padding:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .pv-cantidad button:disabled{ opacity:.25; cursor:default; }
+  .pv-cuantas{
+    font-size:26px; line-height:38px;
+    width:52px; flex:0 0 52px; text-align:center;
+    color:var(--white);
+  }
+  .pv-total{
+    font-size:11px; letter-spacing:.14em; color:rgba(var(--gray-rgb),.85);
+    min-height:15px;
+  }
+
+  /* el aviso aparece sólo cuando pasás de una: al que compra para sí mismo
+     no hay nada que explicarle */
+  .pv-aviso{
+    border-left:2px solid var(--bordo-claro);
+    padding:12px 0 12px 14px; margin:24px 0 0;
+    font-size:11.5px; line-height:1.75; color:rgba(var(--white-rgb),.8);
+    text-align:left;
+    max-height:0; opacity:0; overflow:hidden;
+    transition:max-height .45s ease, opacity .45s ease, margin .45s ease;
+  }
+  .pv-aviso.se-ve{ max-height:240px; opacity:1; }
+
+  /* el alias, lo único de toda la pantalla que no se puede tipear mal */
+  .pv-alias{
+    border:1px solid rgba(var(--bordo-rgb),.7);
+    background:rgba(var(--bordo-rgb),.10);
+    padding:20px 16px; margin:8px 0 6px; cursor:pointer;
+  }
+  .pv-alias:hover{ background:rgba(var(--bordo-rgb),.18); }
+  .pv-alias-dato{
+    font-size:25px; letter-spacing:.14em; color:var(--white);
+  }
+  /* "a nombre de" adelante del nombre: sin eso son dos datos sueltos, y el
+     que está por transferir no sabe cuál de los dos va en qué campo */
+  .pv-alias-nombre{
+    font-size:10px; letter-spacing:.14em;
+    color:rgba(var(--white-rgb),.72); margin-top:14px;
+  }
+  .pv-alias-copiar{
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:9px; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(var(--white-rgb),.55); margin-top:16px; min-height:13px;
+  }
+  .pv-alias-copiar svg{ width:12px; height:12px; flex:0 0 12px; }
+  .pv-alias:hover .pv-alias-copiar{ color:rgba(var(--white-rgb),.85); }
+
+  .pv-btn{
+    width:100%; margin-top:8px; padding:15px;
+    background:rgba(var(--bordo-rgb),.12);
+    border:1px solid rgba(var(--bordo-rgb),.8);
+    color:var(--white); font-family:inherit;
+    font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+    cursor:pointer;
+  }
+  .pv-btn:hover{ background:rgba(var(--bordo-rgb),.22); }
+  .pv-btn:disabled{ opacity:.35; cursor:default; }
+  .pv-nota{
+    font-size:10px; line-height:1.7; color:rgba(var(--gray-rgb),.7);
+    margin-top:14px;
+  }
+
+  /* una entrada de la lista */
+  .pv-entrada{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    border-bottom:1px solid rgba(var(--gray-rgb),.18);
+    padding:16px 0; text-align:left;
+  }
+  .pv-entrada:last-child{ border-bottom:none; }
+  .pv-quien{ font-size:13px; color:var(--white); }
+  .pv-quien.vacia{ color:rgba(var(--gray-rgb),.6); font-style:italic; }
+  .pv-detalle{
+    font-size:9px; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(var(--gray-rgb),.6); margin-top:6px;
+  }
+  .pv-detalle.listo{ color:var(--bordo-claro); }
+  .pv-tipo{
+    display:inline-block; margin-left:8px; padding:2px 7px;
+    border:1px solid rgba(var(--bordo-rgb),.8);
+    font-size:8px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--white); vertical-align:2px;
+  }
+  .pv-mini{
+    background:none; border:1px solid rgba(var(--gray-rgb),.4);
+    color:var(--white); font-family:inherit;
+    font-size:8.5px; letter-spacing:.14em; text-transform:uppercase;
+    padding:8px 12px; cursor:pointer; white-space:nowrap;
+  }
+  .pv-mini:hover{ border-color:var(--white); }
+
+  /* el buscador de a quién dársela */
+  .pv-buscar{ padding:6px 0 18px; }
+  .pv-buscar input{
+    width:100%; background:none; border:none;
+    border-bottom:1px solid rgba(var(--gray-rgb),.4);
+    color:var(--white); font-family:inherit; font-size:13px;
+    padding:10px 0; outline:none;
+  }
+  .pv-op{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px 0; cursor:pointer; font-size:12.5px; color:var(--white);
+    border-bottom:1px solid rgba(var(--gray-rgb),.12);
+  }
+  .pv-op span{ font-size:9px; letter-spacing:.14em; color:rgba(var(--gray-rgb),.6); }
+  .pv-op.tiene span{ color:var(--bordo-claro); }
+
+  /* cuando la persona ya tiene entrada, las dos salidas */
+  .pv-dilema{
+    border:1px solid rgba(var(--bordo-rgb),.7);
+    background:rgba(var(--bordo-rgb),.08);
+    padding:16px; margin-top:12px; text-align:left;
+  }
+  .pv-dilema p{
+    font-size:11.5px; line-height:1.7; color:rgba(var(--white-rgb),.85); margin:0 0 14px;
+  }
+  .pv-dilema .pv-mini{ margin-right:8px; }
+
+  .pv-compra{
+    border:1px solid rgba(var(--gray-rgb),.22);
+    padding:16px; margin-bottom:14px; text-align:left;
+  }
+  .pv-compra-linea{
+    display:flex; justify-content:space-between; gap:10px;
+    font-size:11.5px; color:rgba(var(--white-rgb),.85);
+  }
+  .pv-estado{
+    font-size:9px; letter-spacing:.16em; text-transform:uppercase; margin-top:8px;
+  }
+  .pv-estado.espera{ color:rgba(var(--gray-rgb),.7); }
+  .pv-estado.ok{ color:var(--bordo-claro); }
+  .pv-estado.mal{ color:#C24; }
+  .pv-motivo{
+    font-size:11px; line-height:1.6; color:rgba(var(--gray-rgb),.85); margin-top:10px;
+  }
+  .pv-dicho{
+    font-size:10px; letter-spacing:.1em; color:var(--bordo-claro);
+    min-height:13px; margin-top:12px;
+  }
+
+  /* la entrada: una imagen, la misma que se guarda. Lo que se ve es lo que
+     se lleva a la puerta */
+  .pv-tarjeta{
+    width:100%; max-width:420px; margin:0 auto 18px;
+    aspect-ratio:1080/1000; background:var(--black);
+    box-shadow:0 0 40px rgba(var(--bordo-rgb),.35);
+  }
+  .pv-tarjeta img{ width:100%; height:100%; display:block; }
 
   /* ---------- lxs devotxs: buscar a alguien ---------- */
   .padron-input{
@@ -1725,6 +1998,8 @@
 </style>
 <!-- quién tiene fotos y cuántas: vive al lado de las fotos -->
 <script src="images/perfiles/perfiles.js"></script>
+<!-- la tarjeta de la entrada de SEKI 7: la dibujan el portal y el panel -->
+<script src="/entrada.js"></script>
 </head>
 <body>
 
@@ -1899,6 +2174,13 @@
 
 
 
+    <div class="s7-cartel pv-abrir rv-d" role="button" tabindex="0">
+      <div class="s7-abanico" aria-hidden="true"></div>
+      <div class="s7-nombre">SEKI 7</div>
+      <div class="s7-fecha">14 DE NOVIEMBRE</div>
+      <div class="s7-estado">—</div>
+    </div>
+
     <div class="seccion rv-d">
       <div class="seccion-titulo"><span>mis ritos</span></div>
       <div class="ritos-preview ritos-abrir" role="button" tabindex="0">
@@ -2029,6 +2311,16 @@
     <div class="ritos-titulo">susurros</div>
 
     <div id="susurrosCuerpo"><div class="ritos-cargando">buscando...</div></div>
+  </section>
+
+  <section id="preventa-screen" class="screen">
+    <div class="top-row">
+      <button class="exit-link" id="exitPreventa">volver</button>
+    </div>
+
+    <div class="ritos-titulo">seki 7</div>
+
+    <div id="preventaCuerpo"><div class="ritos-cargando">buscando...</div></div>
   </section>
 
   <!-- ===================== LA FICHA DE ALGUIEN ===================== -->
@@ -2319,6 +2611,7 @@ function entrarAlSitio(miembro){
   if (window.__refrescarRitos)    window.__refrescarRitos();
   if (window.__arbolMini)         window.__arbolMini();
   if (window.__refrescarSusurros) window.__refrescarSusurros();
+  if (window.__refrescarPreventa) window.__refrescarPreventa();
 
   memberNombre.textContent = tituloDe(miembro);
   if (window.__pintarApodo) window.__pintarApodo();
@@ -3067,7 +3360,7 @@ reveal();
 
 /* ---------- cómo te dicen, desde el perfil ----------
    El apodo vive en la base, con cada persona. Se ve donde la gente se ve
-   entre sí; el nombre real queda para el panel y Passline. */
+   entre sí; el nombre real queda para el panel y la puerta. */
 (function apodo(){
   const btn      = document.getElementById('apodoBtn');
   const form     = document.getElementById('apodoForm');
@@ -3816,6 +4109,527 @@ reveal();
   });
 })();
 
+/* ---------------------------------------------------------------------------
+   LA PREVENTA DE LA SEKI 7
+
+   Dos planos que no se mezclan, igual que en la base:
+
+     LA COMPRA es la plata. Una transferencia, un comprobante, una espera.
+     LA ENTRADA es la persona. Un nombre y un código: el QR es ese código
+     dibujado. Sin Passline: la entrada la hace el portal, y nace recién
+     cuando la sekta confirma el comprobante.
+
+   Comprar tres es una sola transferencia y tres destinos que pueden
+   resolverse semanas después. Por eso la pantalla no pide los nombres al
+   comprar: pedirlos ahí sería trabar el pago de alguien que todavía no sabe
+   el apellido de su amigo.
+
+   Y por eso el aviso de que después hay que asignarlas aparece cuando la
+   cantidad pasa de uno, y no antes: al que compra para sí mismo no hay nada
+   que explicarle.
+--------------------------------------------------------------------------- */
+(function preventa(){
+  const pantalla = document.getElementById('preventa-screen');
+  const salir    = document.getElementById('exitPreventa');
+  const cuerpo   = document.getElementById('preventaCuerpo');
+
+  const ALIAS  = 'seki.7';
+  const ATITULAR = 'Florencia Di Rocco';
+
+  // el de siempre: dos hojas, una atrás de la otra
+  const ICONO_COPIAR =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+         'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="9" y="9" width="12" height="12" rx="2"/>' +
+      '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
+    '</svg>';
+
+  let volverA = null;
+  let tanda   = null;   // {tanda_id, nombre, precio, tope}
+  let entradas = [];
+  let compras  = [];
+  let pendiente = null; // la compra recién creada, esperando comprobante
+  let cuantas   = 1;
+  let asignando = null; // la entrada que estoy repartiendo
+
+  const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const plata = n => '$' + Number(n).toLocaleString('es-AR');
+
+  // la tarjeta de la entrada se dibuja en entrada.js: la usan el portal y el panel
+  const dibujarEntrada = window.dibujarEntrada;
+
+  /* --- el cartel del perfil ---
+     El precio no va acá. El cartel existe para que sepas que la SEKI 7 está
+     pasando y que hay algo tuyo esperando; el número lo ves adentro, cuando
+     ya decidiste mirar. */
+  function pintarPreview(){
+    const sinDuenio = entradas.filter(e => e.estado === 'sin_asignar').length;
+    const mias      = entradas.length;
+
+    let dice, pide = false;
+    if (sinDuenio){
+      dice = sinDuenio === 1 ? 'TENÉS 1 SIN ASIGNAR' : 'TENÉS ' + sinDuenio + ' SIN ASIGNAR';
+      pide = true;
+    } else if (mias){
+      dice = mias === 1 ? 'TU LUGAR ESTÁ' : 'TENÉS ' + mias + ' LUGARES';
+    } else if (tanda){
+      dice = 'TANDA ' + tanda.nombre.toUpperCase();
+    } else {
+      dice = 'TODAVÍA NO ABRIÓ';
+    }
+
+    document.querySelectorAll('.s7-cartel').forEach(box => {
+      const est = box.querySelector('.s7-estado');
+      est.textContent = dice;
+      est.classList.toggle('pide', pide);
+    });
+  }
+
+  window.__refrescarPreventa = async function(){
+    if (!codigoActual) return;
+    const [t, e, c] = await Promise.all([
+      llamarRPC('la_tanda',     { p_codigo: codigoActual }),
+      llamarRPC('mis_entradas', { p_codigo: codigoActual }),
+      llamarRPC('mis_compras',  { p_codigo: codigoActual }),
+    ]);
+    tanda    = (t.ok && t.datos && t.datos[0]) || null;
+    entradas = (e.ok && e.datos) || [];
+    compras  = (c.ok && c.datos) || [];
+    // si pidió y se fue sin subir el comprobante, al volver lo encuentra ahí
+    const pedida = compras.find(x => x.estado === 'esperando_comprobante');
+    pendiente = pedida ? { compra_id: pedida.compra_id, total: pedida.total } : null;
+    if (cuantas > (tanda ? tanda.tope : 7)) cuantas = 1;
+    pintarPreview();
+    entrarSiVienenDeAfuera();
+  };
+
+  // el botón de la landing pública manda acá derecho, no a la puerta del portal
+  let yaEntramos = false;
+  function entrarSiVienenDeAfuera(){
+    if (yaEntramos) return;
+    if (new URLSearchParams(location.search).get('ir') !== 'preventa') return;
+    const btn = document.querySelector('.member-screen.active .pv-abrir');
+    if (!btn) return;
+    yaEntramos = true;
+    btn.click();
+  }
+
+  // --- lo que se dibuja ------------------------------------------------------
+  function bloqueComprar(){
+    if (!tanda){
+      return '<div class="pv-bloque"><div class="pv-nota">La preventa todavía no abrió.</div></div>';
+    }
+
+    if (pendiente){
+      return '<div class="pv-bloque">' +
+        '<div class="pv-rotulo">transferí</div>' +
+        '<div class="pv-precio">' + plata(pendiente.total) + '</div>' +
+        '<div class="pv-alias" id="pvAlias" role="button" tabindex="0">' +
+          '<div class="pv-alias-dato">' + ALIAS + '</div>' +
+          '<div class="pv-alias-nombre">a nombre de ' + ATITULAR + '</div>' +
+          '<div class="pv-alias-copiar" id="pvCopiado">' + ICONO_COPIAR + 'copiar alias</div>' +
+        '</div>' +
+        '<button class="pv-btn" id="pvSubir">ya transferí, subo el comprobante</button>' +
+        '<input type="file" id="pvArchivo" accept="image/*" hidden>' +
+        '<div class="pv-dicho" id="pvDicho"></div>' +
+        '<div class="pv-nota">Cuando lo subas, la sekta lo mira y te avisa.</div>' +
+      '</div>';
+    }
+
+    const total = tanda.precio * cuantas;
+    return '<div class="pv-bloque">' +
+      '<div class="pv-rotulo">tu lugar</div>' +
+      '<div class="pv-precio">' + plata(tanda.precio) + '</div>' +
+      '<div class="pv-tanda">tanda ' + esc(tanda.nombre) + '</div>' +
+      '<div class="pv-cantidad">' +
+        '<button type="button" id="pvMenos"' + (cuantas <= 1 ? ' disabled' : '') + '>−</button>' +
+        '<div class="pv-cuantas">' + cuantas + '</div>' +
+        '<button type="button" id="pvMas"' + (cuantas >= tanda.tope ? ' disabled' : '') + '>+</button>' +
+      '</div>' +
+      '<div class="pv-total">' + (cuantas > 1 ? cuantas + ' × ' + plata(tanda.precio) + ' = ' + plata(total) : '') + '</div>' +
+      '<div class="pv-aviso' + (cuantas > 1 ? ' se-ve' : '') + '">' +
+        'Cada entrada se asigna a <strong>una persona</strong>, y esa persona tiene que estar en el portal.<br>' +
+        'Podés asignarlas después. Las que no asignes, quedan esperando.' +
+      '</div>' +
+      '<button class="pv-btn" id="pvReservar">' +
+        (cuantas === 1 ? 'quiero mi lugar' : 'quiero ' + cuantas + ' lugares') +
+      '</button>' +
+    '</div>';
+  }
+
+  function bloqueCompras(){
+    // la pedida no va acá: es la que está abajo, esperando el comprobante
+    const hechas = compras.filter(c => c.estado !== 'esperando_comprobante');
+    if (!hechas.length) return '';
+    const filas = hechas.map(c => {
+      const clase = c.estado === 'confirmada' ? 'ok'
+                  : c.estado === 'rechazada'  ? 'mal' : 'espera';
+      const dice  = c.estado === 'confirmada' ? 'confirmada'
+                  : c.estado === 'rechazada'  ? 'algo no cerró'
+                  : 'la sekta lo está mirando';
+      return '<div class="pv-compra">' +
+        '<div class="pv-compra-linea">' +
+          '<span>' + c.cantidad + (c.cantidad === 1 ? ' entrada' : ' entradas') + '</span>' +
+          '<span>' + plata(c.total) + '</span>' +
+        '</div>' +
+        '<div class="pv-estado ' + clase + '">' + dice + '</div>' +
+        (c.motivo ? '<div class="pv-motivo">' + esc(c.motivo) + '</div>' : '') +
+      '</div>';
+    }).join('');
+    return '<div class="pv-bloque"><div class="pv-rotulo">lo que compraste</div>' + filas + '</div>';
+  }
+
+  // el mismo estado, dicho igual en todos lados
+  const DICE = {
+    sin_asignar: '',
+    asignada:    'tiene su entrada',
+    adentro:     'ya entró',
+  };
+
+  function bloqueEntradas(){
+    if (!entradas.length) return '';
+    const filas = entradas.map(e => {
+      let quien, detalle = '', boton = '';
+      // staff y free se dicen; una preventa entre entradas de preventa no
+      // agrega nada
+      const sello = (e.tipo === 'staff' || e.tipo === 'free')
+        ? '<span class="pv-tipo">' + esc(e.tipo) + '</span>' : '';
+
+      if (e.duenio_nombre){
+        quien = '<div class="pv-quien">' + esc(e.duenio_nombre) +
+                (e.soy_duenio ? ' <span style="opacity:.5">(vos)</span>' : '') + sello + '</div>';
+        detalle = '<div class="pv-detalle listo">' +
+                  (e.soy_duenio && e.estado === 'asignada' ? 'tu entrada está arriba' : DICE[e.estado]) +
+                  '</div>';
+        // Sólo el dueño puede soltarla, y hasta 24 h antes. Al que la compró
+        // y ya se la dio, la entrada se le fue de las manos: no ve botón.
+        if (e.soy_duenio && e.puede_cambiar){
+          boton = '<button class="pv-mini" data-soltar="' + e.entrada_id + '">dársela a otro</button>';
+        }
+      } else {
+        quien = '<div class="pv-quien vacia">sin asignar</div>' ;
+        if (e.quien_me_la_dio){
+          detalle = '<div class="pv-detalle">te la dio ' + esc(e.quien_me_la_dio) + '</div>';
+        }
+        if (e.puede_cambiar){
+          boton = '<button class="pv-mini" data-asignar="' + e.entrada_id + '">asignar</button>';
+        } else {
+          detalle = '<div class="pv-detalle">ya no se puede asignar: escribile a la sekta</div>';
+        }
+      }
+
+      const buscador = (asignando === e.entrada_id)
+        ? '<div class="pv-buscar" data-para="' + e.entrada_id + '">' +
+            '<input type="text" placeholder="buscá por apodo, nombre o código" autocomplete="off" ' +
+                   'autocapitalize="off" spellcheck="false">' +
+            '<div class="pv-resultados"></div>' +
+          '</div>'
+        : '';
+
+      return '<div class="pv-entrada">' +
+               '<div>' + quien + detalle + '</div>' + boton +
+             '</div>' + buscador;
+    }).join('');
+
+    return '<div class="pv-bloque"><div class="pv-rotulo">tus entradas</div>' + filas + '</div>';
+  }
+
+  // --- la entrada ------------------------------------------------------------
+  /* La tarjeta es una imagen dibujada acá, la misma que se guarda: lo que se
+     ve en la pantalla es exactamente lo que se lleva a la puerta. El QR es el
+     código, nada más; si la cámara no lo lee, se tipea el código. */
+  function laMia(){ return entradas.find(e => e.soy_duenio && e.codigo); }
+
+  function bloqueTarjeta(){
+    const mia = laMia();
+    if (!mia) return '';
+    return '<div class="pv-bloque">' +
+      '<div class="pv-rotulo">tu entrada</div>' +
+      '<div class="pv-tarjeta" id="pvTarjeta"></div>' +
+      '<button class="pv-btn" id="pvGuardar">guardar mi entrada</button>' +
+      '<div class="pv-nota">En la puerta mostrás el QR, o decís el código.</div>' +
+    '</div>';
+  }
+
+  let tarjetaHecha = { codigo: null, url: null };
+
+  async function pintarTarjeta(){
+    const mia = laMia();
+    const caja = document.getElementById('pvTarjeta');
+    if (!mia || !caja) return;
+    if (tarjetaHecha.codigo !== mia.codigo){
+      const lienzo = await dibujarEntrada(mia);
+      tarjetaHecha = { codigo: mia.codigo, url: lienzo.toDataURL('image/png'), lienzo };
+    }
+    caja.innerHTML = '<img alt="tu entrada para SEKI 7: ' + esc(mia.codigo) + '" src="' + tarjetaHecha.url + '">';
+  }
+
+  async function guardarTarjeta(){
+    const mia = laMia();
+    if (!mia || !tarjetaHecha.lienzo) return;
+    const blob = await new Promise(ok => tarjetaHecha.lienzo.toBlob(ok, 'image/png'));
+    const nombre = 'seki7-' + mia.codigo.toLowerCase() + '.png';
+    const archivo = new File([blob], nombre, { type: 'image/png' });
+    // en el celu, la ventana de compartir: ahí está "guardar imagen" y WhatsApp
+    const esCelu = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    try {
+      if (esCelu && navigator.canShare && navigator.canShare({ files: [archivo] })){
+        await navigator.share({ files: [archivo] });
+        return;
+      }
+    } catch (err) { if (err && err.name === 'AbortError') return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = nombre;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+
+  function pintar(){
+    cuerpo.innerHTML = bloqueTarjeta() + bloqueEntradas() + bloqueCompras() + bloqueComprar();
+    pintarTarjeta();
+  }
+
+  // --- comprar ---------------------------------------------------------------
+  async function reservar(){
+    const btn = document.getElementById('pvReservar');
+    btn.disabled = true; btn.textContent = 'guardando...';
+    const r = await llamarRPC('comprar_entradas',
+                              { p_codigo: codigoActual, p_cantidad: cuantas });
+    if (!r.ok || !r.datos || !r.datos[0]){
+      btn.disabled = false; btn.textContent = 'no se pudo, probá de nuevo';
+      return;
+    }
+    pendiente = r.datos[0];
+    pintar();
+  }
+
+  function copiarAlias(){
+    const dicho = document.getElementById('pvCopiado');
+    navigator.clipboard.writeText(ALIAS).then(() => {
+      dicho.innerHTML = ICONO_COPIAR + 'alias copiado';
+      setTimeout(() => {
+        if (dicho) dicho.innerHTML = ICONO_COPIAR + 'copiar alias';
+      }, 2400);
+    }).catch(() => {});
+  }
+
+  /* La foto de un comprobante sale de la cámara pesando cinco megas. Subirla
+     entera es pedirle a alguien que espere en una pantalla de pago con la
+     señal de un sótano. Se achica antes de salir: nadie necesita leer un
+     comprobante a tamaño mural. */
+  function achicar(archivo){
+    return new Promise((listo, mal) => {
+      const lector = new FileReader();
+      lector.onerror = mal;
+      lector.onload = () => {
+        const img = new Image();
+        img.onerror = mal;
+        img.onload = () => {
+          const LADO = 1400;
+          const k = Math.min(1, LADO / Math.max(img.width, img.height));
+          const c = document.createElement('canvas');
+          c.width  = Math.round(img.width  * k);
+          c.height = Math.round(img.height * k);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          listo(c.toDataURL('image/jpeg', .72).split(',')[1]);
+        };
+        img.src = lector.result;
+      };
+      lector.readAsDataURL(archivo);
+    });
+  }
+
+  async function subirComprobante(archivo){
+    const dicho = document.getElementById('pvDicho');
+    const btn   = document.getElementById('pvSubir');
+    dicho.textContent = 'subiendo...';
+    btn.disabled = true;
+
+    let base64;
+    try { base64 = await achicar(archivo); }
+    catch (e){ dicho.textContent = 'esa imagen no se pudo leer'; btn.disabled = false; return; }
+
+    const r = await llamarRPC('adjuntar_comprobante', {
+      p_codigo: codigoActual, p_compra: pendiente.compra_id,
+      p_base64: base64, p_tipo: 'image/jpeg',
+    });
+
+    if (!r.ok){ dicho.textContent = 'no se pudo subir, probá de nuevo'; btn.disabled = false; return; }
+
+    pendiente = null;
+    cuantas = 1;
+    await window.__refrescarPreventa();
+    pintar();
+  }
+
+  // --- asignar ---------------------------------------------------------------
+  let debounce = null;
+
+  async function buscar(caja, q){
+    const lista = caja.querySelector('.pv-resultados');
+    if (q.length < 1){ lista.innerHTML = ''; return; }
+    const r = await llamarRPC('buscar_para_entrada',
+                              { p_codigo: codigoActual, p_query: q });
+    const gente = (r.ok && r.datos) || [];
+    if (!gente.length){ lista.innerHTML = '<div class="pv-detalle">nadie con ese nombre</div>'; return; }
+    lista.innerHTML = gente.map(g =>
+      '<div class="pv-op' + (g.ya_tiene ? ' tiene' : '') + '" data-id="' + g.id + '" ' +
+           'data-nombre="' + esc(g.nombre || g.sektario) + '">' +
+        esc(g.nombre || g.sektario) +
+        (g.ya_tiene ? '<span>ya tiene</span>' : '<span>' + esc(g.sektario || '') + '</span>') +
+      '</div>').join('');
+  }
+
+  async function darSela(entrada, quien, nombre, caja){
+    const r = await llamarRPC('asignar_entrada',
+              { p_codigo: codigoActual, p_entrada: entrada, p_a_quien: quien });
+
+    if (r.ok){
+      asignando = null;
+      await window.__refrescarPreventa();
+      pintar();
+      return;
+    }
+
+    // la única salida que no es un error: ya tiene entrada. Entonces se le
+    // ofrece dejársela igual, sin dueño, para que la reparta esa persona.
+    const dice = (r.motivo || '') + '';
+    if (dice.indexOf('ya_tiene_entrada') === -1){
+      caja.querySelector('.pv-resultados').innerHTML =
+        '<div class="pv-detalle">' + (dice.indexOf('cambios_cerrados') !== -1
+          ? 'ya no se puede asignar: escribile a la sekta' : 'no se pudo asignar') + '</div>';
+      return;
+    }
+
+    caja.querySelector('.pv-resultados').innerHTML =
+      '<div class="pv-dilema">' +
+        '<p><strong>' + esc(nombre) + '</strong> ya tiene entrada.<br>' +
+        'Podés dejársela igual: le queda a ella, sin nombre, para que se la dé a quien quiera.</p>' +
+        '<button class="pv-mini" data-pasar="' + quien + '">dejársela igual</button>' +
+        '<button class="pv-mini" data-otro="1">elegir a otra persona</button>' +
+      '</div>';
+  }
+
+  // --- los clicks ------------------------------------------------------------
+  cuerpo.addEventListener('click', async e => {
+    const t = e.target;
+
+    if (t.id === 'pvMas'  ){ cuantas++; pintar(); return; }
+    if (t.id === 'pvMenos'){ cuantas--; pintar(); return; }
+    if (t.id === 'pvReservar'){ reservar(); return; }
+    if (t.closest('#pvAlias')){ copiarAlias(); return; }
+    if (t.id === 'pvSubir'){ document.getElementById('pvArchivo').click(); return; }
+    if (t.id === 'pvGuardar'){ guardarTarjeta(); return; }
+
+    const asignar = t.closest('[data-asignar]');
+    if (asignar){
+      asignando = asignar.dataset.asignar;
+      pintar();
+      const inp = cuerpo.querySelector('.pv-buscar input');
+      if (inp) inp.focus();
+      return;
+    }
+
+    const soltar = t.closest('[data-soltar]');
+    if (soltar){
+      if (!confirm('¿Soltás tu entrada para dársela a otra persona? Tu código deja de servir, y te quedás sin lugar hasta que se la des a alguien.')) return;
+      await llamarRPC('soltar_entrada',
+                      { p_codigo: codigoActual, p_entrada: soltar.dataset.soltar });
+      asignando = soltar.dataset.soltar;
+      await window.__refrescarPreventa();
+      pintar();
+      return;
+    }
+
+    const otro = t.closest('[data-otro]');
+    if (otro){ pintar(); const i = cuerpo.querySelector('.pv-buscar input'); if (i) i.focus(); return; }
+
+    const pasar = t.closest('[data-pasar]');
+    if (pasar){
+      await llamarRPC('pasar_entrada', {
+        p_codigo: codigoActual, p_entrada: asignando, p_a_quien: pasar.dataset.pasar });
+      asignando = null;
+      await window.__refrescarPreventa();
+      pintar();
+      return;
+    }
+
+    // elegir a alguien no asigna todavía: primero se pregunta, porque
+    // asignar es un viaje de ida
+    const op = t.closest('.pv-op');
+    if (op){
+      const caja = op.closest('.pv-buscar');
+      if (op.classList.contains('tiene')){
+        darSela(caja.dataset.para, op.dataset.id, op.dataset.nombre, caja);
+        return;
+      }
+      caja.querySelector('.pv-resultados').innerHTML =
+        '<div class="pv-dilema">' +
+          '<p>¿Le das esta entrada a <strong>' + esc(op.dataset.nombre) + '</strong>?<br>' +
+          'Le llega un mail con su código. Una vez dada, no la podés sacar.</p>' +
+          '<button class="pv-mini" data-confirmar="' + op.dataset.id + '" data-nombre="' +
+            esc(op.dataset.nombre) + '">sí, dársela</button>' +
+          '<button class="pv-mini" data-otro="1">elegir a otra persona</button>' +
+        '</div>';
+      return;
+    }
+
+    const confirmar = t.closest('[data-confirmar]');
+    if (confirmar){
+      const caja = confirmar.closest('.pv-buscar');
+      confirmar.disabled = true;
+      darSela(caja.dataset.para, confirmar.dataset.confirmar, confirmar.dataset.nombre, caja);
+      return;
+    }
+  });
+
+  cuerpo.addEventListener('input', e => {
+    if (e.target.matches('.pv-buscar input')){
+      const caja = e.target.closest('.pv-buscar');
+      const q = e.target.value.trim();
+      clearTimeout(debounce);
+      debounce = setTimeout(() => buscar(caja, q), 220);
+      return;
+    }
+  });
+
+  cuerpo.addEventListener('change', e => {
+    if (e.target.id === 'pvArchivo' && e.target.files && e.target.files[0]){
+      subirComprobante(e.target.files[0]);
+    }
+  });
+
+  // --- entrar y salir --------------------------------------------------------
+  function abrir(desde){
+    if (!miembroActual || !codigoActual) return;
+    volverA = desde.closest('.member-screen');
+    volverA.classList.remove('active');
+    historiaScreen.classList.remove('active');
+    asignando = null;
+    pantalla.classList.add('active');
+    scrollToTop();
+    pintar();
+  }
+
+  document.querySelectorAll('.pv-abrir').forEach(el => {
+    el.addEventListener('click', () => abrir(el));
+    el.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); abrir(el); }
+    });
+  });
+
+  salir.addEventListener('click', () => {
+    pantalla.classList.remove('active');
+    historiaScreen.classList.add('active');
+    if (volverA){
+      volverA.classList.add('active');
+      volverA.scrollIntoView({ block: 'start' });
+    }
+  });
+})();
+
 (function padron(){
   const pantalla = document.getElementById('ficha-screen');
   const salir    = document.getElementById('exitFicha');
@@ -4104,12 +4918,13 @@ reveal();
     'ritos-screen':  'exitRitos',
     'ficha-screen':  'exitFicha',
     'susurros-screen': 'exitSusurros',
+    'preventa-screen': 'exitPreventa',
   };
 
   function marcar(){ history.pushState({ sekito:true }, ''); }
   window.__marcarPantalla = marcar;
 
-  document.querySelectorAll('.invite-trigger, .ritos-abrir, .arbol-abrir, .sus-abrir')
+  document.querySelectorAll('.invite-trigger, .ritos-abrir, .arbol-abrir, .sus-abrir, .pv-abrir')
     .forEach(el => el.addEventListener('click', marcar));
 
   window.addEventListener('popstate', () => {

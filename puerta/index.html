@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0D0D0D">
+<title>SÉKITO · puerta</title>
+<link rel="icon" href="../favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<!-- quién tiene foto: la misma lista que usa el portal -->
+<script src="../images/perfiles/perfiles.js"></script>
+<style>
+/* ===========================================================================
+   LA PUERTA DE SEKI 7
+
+   Un celu en la mano, en un lugar oscuro, con una fila adelante. Todo grande,
+   todo a un toque: arriba la cámara, abajo el buscador. Lo que aparece al
+   escanear se entiende sin leer: el borde dice si pasa o si ya pasó.
+   =========================================================================== */
+:root{
+  --black:#0D0D0D;
+  --gray:#93A8AC;
+  --white:#F2F2F2;
+  --bordo:#800020;
+  --bordo-claro:#C9566E;
+  --amarillo:#D9A11E;
+  --linea:rgba(147,168,172,.22);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0; background:var(--black); color:var(--white)}
+body{
+  font-family:'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  font-size:15px; line-height:1.4; -webkit-font-smoothing:antialiased;
+  min-height:100svh;
+}
+button, input{font-family:inherit; font-size:inherit; color:inherit}
+[hidden]{display:none !important}
+
+/* ---------- entrar ---------- */
+#entrar{
+  min-height:100svh; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:22px; padding:24px;
+}
+.abanico{
+  width:72px; aspect-ratio:516.569/335.754; background:var(--white);
+  -webkit-mask:url(../images/abanico-seki.svg) center / contain no-repeat;
+          mask:url(../images/abanico-seki.svg) center / contain no-repeat;
+}
+#entrar h1{font-size:13px; font-weight:500; letter-spacing:.42em; color:var(--gray); margin:0}
+#entrar form{display:flex; flex-direction:column; gap:14px; width:min(340px,100%)}
+#llave{
+  background:transparent; border:1px solid var(--linea); padding:16px; text-align:center;
+  letter-spacing:.18em; text-transform:uppercase; outline:none;
+}
+#llave:focus{border-color:var(--gray)}
+.btn{
+  background:none; border:1px solid rgba(242,242,242,.5); padding:15px 18px;
+  letter-spacing:.16em; text-transform:uppercase; font-size:12px; cursor:pointer;
+}
+.btn-fuerte{border-color:var(--amarillo); color:var(--amarillo)}
+.aviso{color:var(--bordo-claro); font-size:12.5px; min-height:1.3em; text-align:center; margin:0}
+
+/* ---------- la puerta ---------- */
+#puerta{padding:0 0 40px}
+.arriba{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  padding:14px 16px; border-bottom:1px solid var(--linea);
+  position:sticky; top:0; background:var(--black); z-index:3;
+}
+.quien{font-size:11px; letter-spacing:.2em; color:var(--gray); text-transform:uppercase}
+.conteo{font-size:22px; letter-spacing:.04em; text-align:right}
+.conteo small{display:block; font-size:9.5px; letter-spacing:.16em; color:var(--gray); text-transform:uppercase}
+
+.camara{position:relative; margin:16px; aspect-ratio:1; background:#050505; border:1px solid var(--linea); overflow:hidden}
+.camara video{width:100%; height:100%; object-fit:cover; display:block}
+/* el marco: dónde poner el QR */
+.camara::after{
+  content:""; position:absolute; inset:18%; border:2px solid rgba(242,242,242,.55); border-radius:14px;
+  pointer-events:none;
+}
+#prender{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; background:none; border:none; cursor:pointer; color:var(--gray);
+  font-size:12px; letter-spacing:.16em; text-transform:uppercase; z-index:2;
+}
+#prender strong{color:var(--white); font-weight:500; font-size:14px}
+
+.buscar{margin:0 16px}
+#busca{
+  width:100%; background:transparent; border:none; border-bottom:1px solid rgba(147,168,172,.45);
+  padding:14px 2px; outline:none; font-size:16px;   /* 16 px: si no, el iPhone hace zoom */
+}
+.opcion{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  padding:16px 2px; border-bottom:1px solid rgba(147,168,172,.14); cursor:pointer;
+}
+.opcion b{font-weight:500; letter-spacing:.06em}
+.opcion span{font-size:11px; color:var(--gray); letter-spacing:.08em}
+.opcion .ya{color:var(--bordo-claro)}
+.nada{color:var(--gray); font-size:12.5px; padding:16px 2px}
+.respaldo{margin:26px 16px 0; color:rgba(147,168,172,.6); font-size:11px; line-height:1.6}
+
+/* ---------- lo que se escaneó ---------- */
+#ficha{
+  position:fixed; inset:0; z-index:10; background:var(--black);
+  display:flex; flex-direction:column; padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+  border:6px solid var(--gray);
+}
+#ficha.pasa{border-color:var(--amarillo)}
+#ficha.ya{border-color:var(--bordo-claro); background:#1a0509}
+#ficha.no{border-color:var(--bordo-claro)}
+.ficha-centro{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px}
+.foto{width:132px; height:132px; border-radius:50%; object-fit:cover; border:1px solid var(--linea)}
+.titulo{font-size:34px; font-weight:500; letter-spacing:.1em; line-height:1.15; word-break:break-word}
+.nombre{font-size:16px; color:rgba(242,242,242,.82)}
+.sektario{font-size:13px; color:var(--gray); letter-spacing:.14em}
+.sello{
+  margin-top:6px; padding:5px 12px; border:1px solid var(--linea); font-size:11px;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--gray);
+}
+.sello.staff{border-color:var(--amarillo); color:var(--amarillo)}
+.sello.free{border-color:var(--bordo-claro); color:var(--bordo-claro)}
+.codigo{font-size:13px; letter-spacing:.16em; color:rgba(147,168,172,.7)}
+.estado{font-size:15px; letter-spacing:.18em; text-transform:uppercase; margin-bottom:6px}
+#ficha.pasa .estado{color:var(--amarillo)}
+#ficha.ya .estado, #ficha.no .estado{color:var(--bordo-claro)}
+.ficha-botones{display:flex; flex-direction:column; gap:10px}
+.ficha-botones .btn{padding:20px; font-size:14px}
+.btn-entra{border-color:var(--amarillo); background:rgba(217,161,30,.12); color:var(--amarillo); font-weight:500}
+
+/* el destello de "adentro" y el deshacer */
+#listo{
+  position:fixed; inset:0; z-index:11; display:flex; align-items:center; justify-content:center;
+  background:rgba(217,161,30,.94); color:var(--black); font-size:30px; font-weight:500; letter-spacing:.2em;
+  pointer-events:none; opacity:0; transition:opacity .25s;
+}
+#listo.se-ve{opacity:1}
+#deshacer{
+  position:fixed; left:16px; right:16px; bottom:calc(16px + env(safe-area-inset-bottom)); z-index:9;
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  background:#1a1a1a; border:1px solid var(--linea); padding:12px 14px; font-size:12.5px;
+}
+#deshacer button{background:none; border:1px solid var(--linea); padding:9px 12px; cursor:pointer; font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<section id="entrar">
+  <div class="abanico" aria-hidden="true"></div>
+  <h1>PUERTA · SEKI 7</h1>
+  <form id="formEntrar">
+    <input id="llave" placeholder="llave de puerta" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <button class="btn btn-fuerte" type="submit">entrar</button>
+    <p class="aviso" id="avisoEntrar"></p>
+  </form>
+</section>
+
+<section id="puerta" hidden>
+  <div class="arriba">
+    <div>
+      <div class="quien" id="quien">puerta</div>
+      <button class="quien" id="salir" style="background:none;border:none;padding:6px 0 0;cursor:pointer;opacity:.6">salir</button>
+    </div>
+    <div class="conteo"><span id="conteo">—</span><small>adentro</small></div>
+  </div>
+
+  <div class="camara">
+    <video id="video" playsinline muted></video>
+    <button id="prender" type="button"><strong>prender la cámara</strong>y apuntá al QR</button>
+  </div>
+
+  <div class="buscar">
+    <input id="busca" placeholder="o buscá: apodo, nombre o código" autocomplete="off" spellcheck="false" autocapitalize="off">
+    <div id="opciones"></div>
+  </div>
+
+  <p class="respaldo">
+    Si se corta internet: la lista impresa, en orden alfabético, y se tacha
+    con birome.
+  </p>
+</section>
+
+<section id="ficha" hidden>
+  <div class="ficha-centro" id="fichaCentro"></div>
+  <div class="ficha-botones" id="fichaBotones"></div>
+</section>
+
+<div id="listo">ADENTRO</div>
+<div id="deshacer" hidden><span id="deshacerDice"></span><button type="button" id="deshacerBtn">deshacer</button></div>
+
+<script>
+const SUPABASE_URL = 'https://imhbhkknpgtwmwzflqlk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_7KAttE0ISGm_BQHswIH3hg_NCQWelFs';
+const $ = s => document.querySelector(s);
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hora = f => new Date(f).toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit', hour12:false });
+const vibrar = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+
+async function rpc(funcion, cuerpo){
+  const ctrl = new AbortController();
+  const corte = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + funcion, {
+      method:'POST',
+      headers:{ 'apikey':SUPABASE_KEY, 'Authorization':'Bearer ' + SUPABASE_KEY, 'Content-Type':'application/json' },
+      body:JSON.stringify(cuerpo), signal:ctrl.signal,
+    });
+    const datos = await res.json().catch(() => null);
+    if (!res.ok) return { ok:false, motivo:(datos && datos.message) || ('http ' + res.status) };
+    return { ok:true, datos };
+  } catch (e) { return { ok:false, motivo:'sin_conexion' }; }
+  finally { clearTimeout(corte); }
+}
+
+// la llave de puerta queda en este celu: la noche de la fiesta nadie quiere tipearla dos veces
+const GUARDADA = 'sekito.puerta';
+const guardada = {
+  get: () => { try { return localStorage.getItem(GUARDADA); } catch (e) { return null; } },
+  set: v  => { try { localStorage.setItem(GUARDADA, v); } catch (e) {} },
+  borrar: () => { try { localStorage.removeItem(GUARDADA); } catch (e) {} },
+};
+let LLAVE = null;
+
+// ---------------------------------------------------------------- entrar
+async function probar(llave){
+  const r = await rpc('puerta_entrar', { p_llave: llave });
+  if (!r.ok || !r.datos || !r.datos[0]) return null;
+  return r.datos[0].nombre;
+}
+async function abrirPuerta(llave, nombre){
+  LLAVE = llave; guardada.set(llave);
+  $('#quien').textContent = 'puerta · ' + nombre;
+  $('#entrar').hidden = true; $('#puerta').hidden = false;
+  contar(); setInterval(contar, 15000);
+  // que la pantalla no se apague con el celu en la mano
+  try { if (navigator.wakeLock) await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+$('#formEntrar').addEventListener('submit', async e => {
+  e.preventDefault();
+  const v = $('#llave').value.trim();
+  if (!v) return;
+  $('#avisoEntrar').textContent = '';
+  const nombre = await probar(v);
+  if (!nombre){ $('#avisoEntrar').textContent = 'esa llave no abre la puerta'; return; }
+  abrirPuerta(v, nombre);
+});
+$('#salir').addEventListener('click', () => { guardada.borrar(); location.reload(); });
+(async () => {
+  const v = guardada.get();
+  if (!v) return;
+  const nombre = await probar(v);
+  if (nombre) abrirPuerta(v, nombre); else guardada.borrar();
+})();
+
+async function contar(){
+  const r = await rpc('puerta_conteo', { p_llave: LLAVE });
+  if (r.ok && r.datos && r.datos[0]) $('#conteo').textContent = r.datos[0].adentro + ' / ' + r.datos[0].total;
+}
+
+// ---------------------------------------------------------------- la cámara
+/* jsQR lee cada cuadro del video, achicado: es rápido y anda igual en
+   iPhone y en Android, que no traen el mismo lector incorporado. */
+const video = $('#video');
+const lienzo = document.createElement('canvas');
+const ctx = lienzo.getContext('2d', { willReadFrequently:true });
+let leyendo = false, pausada = false, ultimo = { texto:null, cuando:0 };
+
+$('#prender').addEventListener('click', async () => {
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+    video.srcObject = s; await video.play();
+    $('#prender').hidden = true;
+    leyendo = true; mirar();
+  } catch (e) {
+    $('#prender').innerHTML = '<strong>la cámara no arrancó</strong>dale permiso y tocá de nuevo · o usá el buscador';
+  }
+});
+
+function mirar(){
+  if (!leyendo) return;
+  if (!pausada && video.readyState >= 2){
+    const lado = 480, k = lado / Math.max(video.videoWidth, video.videoHeight);
+    lienzo.width = Math.round(video.videoWidth * k); lienzo.height = Math.round(video.videoHeight * k);
+    ctx.drawImage(video, 0, 0, lienzo.width, lienzo.height);
+    const img = ctx.getImageData(0, 0, lienzo.width, lienzo.height);
+    const qr = window.jsQR && jsQR(img.data, img.width, img.height, { inversionAttempts:'dontInvert' });
+    // el mismo QR frente a la cámara no se lee dos veces seguidas
+    if (qr && qr.data && !(qr.data === ultimo.texto && Date.now() - ultimo.cuando < 4000)){
+      ultimo = { texto: qr.data, cuando: Date.now() };
+      leer(qr.data);
+    }
+  }
+  setTimeout(() => requestAnimationFrame(mirar), 120);
+}
+
+async function leer(texto){
+  pausada = true;
+  const r = await rpc('puerta_leer', { p_llave: LLAVE, p_codigo: texto });
+  if (!r.ok){ mostrarError(r.motivo === 'sin_conexion' ? 'sin conexión: probá de nuevo o usá la lista' : 'no se pudo leer'); return; }
+  if (!r.datos || !r.datos[0]){ mostrarError('ese código no es una entrada'); return; }
+  mostrar(r.datos[0]);
+}
+
+// ---------------------------------------------------------------- buscar
+let espera = null;
+$('#busca').addEventListener('input', () => {
+  clearTimeout(espera);
+  const q = $('#busca').value.trim();
+  espera = setTimeout(async () => {
+    const caja = $('#opciones');
+    if (q.length < 2){ caja.innerHTML = ''; return; }
+    const r = await rpc('puerta_buscar', { p_llave: LLAVE, p_q: q });
+    const lista = (r.ok && r.datos) || [];
+    BUSCADOS = lista;
+    caja.innerHTML = lista.length ? lista.map((e, i) =>
+      '<div class="opcion" data-i="' + i + '"><div><b>' + esc(e.titulo) + '</b><br><span>' + esc(e.nombre || '') + '</span></div>' +
+      (e.adentro_en ? '<span class="ya">adentro ' + hora(e.adentro_en) + '</span>' : '<span>' + esc(e.tipo) + '</span>') + '</div>').join('')
+      : '<div class="nada">' + (r.ok ? 'nadie con eso' : 'sin conexión') + '</div>';
+  }, 200);
+});
+let BUSCADOS = [];
+$('#opciones').addEventListener('click', e => {
+  const op = e.target.closest('[data-i]');
+  if (!op) return;
+  pausada = true;
+  mostrar(BUSCADOS[Number(op.dataset.i)]);
+});
+
+// ---------------------------------------------------------------- la ficha
+let ACTUAL = null;
+function fotoDe(sektario){
+  const p = sektario && window.PERFILES && window.PERFILES[sektario];
+  if (!p || !p.fotos) return '';
+  return '../images/perfiles/' + sektario.toLowerCase().replace(/·/g, '-') + '/1.jpg';
+}
+
+function mostrar(e){
+  ACTUAL = e;
+  const ficha = $('#ficha');
+  const ya = !!e.adentro_en;
+  ficha.className = ya ? 'ya' : 'pasa';
+  const foto = fotoDe(e.sektario);
+  const tipo = (e.tipo === 'staff' || e.tipo === 'free') ? e.tipo : 'tanda ' + e.tipo;
+  $('#fichaCentro').innerHTML =
+    '<div class="estado">' + (ya ? 'ya entró · ' + hora(e.adentro_en) + (e.adentro_por ? ' · ' + esc(e.adentro_por) : '') : 'tiene entrada') + '</div>' +
+    (foto ? '<img class="foto" alt="" src="' + foto + '">' : '') +
+    '<div class="titulo">' + esc(e.titulo || '') + '</div>' +
+    (e.nombre ? '<div class="nombre">' + esc(e.nombre) + '</div>' : '') +
+    (e.sektario ? '<div class="sektario">' + esc(e.sektario) + '</div>' : (e.de_afuera ? '<div class="sektario">de afuera</div>' : '')) +
+    '<div class="sello ' + esc(e.tipo) + '">' + esc(tipo) + '</div>' +
+    '<div class="codigo">' + esc(e.codigo) + '</div>';
+  $('#fichaBotones').innerHTML = ya
+    ? '<button class="btn" type="button" data-volver>volver</button>' +
+      '<button class="btn" type="button" data-sacar style="opacity:.6">fue un error: sacarla de adentro</button>'
+    : '<button class="btn btn-entra" type="button" data-entra>entra</button>' +
+      '<button class="btn" type="button" data-volver>volver</button>';
+  ficha.hidden = false;
+  vibrar(ya ? [90, 60, 90] : 40);
+}
+
+function mostrarError(texto){
+  ACTUAL = null;
+  const ficha = $('#ficha');
+  ficha.className = 'no';
+  $('#fichaCentro').innerHTML = '<div class="estado">' + esc(texto) + '</div>' +
+    '<div class="nombre" style="color:var(--gray)">Probá con el buscador: apodo, nombre o código.</div>';
+  $('#fichaBotones').innerHTML = '<button class="btn" type="button" data-volver>volver</button>';
+  ficha.hidden = false;
+  vibrar([90, 60, 90]);
+}
+
+function cerrarFicha(){
+  $('#ficha').hidden = true;
+  $('#busca').value = ''; $('#opciones').innerHTML = '';
+  pausada = false;
+}
+
+let deshacerQue = null, deshacerReloj = null;
+$('#ficha').addEventListener('click', async ev => {
+  if (ev.target.closest('[data-volver]')){ cerrarFicha(); return; }
+
+  if (ev.target.closest('[data-entra]') && ACTUAL){
+    const b = ev.target.closest('[data-entra]'); b.disabled = true;
+    const r = await rpc('puerta_marcar', { p_llave: LLAVE, p_entrada: ACTUAL.entrada_id });
+    if (!r.ok || !r.datos || !r.datos[0]){ b.disabled = false; b.textContent = 'no se pudo · tocá de nuevo'; return; }
+    const m = r.datos[0];
+    if (m.ya_estaba){
+      // otro celu la marcó un segundo antes
+      mostrar(Object.assign({}, ACTUAL, { adentro_en: m.adentro_en, adentro_por: m.adentro_por }));
+      return;
+    }
+    const quien = ACTUAL;
+    cerrarFicha();
+    $('#listo').classList.add('se-ve'); vibrar(60);
+    setTimeout(() => $('#listo').classList.remove('se-ve'), 700);
+    contar();
+    // ocho segundos para arrepentirse
+    deshacerQue = quien.entrada_id;
+    $('#deshacerDice').textContent = (quien.titulo || '') + ' adentro';
+    $('#deshacer').hidden = false;
+    clearTimeout(deshacerReloj);
+    deshacerReloj = setTimeout(() => { $('#deshacer').hidden = true; deshacerQue = null; }, 8000);
+    return;
+  }
+
+  if (ev.target.closest('[data-sacar]') && ACTUAL){
+    await rpc('puerta_desmarcar', { p_llave: LLAVE, p_entrada: ACTUAL.entrada_id });
+    cerrarFicha(); contar();
+  }
+});
+
+$('#deshacerBtn').addEventListener('click', async () => {
+  if (!deshacerQue) return;
+  await rpc('puerta_desmarcar', { p_llave: LLAVE, p_entrada: deshacerQue });
+  deshacerQue = null; $('#deshacer').hidden = true; contar();
+});
+</script>
+</body>
+</html>
