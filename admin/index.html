@@ -425,6 +425,8 @@ async function rpc(funcion, cuerpo){
 function enCastellano(motivo){
   if (motivo === 'codigo_admin_invalido') return 'ese código no sirve';
   if (motivo === 'sin_conexion')          return 'el portal no responde.. probá de nuevo';
+  // un mail, una persona (supabase/migracion-un-mail.sql)
+  if (motivo === 'mail_ya_esta')          return 'ese mail ya es de otra persona activa del portal';
   return motivo || 'algo salió mal';
 }
 

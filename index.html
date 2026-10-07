@@ -2515,6 +2515,7 @@ reveal();
     invitacion_ya_usada:  'esta invitación ya fue usada',
     invitacion_vencida:   'esta invitación venció',
     invitacion_revocada:  'esta invitación se dio de baja.. pedile otra a quien te invitó',
+    mail_ya_esta:         'ese mail ya tiene un lugar en el sékito.. si es tuyo, ya tenés tu llave',
     sin_conexion:         'el portal no responde.. probá de nuevo',
   };
 
@@ -2573,6 +2574,7 @@ reveal();
 
     if (!r.ok){
       const clave = Object.keys(MENSAJES).find(k => String(r.motivo).includes(k));
+      if (clave === 'mail_ya_esta') marcarFalta(campos.email, true);
       decir(MENSAJES[clave] || 'no se pudo guardar.. probá de nuevo');
       return;
     }
