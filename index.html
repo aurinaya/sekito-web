@@ -3879,8 +3879,11 @@ reveal();
   async function abrir(sektario, desde, forzar){
     if (!miembroActual || !codigoActual) return;
     // saltando de una ficha a la de su guía no llega un "desde": el camino
-    // de vuelta es el del primer salto, y se conserva
-    if (desde){ volverA = desde; if (!forzar) volverA.classList.remove('active'); }
+    // de vuelta es el del primer salto, y se conserva. La pantalla de la que
+    // se viene se apaga siempre: si queda prendida, la ficha se ve debajo de
+    // todo (pasaba al venir del árbol)
+    if (desde){ volverA = desde; volverA.classList.remove('active'); }
+    document.querySelectorAll('.screen.active').forEach(s => { if (s !== pantalla) s.classList.remove('active'); });
     historiaScreen.classList.remove('active');
     pantalla.classList.add('active');
     scrollToTop();
