@@ -10,7 +10,7 @@
 <meta property="og:url" content="https://www.sekito.ar/s7">
 <meta property="og:title" content="SEKI SÉPTIMA">
 <meta property="og:description" content="Sábado 14 de noviembre · Palermo, Buenos Aires. Tanda sekreta desde el portal.">
-<meta property="og:image" content="https://www.sekito.ar/images/tarjeta-s7.jpg?v=s7">
+<meta property="og:image" content="https://www.sekito.ar/images/tarjeta-s7.jpg?v=s7b">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -113,14 +113,16 @@
     opacity:0;
   }
   /* el tracking va solo entre letras: el espacio de más que deja después de
-     la última se compensa a la izquierda, y el S7 queda centrado de verdad */
+     la última se compensa a la izquierda, y el S7 queda centrado de verdad.
+     Desde el 07/10 la S y el 7 van casi pegados (.03em; antes .22em), igual
+     en la historia, en el perfil y en la tarjeta de compartir */
   .nombre .piedra{
     display:inline-block;
-    letter-spacing:.22em;
-    padding-left:.22em;
-    /* el "7" carga la tinta a la izquierda de su lugar: medido, el S7 queda
-       1 px corrido a 58 px de letra. Se compensa para que se vea centrado */
-    position:relative; left:.022em;
+    letter-spacing:.03em;
+    padding-left:.03em;
+    /* el "7" carga la tinta a la izquierda de su lugar: medido sobre la
+       tinta, el S7 queda centrado corriéndolo .014em */
+    position:relative; left:.014em;
     color:var(--white);
     filter:drop-shadow(0 0 8px rgba(255,255,255,.3));
   }
