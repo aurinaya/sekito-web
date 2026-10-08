@@ -2634,6 +2634,9 @@ function mostrarCodigoNuevo(miembro){
   miembroActual = miembro;
   // queda como código activo de la sesión, así puede invitar él también
   codigoActual = miembro.codigo_acceso;
+  // y queda guardado, como el de quien la tipea en la puerta: la próxima vez
+  // entra directo (antes, quien llegaba por invitación volvía al portón)
+  guardarLlave(miembro.codigo_acceso);
 
   document.getElementById('bienvenida').classList.remove('active');
   document.getElementById('cnCodigo').textContent = miembro.codigo_acceso;
@@ -4920,7 +4923,10 @@ reveal();
    La gente usa el gesto de atrás y eso, en un sitio de una sola página, te
    saca afuera. Cada vez que se abre una pantalla dejamos una marca en el
    historial; el atrás consume esa marca y cierra la pantalla en vez de irse.
-   Estando en el perfil, te devuelve al portón. */
+   Sin ninguna pantalla abierta, el atrás sigue de largo (sale del sitio,
+   como en cualquier página) y la sesión queda: antes llevaba al portón y
+   borraba la llave, y la gente "se salía" sin haber tocado "salir". Las
+   marcas que quedaron de pantallas cerradas con su "volver" se saltan. */
 (function atras(){
   const SALIDAS = {
     'invite-screen': 'exitInvite',
@@ -4946,7 +4952,7 @@ reveal();
       document.getElementById(SALIDAS[abierta]).click();
       return;
     }
-    if (miembroActual) resetToGate();
+    history.back();
   });
 })();
 
