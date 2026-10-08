@@ -34,4 +34,10 @@ window.PERFILES = {
   'VLR·173': { fotos: 1 },
   'GSN·019': { fotos: 1 },
   'NTL·797': { fotos: 2 },
+  'GBR·235': { fotos: 1 },
+  'JLL·947': { fotos: 1 },
+  'LJN·467': { fotos: 1 },
+  'LCT·840': { fotos: 1 },
+  'JLS·247': { fotos: 1 },
+  'TTN·214': { fotos: 1 },
 };
