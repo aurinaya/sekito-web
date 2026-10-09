@@ -1052,7 +1052,7 @@
 
   .padron-resultados:not(:empty){ margin-top:8px; }
   /* cada persona: la foto chiquita (o el abanico), cómo le dicen, y abajo,
-     más chico, nombre, apellido y código sektario */
+     más chico, el nombre con la inicial del apellido y el código sektario */
   .padron-op{
     display:flex; align-items:center; gap:12px;
     padding:10px 4px;
@@ -2712,6 +2712,7 @@ reveal();
     if (campo) campo.classList.toggle('falta', falta);
   }
 
+  // m.apellido ya viene como inicial ("N."): el apellido entero no sale de la base
   function comoSeLlama(m){
     const real = [m.nombre_real, m.apellido].filter(Boolean).join(' ');
     if (m.apodo && real) return m.apodo + ' · ' + real;
@@ -4681,7 +4682,7 @@ reveal();
         }
         caja.innerHTML = lista.map(d => {
           const foto = fotoPrincipal(d.sektario);
-          // abajo, lo secundario: nombre y apellido (si dicen algo más que
+          // abajo, lo secundario: el nombre con la inicial (si dice algo más que
           // el título) y el código sektario
           const titulo = d.nombre || d.sektario;
           const completo = d.nombre_completo && d.nombre_completo.toLowerCase() !== String(titulo).toLowerCase()
