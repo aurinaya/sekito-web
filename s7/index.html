@@ -10,7 +10,7 @@
 <meta property="og:url" content="https://www.sekito.ar/s7">
 <meta property="og:title" content="SEKI SÉPTIMA">
 <meta property="og:description" content="Sábado 14 de noviembre · Palermo, Buenos Aires. Tanda sekreta desde el portal.">
-<meta property="og:image" content="https://www.sekito.ar/images/tarjeta-s7.jpg?v=s7b">
+<meta property="og:image" content="https://www.sekito.ar/images/tarjeta-s7.jpg?v=s7c">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -25,6 +25,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500&display=swap" rel="stylesheet">
 <style>
+  /* Cleopatra, la letra oficial de la Seki: solo para el S7 (08/10) */
+  @font-face{ font-family:'Cleopatra'; src:url('/fuentes/cleopatra.otf') format('opentype'); font-display:block; }
   :root{
     --black:#0D0D0D;
     --white-rgb:242,242,242;
@@ -105,8 +107,8 @@
      El tamaño y el lugar de siempre. Aparece de una (no se escribe), y queda
      con un halo blanco que respira despacio. */
   .nombre{
-    font-size:clamp(34px, 13vw, 58px);
-    font-weight:500;
+    font-size:clamp(42px, 16vw, 72px);
+    font-weight:400;
     margin:70px 0 0;
     line-height:1.2;
     min-height:1.2em;
@@ -114,17 +116,18 @@
   }
   /* el tracking va solo entre letras: el espacio de más que deja después de
      la última se compensa a la izquierda, y el S7 queda centrado de verdad.
-     Desde el 07/10 la S y el 7 van casi pegados (.03em; antes .22em), igual
-     en la historia, en el perfil y en la tarjeta de compartir */
+     Desde el 08/10 el S7 va en Cleopatra, la letra de la Seki, engrosada
+     con un contorno de su mismo color (Cleopatra tiene un solo grosor) y con
+     más brillo; igual en el perfil, las placas, las historias y el reel */
   .nombre .piedra{
     display:inline-block;
-    letter-spacing:.03em;
-    padding-left:.03em;
-    /* el "7" carga la tinta a la izquierda de su lugar: medido sobre la
-       tinta, el S7 queda centrado corriéndolo .014em */
-    position:relative; left:.014em;
+    font-family:'Cleopatra', serif;
+    letter-spacing:.02em;
+    padding-left:.02em;
+    -webkit-text-stroke:.0122em currentColor;
+    position:relative; left:0;     /* lo ajusta la medida de la tinta */
     color:var(--white);
-    filter:drop-shadow(0 0 8px rgba(255,255,255,.3));
+    filter:drop-shadow(0 0 10px rgba(255,255,255,.48));
   }
   .nombre.cayo{ opacity:1; animation:asoma .5s ease-out both; }
   @keyframes asoma{
@@ -135,8 +138,8 @@
     animation:respira 4.2s ease-in-out .5s infinite;
   }
   @keyframes respira{
-    0%,100%{ filter:drop-shadow(0 0 7px rgba(255,255,255,.26)); }
-    50%    { filter:drop-shadow(0 0 18px rgba(255,255,255,.55)); }
+    0%,100%{ filter:drop-shadow(0 0 9px rgba(255,255,255,.42)); }
+    50%    { filter:drop-shadow(0 0 23px rgba(255,255,255,.88)); }
   }
   .fecha{
     font-size:12px;

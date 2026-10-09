@@ -833,17 +833,22 @@
             mask:var(--fan-mask) center / contain no-repeat;
   }
   /* S7, como en sekito.ar/s7: blanco, con el halo que respira */
+  /* el S7 en Cleopatra, la letra de la Seki, engrosado con un contorno de su
+     color y con brillo, como en /s7 (08/10) */
+  @font-face{ font-family:'Cleopatra'; src:url('/fuentes/cleopatra.otf') format('opentype'); font-display:block; }
   .s7-nombre{
-    font-size:33px; letter-spacing:.03em; text-indent:.03em;   /* casi pegados, como en /s7 */
-    left:.014em;   /* el "7" carga la tinta a la izquierda: se compensa */
+    font-family:'Cleopatra', serif;
+    font-size:42px; letter-spacing:.02em; text-indent:.02em;
+    -webkit-text-stroke:.0122em currentColor;
+    left:0;        /* lo ajusta la medida de la tinta */
     color:var(--white);
     text-shadow:0 0 22px rgba(0,0,0,.55);
-    filter:drop-shadow(0 0 8px rgba(255,255,255,.3));
+    filter:drop-shadow(0 0 10px rgba(255,255,255,.48));
     animation:s7Respira 4.2s ease-in-out infinite;
   }
   @keyframes s7Respira{
-    0%,100%{ filter:drop-shadow(0 0 7px rgba(255,255,255,.26)); }
-    50%    { filter:drop-shadow(0 0 18px rgba(255,255,255,.55)); }
+    0%,100%{ filter:drop-shadow(0 0 9px rgba(255,255,255,.42)); }
+    50%    { filter:drop-shadow(0 0 23px rgba(255,255,255,.88)); }
   }
   @media (prefers-reduced-motion: reduce){ .s7-nombre{ animation:none; } }
   .s7-fecha{
