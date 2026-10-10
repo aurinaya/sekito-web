@@ -950,6 +950,8 @@
     font-size:10px; line-height:1.7; color:rgba(var(--gray-rgb),.7);
     margin-top:14px;
   }
+  .pv-llego{ font-size:20px; letter-spacing:.04em; color:var(--white); }
+  .pv-otra{ margin-top:22px; }
 
   /* una entrada de la lista */
   .pv-entrada{
@@ -4168,6 +4170,7 @@ reveal();
   let compras  = [];
   let pendiente = null; // la compra recién creada, esperando comprobante
   let cuantas   = 1;
+  let otraMas   = false; // con un comprobante en revisión, pidió comprar otra
   let asignando = null; // la entrada que estoy repartiendo
 
   const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
@@ -4253,6 +4256,18 @@ reveal();
         '<input type="file" id="pvArchivo" accept="image/*" hidden>' +
         '<div class="pv-dicho" id="pvDicho"></div>' +
         '<div class="pv-nota">Cuando lo subas, la sekta lo mira y te avisa.</div>' +
+      '</div>';
+    }
+
+    /* recién subido el comprobante, lo que se ve es que llegó, no otro botón
+       de comprar: Lucas vio "quiero mi lugar" de nuevo, creyó que no había
+       salido y compró dos veces (10/10). Comprar otra sigue, a un toque. */
+    if (!otraMas && compras.some(c => c.estado === 'a_revisar')){
+      return '<div class="pv-bloque">' +
+        '<div class="pv-rotulo">listo</div>' +
+        '<div class="pv-llego">tu comprobante llegó</div>' +
+        '<div class="pv-nota">La sekta lo está mirando. Cuando esté confirmado,<br>te escribimos y tu entrada aparece acá.</div>' +
+        '<button type="button" class="pv-mini pv-otra" id="pvOtra">comprar otra</button>' +
       '</div>';
     }
 
@@ -4478,6 +4493,7 @@ reveal();
 
     pendiente = null;
     cuantas = 1;
+    otraMas = false;
     await window.__refrescarPreventa();
     pintar();
   }
@@ -4537,6 +4553,7 @@ reveal();
     if (t.id === 'pvMas'  ){ cuantas++; pintar(); return; }
     if (t.id === 'pvMenos'){ cuantas--; pintar(); return; }
     if (t.id === 'pvReservar'){ reservar(); return; }
+    if (t.id === 'pvOtra'){ otraMas = true; pintar(); return; }
     if (t.closest('#pvAlias')){ copiarAlias(); return; }
     if (t.id === 'pvSubir'){ document.getElementById('pvArchivo').click(); return; }
     if (t.id === 'pvGuardar'){ guardarTarjeta(); return; }

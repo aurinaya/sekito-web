@@ -101,6 +101,7 @@ main{padding:20px; flex:1}
 .est-ok{color:#D9A11E}
 .est-mal{color:#C24}
 .est-pide{color:#E5843F}
+.repetido{color:#C24;font-size:11px;margin-top:4px;max-width:230px;white-space:normal;line-height:1.45}
 
 /* los números de arriba: lo que hay que poder mirar sin contar filas */
 .numeros{margin:0 0 22px}
@@ -412,6 +413,9 @@ td.apretado{white-space:normal; min-width:150px}
         la de quien compró ya con su código, y le llega el mail. Se abren de
         a uno: cada comprobante lleva el CBU y el nombre completo de alguien.
       </p>
+      <div class="barra">
+        <input type="search" id="buscarCompras" placeholder="buscar por nombre, apellido, código o mail…">
+      </div>
       <div class="tabla-scroll">
         <table>
           <thead><tr>
@@ -1114,17 +1118,41 @@ async function cargarTandas(){
     '</button>').join('');
 }
 
+let COMPRAS = [], REPETIDOS = {};
 async function cargarCompras(){
   const cuerpo = $('#filasCompras');
-  const r = await rpc('admin_compras', { p_codigo: CODIGO, p_estado: null });
+  const [r, rep] = await Promise.all([
+    rpc('admin_compras', { p_codigo: CODIGO, p_estado: null }),
+    rpc('admin_comprobantes_repetidos', { p_codigo: CODIGO }),
+  ]);
+  // el mismo comprobante en dos compras: una transferencia no paga dos veces
+  REPETIDOS = {};
+  if (rep.ok) (rep.datos || []).forEach(x => { REPETIDOS[x.compra_id] = x.igual_a; });
 
   if (!r.ok){
+    COMPRAS = [];
     cuerpo.innerHTML = '<tr><td colspan="7" class="vacio">' + esc(enCastellano(r.motivo)) + '</td></tr>';
     return;
   }
-  const lista = r.datos || [];
-  if (!lista.length){
+  COMPRAS = r.datos || [];
+  pintarCompras();
+}
+
+/* el buscador de las transferencias: cuando alguien escribe "tengo dos" o
+   "no me llegó", se lo encuentra por nombre, apellido, código o mail */
+function pintarCompras(){
+  const cuerpo = $('#filasCompras');
+  if (!COMPRAS.length){
     cuerpo.innerHTML = '<tr><td colspan="7" class="vacio">todavía no compró nadie</td></tr>';
+    return;
+  }
+  const q = $('#buscarCompras').value.trim();
+  const t = paraBuscar(q), cod = codigoParaBuscar(q);
+  const lista = !q ? COMPRAS : COMPRAS.filter(c =>
+    [c.comprador, c.email].some(v => v && paraBuscar(v).includes(t)) ||
+    (!!cod && codigoParaBuscar(c.sektario).includes(cod)));
+  if (!lista.length){
+    cuerpo.innerHTML = '<tr><td colspan="7" class="vacio">ninguna compra con eso</td></tr>';
     return;
   }
 
@@ -1133,12 +1161,16 @@ async function cargarCompras(){
     const falta = c.estado === 'confirmada' && c.sin_asignar
       ? '<div class="tenue" style="font-size:11px">' + c.sin_asignar + ' sin asignar</div>' : '';
     return '<tr>' +
-      '<td>' + esc(c.comprador || '') + falta + '</td>' +
+      '<td>' + esc(c.comprador || '') +
+        (c.sektario ? '<div class="tenue" style="font-size:11px">' + esc(c.sektario) + '</div>' : '') + falta + '</td>' +
       '<td>' + c.cantidad + '</td>' +
       '<td>' + plata(c.total) + '</td>' +
       '<td class="tenue">' + esc(c.tanda) + '</td>' +
       '<td class="tenue">' + fecha(c.creada_en) + '</td>' +
-      '<td class="est-' + d[0] + '">' + d[1] + '</td>' +
+      '<td class="est-' + d[0] + '">' + d[1] +
+        (REPETIDOS[c.compra_id]
+          ? '<div class="repetido">⚠ mismo comprobante que la compra de ' + esc(REPETIDOS[c.compra_id]) + '</div>' : '') +
+      '</td>' +
       '<td><div class="acciones">' +
         (c.tiene_comprobante
           ? '<button data-vercomp="' + c.compra_id + '">ver comprobante</button>'
@@ -1150,6 +1182,8 @@ async function cargarCompras(){
     '</tr>';
   }).join('');
 }
+
+$('#buscarCompras').addEventListener('input', pintarCompras);
 
 async function cargarEntradasS7(){
   const cuerpo = $('#filasEntradas');
@@ -1493,7 +1527,10 @@ document.addEventListener('click', async e => {
 
   const ok = e.target.closest('[data-okcompra]');
   if (ok){
-    if (!confirm('¿Confirmamos? Nacen las entradas y le llega el mail con su código.')) return;
+    const igual = REPETIDOS[ok.dataset.okcompra];
+    if (igual && !confirm('Ojo: este comprobante es idéntico al de la compra de ' + igual +
+                          '. Una transferencia no paga dos compras. ¿Confirmamos igual?')) return;
+    if (!igual && !confirm('¿Confirmamos? Nacen las entradas y le llega el mail con su código.')) return;
     ok.disabled = true;
     const r = await rpc('admin_confirmar_compra', { p_codigo: CODIGO, p_compra: ok.dataset.okcompra });
     if (!r.ok){ alert(enCastellano(r.motivo)); ok.disabled = false; return; }
