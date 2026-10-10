@@ -65,12 +65,19 @@ header{
 }
 header .marca{letter-spacing:.34em; text-transform:uppercase; font-size:12px; color:var(--gray)}
 header .quien{margin-left:auto; color:var(--gray); font-size:12px}
-nav{display:flex; gap:4px; padding:12px 20px 0; flex-wrap:wrap; border-bottom:1px solid var(--linea)}
+/* las pestañas: que se lean como botones, no como texto suelto */
+nav{display:flex; gap:8px; padding:14px 20px 0; flex-wrap:wrap; border-bottom:1px solid var(--linea)}
 nav button{
-  background:none; border:none; border-bottom:2px solid transparent;
-  color:var(--gray); padding:8px 12px; cursor:pointer; letter-spacing:.08em;
+  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.16); border-bottom:none;
+  border-radius:3px 3px 0 0; margin-bottom:-1px;
+  color:var(--gray); padding:10px 18px; cursor:pointer; letter-spacing:.08em;
+  transition:color .15s, background .15s, border-color .15s;
 }
-nav button[aria-selected="true"]{color:var(--white); border-bottom-color:var(--amarillo)}
+nav button:hover{color:var(--white); background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.3)}
+nav button[aria-selected="true"]{
+  color:var(--white); background:var(--black); border-color:rgba(255,255,255,.4);
+  box-shadow:inset 0 2px 0 var(--amarillo);
+}
 /* el contador solo aparece si hay algo esperando */
 /* el contador de cada pestaña. Sin la píldora, el número se lee pegado al
    nombre y "entradas s7" con un 1 al lado pasa a ser "entradas s71". */
@@ -330,14 +337,15 @@ td.apretado{white-space:normal; min-width:150px}
 
   <nav role="tablist">
     <button role="tab" data-vista="miembros" aria-selected="true">miembros</button>
-    <button role="tab" data-vista="validaciones" aria-selected="false">validaciones<span id="contaVal"></span></button>
     <button role="tab" data-vista="s7" aria-selected="false">entradas s7<span id="contaS7"></span></button>
+    <button role="tab" data-vista="validaciones" aria-selected="false">validaciones<span id="contaVal"></span></button>
     <button role="tab" data-vista="linaje" aria-selected="false">linaje</button>
     <button role="tab" data-vista="registro" aria-selected="false">registro</button>
   </nav>
 
   <main>
     <div class="vista activa" id="v-miembros">
+      <div class="numeros" id="numerosMiembros"></div>
       <div class="barra">
         <input type="search" id="buscar" placeholder="buscar por apodo, nombre, código, llave o mail…">
         <button class="btn" id="btnCrear">+ llave nueva</button>
@@ -356,7 +364,6 @@ td.apretado{white-space:normal; min-width:150px}
           <tbody id="filasMiembros"></tbody>
         </table>
       </div>
-      <p class="tenue" id="conteoMiembros" style="margin-top:12px"></p>
 
       <!-- lo que todavía no es nadie: llaves y links que andan dando vueltas -->
       <div class="pendientes">
@@ -786,6 +793,7 @@ async function cargarTodo(){
   }
   MIEMBROS = r.datos || [];
   pintarMiembros();
+  cargarNumerosMiembros();
   pintarSinUsar();
   cargarInvitaciones();
   cargarLinaje();
@@ -878,7 +886,6 @@ function pintarMiembros(){
 
   if (!lista.length){
     cuerpo.innerHTML = '<tr><td colspan="10" class="vacio">no hay nadie con eso</td></tr>';
-    $('#conteoMiembros').textContent = '';
     return;
   }
 
@@ -917,14 +924,34 @@ function pintarMiembros(){
   pintarConteo();
 }
 
-// miembros son los que ya entraron; las llaves sin usar se cuentan abajo
+/* miembros son los que ya entraron; las llaves sin usar se cuentan abajo.
+   Arriba, la cuenta que cierra: por el panel + por invitación + fundadores =
+   miembros (admin_numeros_miembros), y aparte los susurros. Solo números. */
+let NUMEROS = null;
+async function cargarNumerosMiembros(){
+  const r = await rpc('admin_numeros_miembros', { p_codigo: CODIGO });
+  NUMEROS = (r.ok && r.datos && r.datos[0]) || null;
+  pintarConteo();
+}
 function pintarConteo(){
   const miembros = MIEMBROS.filter(m => m.registro_completo && m.estado_codigo === 'activo').length;
   const fuera    = MIEMBROS.filter(m => m.registro_completo &&
                      (m.estado_codigo === 'suspendido' || m.estado_codigo === 'revocado')).length;
-  $('#conteoMiembros').innerHTML =
-    '<strong>' + miembros + '</strong> miembros' +
-    (fuera ? ' · ' + fuera + ' dados de baja' : '');
+  const uno = (valor, rotulo, gordo) =>
+    '<div class="numero' + (gordo ? ' total' : '') + '">' +
+      '<div class="numero-dato">' + valor + '</div>' +
+      '<div class="numero-rotulo">' + rotulo + '</div>' +
+    '</div>';
+  const n = NUMEROS;
+  $('#numerosMiembros').innerHTML =
+    '<div class="suma">' +
+      (n ? uno(n.por_panel, 'por link del panel') + '<span class="signo">+</span>' +
+           uno(n.por_invitacion, 'por invitación') + '<span class="signo">+</span>' +
+           uno(n.fundadores, 'fundadores') + '<span class="signo">=</span>' : '') +
+      uno(miembros, 'miembros', true) +
+      (n ? '<span class="signo"></span>' + uno(n.susurros, 'susurros') : '') +
+    '</div>' +
+    (fuera ? '<div class="tenue" style="font-size:12px">' + fuera + ' dados de baja</div>' : '');
 }
 
 $('#buscar').addEventListener('input', pintarMiembros);
