@@ -696,6 +696,17 @@
   .su-hacia{ color:rgba(var(--gray-rgb),.7); }
   /* lo que dijiste vos pesa menos que lo que te dijeron */
   .sus-segunda{ margin-top:44px; }
+
+  /* cerrado: se sabe quién y cuándo; lo que dijo, se escucha una vez */
+  .su-cerrado{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
+  .su-regla{ font-size:10px; line-height:1.6; color:rgba(var(--gray-rgb),.7); }
+  /* abierto: el reloj corre, y al final las letras se apagan de a una */
+  .su-reloj{ font-size:10px; letter-spacing:.08em; color:var(--amarillo); margin-top:10px; }
+  .su-texto span{ transition:opacity 1.6s ease, filter 1.6s ease; }
+  .su-texto.se-va span{ opacity:0; filter:blur(3px); }
+  .su-ido{ font-size:12px; font-style:italic; color:rgba(var(--gray-rgb),.6); }
+  .sus-reglas{ margin:-4px 0 30px; }
+  @media (prefers-reduced-motion: reduce){ .su-texto span{ transition:opacity .4s ease; filter:none !important; } }
   .su-nuevo{
     font-size:9px; letter-spacing:.14em; text-transform:uppercase;
     color:var(--amarillo);
@@ -4056,41 +4067,117 @@ reveal();
     }
     pintar(r.datos || []);
 
-    // abrirlos es escucharlos: la base ya los marcó, acá se apaga el aviso
-    // el número del perfil cuenta lo que te dejaron, no lo que dijiste
-    cuenta = { nuevos: 0, total: (r.datos || []).filter(x => !x.mio).length };
+    // el número del perfil cuenta lo que te dejaron, no lo que dijiste;
+    // abrir la pantalla ya no es escucharlos: cada uno se abre aparte
+    const recibidos = (r.datos || []).filter(x => !x.mio);
+    cuenta = { nuevos: recibidos.filter(x => x.estado === 'cerrado').length, total: recibidos.length };
     pintarPreview();
   }
 
+  // lo de arriba del pie: depende de si está cerrado, abierto o ya se fue
+  function cuerpoDe(su){
+    if (su.mio) return '';
+    if (su.estado === 'cerrado'){
+      return '<div class="su-cerrado">' +
+               '<button class="rito-btn" data-escuchar="' + esc(su.id) + '">escuchar</button>' +
+               '<div class="su-regla">se escucha una sola vez: a los ' + DURA + ' segundos se desvanece</div>' +
+             '</div>';
+    }
+    if (su.estado === 'abierto'){
+      // letra por letra, para que se apaguen de a una
+      const letras = [...String(su.texto || '')].map(c => '<span>' + esc(c) + '</span>').join('');
+      return '<div class="su-texto" data-abierto="' + esc(su.id) + '">' + letras + '</div>' +
+             '<div class="su-reloj">se desvanece en <b>' + (su.quedan || DURA) + '</b></div>';
+    }
+    return '<div class="su-ido">se desvaneció</div>';
+  }
+
   function uno(su){
-    return '<div class="susurro">' +
-             '<div class="su-texto">' + esc(su.texto) + '</div>' +
+    return '<div class="susurro" data-su="' + esc(su.id) + '">' +
+             cuerpoDe(su) +
              '<div class="su-pie">' +
                (su.mio ? '<span class="su-hacia">a</span>' : '') +
                '<span class="su-de" data-ir="' + esc(su.sektario) + '">' +
                  esc(su.nombre || su.sektario) + '</span>' +
                (su.nombre ? '<span class="su-cod">' + esc(su.sektario) + '</span>' : '') +
                '<span>' + cuando(su.creado_en) + '</span>' +
-               (su.es_nuevo ? '<span class="su-nuevo">nuevo</span>' : '') +
              '</div>' +
            '</div>';
+  }
+
+  /* --- escucharlo ---
+     El reloj es de la base (abierto_en): acá solo se lo muestra. Recargar
+     no da otros 77 segundos, y lo que ya se fue no vuelve. */
+  const DURA = 77;
+  let LISTA = [];
+  const relojes = {};
+
+  function correrReloj(id){
+    const su = LISTA.find(x => x.id === id);
+    if (!su || relojes[id]) return;
+    const fin = Date.now() + su.quedan * 1000;
+    const caja = () => cuerpo.querySelector('[data-su="' + id + '"]');
+    // las letras se apagan en desorden en los últimos segundos
+    const c0 = caja();
+    if (c0) c0.querySelectorAll('.su-texto span').forEach(l => {
+      l.style.transitionDelay = (Math.random() * 6).toFixed(2) + 's';
+    });
+    relojes[id] = setInterval(() => {
+      const quedan = Math.max(0, Math.ceil((fin - Date.now()) / 1000));
+      const c = caja();
+      if (c){
+        const b = c.querySelector('.su-reloj b');
+        if (b) b.textContent = quedan;
+        const t = c.querySelector('.su-texto');
+        if (t && quedan <= 8) t.classList.add('se-va');
+      }
+      if (quedan <= 0){
+        clearInterval(relojes[id]); delete relojes[id];
+        su.estado = 'desvanecido'; su.texto = null;
+        // un respiro para que la última letra termine de irse
+        setTimeout(() => { const c2 = caja(); if (c2) c2.outerHTML = uno(su); }, 1700);
+      }
+    }, 250);
+  }
+
+  async function escuchar(id, boton){
+    boton.disabled = true;
+    const r = await llamarRPC('escuchar_susurro', { p_codigo: codigoActual, p_id: id });
+    const d = r.ok && r.datos && r.datos[0];
+    if (!d){ boton.disabled = false; return; }
+    const su = LISTA.find(x => x.id === id);
+    su.estado = d.estado; su.texto = d.texto; su.quedan = d.quedan;
+    cuerpo.querySelector('[data-su="' + id + '"]').outerHTML = uno(su);
+    if (su.estado === 'abierto') correrReloj(id);
+    cuenta.nuevos = Math.max(0, cuenta.nuevos - 1);
+    pintarPreview();
   }
 
   function pintar(lista){
     // los dos lados: lo que te dijeron y lo que dijiste. Sin lo segundo, una
     // semana después no te acordás a quién le susurraste ni qué le pusiste.
+    LISTA = lista;
+    Object.keys(relojes).forEach(k => { clearInterval(relojes[k]); delete relojes[k]; });
     const recibidos = lista.filter(x => !x.mio);
     const dejados   = lista.filter(x =>  x.mio);
 
+    // las reglas, del lado de quien escucha (las de quien susurra están en la ficha)
+    const reglas = '<div class="fs-reglas sus-reglas">' +
+        'te susurran 90 caracteres<br>' +
+        'los escuchás una sola vez, durante 77 segundos<br>' +
+        'después se desvanece<br>' +
+        'si querés susurrar, hacelo desde su ficha' +
+      '</div>';
+
     if (!lista.length){
-      cuerpo.innerHTML =
+      cuerpo.innerHTML = reglas +
         '<div class="ficha-vacio">Todavía nadie te susurró,<br>' +
         'y vos todavía no susurraste a nadie.<br>' +
         'Se susurra desde la ficha de cada uno, en devotxs.</div>';
       return;
     }
 
-    let html = '';
+    let html = reglas;
     if (recibidos.length){
       html += '<div class="ritos-seccion">te susurraron</div>' +
               recibidos.map(uno).join('');
@@ -4100,11 +4187,15 @@ reveal();
               dejados.map(uno).join('');
     }
     cuerpo.innerHTML = html;
+    // si volvió dentro de los 77 segundos, el reloj sigue donde estaba
+    recibidos.filter(x => x.estado === 'abierto').forEach(x => correrReloj(x.id));
   }
 
   // del susurro se va a la ficha de quien lo dejó: ahí está el único botón
   // que hace algo parecido a responder
   cuerpo.addEventListener('click', e => {
+    const oir = e.target.closest('[data-escuchar]');
+    if (oir){ escuchar(oir.dataset.escuchar, oir); return; }
     const ir = e.target.closest('[data-ir]');
     if (!ir) return;
     if (window.__marcarPantalla) window.__marcarPantalla();
@@ -4844,8 +4935,9 @@ reveal();
 
     if (d.susurro.mio){
       return '<div class="ficha-susurro">' +
-               '<div class="fs-reglas">le dejaste esto</div>' +
-               '<div class="fs-mio">' + esc(d.susurro.texto) + '</div>' +
+               '<div class="fs-reglas">le susurraste el ' +
+                 new Date(d.susurro.desde).toLocaleDateString('es-AR', { day:'numeric', month:'long' }) +
+               '</div>' +
                '<div class="fs-cuando">' +
                  (d.susurro.dias > 0
                    ? 'vas a poder dejarle otro en ' + d.susurro.dias +
@@ -4865,9 +4957,10 @@ reveal();
   function abrirForm(caja, sektario){
     caja.innerHTML =
       '<div class="fs-reglas">' +
-        'Se susurra una sola vez.<br>' +
-        'Lo escucha esa persona y nadie más.<br>' +
-        'Después, siete días de silencio.' +
+        'susurrás 90 caracteres<br>' +
+        'te escuchan 77 segundos y se desvanecen<br>' +
+        'por cada susurro, ofrendás 7 días de silencio<br>' +
+        'solo con esta persona' +
       '</div>' +
       '<textarea id="susTexto" rows="3" autocapitalize="sentences" ' +
         'placeholder="susurrale acá..."></textarea>' +
