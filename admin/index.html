@@ -696,6 +696,8 @@ function enCastellano(motivo){
   if (motivo === 'sin_conexion')          return 'el portal no responde.. probá de nuevo';
   // un mail, una persona (supabase/migracion-un-mail.sql)
   if (motivo === 'mail_ya_esta')          return 'ese mail ya es de otra persona activa del portal';
+  // los fundadores (supabase/migracion-panel-dueno.sql)
+  if (motivo === 'solo_mau')              return 'inhabilitado';
   // las de SEKI 7
   const S7 = {
     ya_tiene_entrada:  'esa persona ya tiene su entrada',
@@ -897,16 +899,20 @@ function pintarMiembros(){
                    (m.apodo ? ' <span class="tenue">· ' + esc(m.apodo) + '</span>' : '');
     // a los simbólicos (LA SEKTA) no se les cambia el estado ni se los edita
     const botones = m.estado_codigo === 'simbolico' ? '' :
+      // a los fundadores solo los toca MAU: la base no deja, y acá ni se ofrece
+      (m.es_fundador && !soyDueno()) ? '<span class="tenue" style="font-size:11px">inhabilitado</span>' :
       '<div class="acciones">' +
         '<button data-editar="' + m.id + '">editar</button>' +
         (m.estado_codigo === 'activo'
           ? '<button data-estado="suspendido" data-id="' + m.id + '">suspender</button>'
           : '<button data-estado="activo" data-id="' + m.id + '">reactivar</button>') +
+        (m.registro_completo ? '<button data-renovar="' + m.id + '">llave nueva</button>' : '') +
       '</div>';
 
     return '<tr>' +
       '<td class="mono-codigo">' + esc(m.nombre_sektario || '—') + '</td>' +
-      '<td class="mono-codigo">' + esc(m.codigo_acceso) + '</td>' +
+      '<td class="mono-codigo">' + (m.codigo_acceso ? esc(m.codigo_acceso)
+                                    : '<span class="tenue" style="font-size:11px">inhabilitado</span>') + '</td>' +
       '<td>' + nombre + '</td>' +
       '<td class="apretado tenue">' + contacto + '</td>' +
       '<td class="tenue">' + esc(m.invitado_por_nombre || '—') + '</td>' +
@@ -1653,6 +1659,41 @@ document.addEventListener('click', async e => {
     p_codigo: CODIGO, p_miembro_id: b.dataset.id, p_estado: b.dataset.estado,
   });
   if (!r.ok){ alert(enCastellano(r.motivo)); b.disabled = false; return; }
+  cargarTodo();
+});
+
+// ---------------------------------------------------------------- llave nueva
+/* Si alguien perdió su llave (o se le filtró), cualquiera de los tres le
+   hace una nueva: la vieja deja de abrir, y si tenía la sesión abierta,
+   vuelve a entrar con la nueva. A los fundadores, solo MAU. */
+// MAU es el único que recibe las llaves de los tres fundadores
+const soyDueno = () => !MIEMBROS.some(m => m.es_fundador && !m.codigo_acceso);
+
+function mensajeLlaveNueva(llave){
+  return 'Tu llave nueva para sekito.ar:\n\n' +
+         llave + '\n\n' +
+         'La anterior ya no abre. Esta es tuya y de nadie más. Guardala.';
+}
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-renovar]');
+  if (!b) return;
+  const m = MIEMBROS.find(x => x.id === b.dataset.renovar);
+  const quien = m ? (m.apodo || m.nombre_real || m.nombre_sektario) : 'este miembro';
+  if (!confirm('¿Le hacemos una llave nueva a ' + quien + '? La de ahora deja de abrir, ' +
+               'y si tiene la sesión abierta va a tener que entrar con la nueva.')) return;
+
+  b.disabled = true;
+  const r = await rpc('admin_renovar_llave', { p_codigo: CODIGO, p_miembro_id: b.dataset.renovar });
+  b.disabled = false;
+  if (!r.ok || !Array.isArray(r.datos) || !r.datos.length){ alert(enCastellano(r.motivo)); return; }
+
+  const llave = r.datos[0].codigo_acceso;
+  $('#codigoNuevo').textContent = llave;
+  $('#mensajeNuevo').textContent = mensajeLlaveNueva(llave);
+  $('#crearPaso1').hidden = true;
+  $('#crearPaso2').hidden = false;
+  abrir('#modalCrear');
   cargarTodo();
 });
 
