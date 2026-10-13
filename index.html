@@ -4032,9 +4032,10 @@ reveal();
         ley.textContent = cuenta.nuevos === 1
           ? 'susurro sin escuchar' : 'susurros sin escuchar';
       } else if (cuenta.total){
-        num.textContent = cuenta.total;
+        // el número es solo para lo que te espera: lo escuchado no se cuenta
+        num.textContent = '';
         num.classList.remove('nuevos');
-        ley.textContent = cuenta.total === 1 ? 'susurro' : 'susurros';
+        ley.innerHTML = '<span class="sp-nadie">no tenés susurros sin escuchar</span>';
       } else {
         num.textContent = '';
         num.classList.remove('nuevos');
