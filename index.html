@@ -866,10 +866,27 @@
     font-size:10px; letter-spacing:.24em; text-indent:.24em;
     color:rgba(var(--white-rgb),.78); margin-top:16px;
   }
+  .s7-lugar{
+    font-size:9px; letter-spacing:.24em; text-indent:.24em;
+    color:rgba(var(--gray-rgb),.85); margin-top:8px;
+  }
   .s7-estado{
     font-size:9.5px; letter-spacing:.2em; text-transform:uppercase;
     color:var(--white); margin-top:22px; min-height:12px;
   }
+  /* la tanda sekreta se va: lo mismo que dice la placa del feed, con el
+     punto rojo latiendo. Solo para quien todavía no tiene su lugar */
+  .s7-urge[hidden]{ display:none; }
+  .s7-urge{
+    display:inline-flex; align-items:center; gap:8px; margin-top:10px;
+    font-size:9.5px; letter-spacing:.14em; color:rgba(var(--white-rgb),.75);
+  }
+  .s7-urge i{
+    width:6px; height:6px; border-radius:50%; background:#E50040;
+    box-shadow:0 0 8px #E50040; animation:urge 1.6s ease-in-out infinite;
+  }
+  @keyframes urge{ 0%,100%{ opacity:1; } 50%{ opacity:.25; } }
+  @media (prefers-reduced-motion: reduce){ .s7-urge i{ animation:none; } }
   /* cuando hay algo que resolver, el cartel deja de informar y pide */
   .s7-estado.pide{ animation:latir 2.6s ease-in-out infinite; }
 
@@ -2204,8 +2221,10 @@
     <div class="s7-cartel pv-abrir rv-d" role="button" tabindex="0">
       <div class="s7-abanico" aria-hidden="true"></div>
       <div class="s7-nombre">S7</div>
-      <div class="s7-fecha">14 DE NOVIEMBRE</div>
+      <div class="s7-fecha">SÁBADO 14 DE NOVIEMBRE</div>
+      <div class="s7-lugar">PALERMO, BUENOS AIRES</div>
       <div class="s7-estado">—</div>
+      <div class="s7-urge" hidden><i></i>se está yendo</div>
     </div>
 
     <div class="seccion rv-d">
@@ -4288,7 +4307,7 @@ reveal();
     } else if (mias){
       dice = mias === 1 ? 'TU LUGAR ESTÁ' : 'TENÉS ' + mias + ' LUGARES';
     } else if (tanda){
-      dice = 'TANDA ' + tanda.nombre.toUpperCase();
+      dice = 'TANDA ' + tanda.nombre.toUpperCase() + ' ABIERTA';
     } else {
       dice = 'TODAVÍA NO ABRIÓ';
     }
@@ -4297,6 +4316,9 @@ reveal();
       const est = box.querySelector('.s7-estado');
       est.textContent = dice;
       est.classList.toggle('pide', pide);
+      // apurar solo a quien todavía no tiene lugar
+      const urge = box.querySelector('.s7-urge');
+      if (urge) urge.hidden = !(tanda && !mias);
     });
   }
 
