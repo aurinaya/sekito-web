@@ -131,6 +131,36 @@ main{padding:20px; flex:1}
   opacity:.55;margin:32px 0 6px;font-weight:400;
 }
 
+/* las secciones de S7 se pliegan: el título dice lo importante aunque esté
+   cerrada ("2 a confirmar"), y cada navegador recuerda cómo las dejó */
+.pliegue{border-top:1px solid var(--linea);margin-top:26px}
+.pliegue > .titulo-tabla{
+  display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;
+  margin:0;padding:16px 0;opacity:.85;
+}
+.pliegue > .titulo-tabla:hover{opacity:1}
+.pliegue .flecha{display:inline-block;width:12px;transition:transform .15s;opacity:.7}
+.pliegue.cerrado .flecha{transform:rotate(-90deg)}
+.pliegue.cerrado .pliegue-cuerpo{display:none}
+.pliegue .resumen{text-transform:none;letter-spacing:.06em;font-size:12px;color:var(--gray)}
+.pliegue .resumen.pide{color:#E5843F}
+.pliegue-cuerpo{padding-bottom:10px}
+.pliegue-cuerpo > p.tenue{margin:0 0 14px;font-size:12.5px}
+
+/* lo que se ve por defecto es lo que pide algo; el resto, a un toque */
+.filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filtros .rotulo{font-size:11px;color:var(--gray);opacity:.7;margin-right:2px}
+.filtro{
+  background:none;border:1px solid rgba(255,255,255,.16);border-radius:12px;
+  color:var(--gray);font-size:11px;padding:4px 11px;cursor:pointer;
+}
+.filtro:hover{border-color:rgba(255,255,255,.35);color:var(--white)}
+.filtro[aria-pressed="true"]{border-color:rgba(255,255,255,.55);color:var(--white);background:rgba(255,255,255,.07)}
+tr.pendiente td:first-child{box-shadow:inset 3px 0 0 #E5843F}
+tr.pendiente{background:rgba(229,132,63,.06)}
+tr.pendiente [data-okcompra]{border-color:#E5843F;color:#E5843F}
+tr.tranqui td{color:var(--gray);font-style:italic;text-align:center;padding:16px}
+
 /* el tipo de entrada se ve de un vistazo: en la puerta no es lo mismo una
    preventa que un free */
 .sello{
@@ -414,14 +444,13 @@ td.apretado{white-space:normal; min-width:150px}
         <button class="btn btn-principal" id="btnEntradas">+ entradas</button>
       </div>
 
-      <h3 class="titulo-tabla">las transferencias</h3>
-      <p class="tenue" style="margin-top:0">
-        Abrí el comprobante; si está bien, confirmá. Ahí nacen las entradas:
-        la de quien compró ya con su código, y le llega el mail. Se abren de
-        a uno: cada comprobante lleva el CBU y el nombre completo de alguien.
-      </p>
+      <div class="pliegue" data-pliegue="transferencias">
+      <h3 class="titulo-tabla"><span class="flecha">▾</span>las transferencias <span class="resumen" id="resCompras"></span></h3>
+      <div class="pliegue-cuerpo">
+      <p class="tenue">Abrí el comprobante y, si está bien, confirmá: nacen las entradas y le llega el mail.</p>
       <div class="barra">
         <input type="search" id="buscarCompras" placeholder="buscar por nombre, apellido, código o mail…">
+        <div class="filtros" id="filtrosCompras"></div>
       </div>
       <div class="tabla-scroll">
         <table>
@@ -432,13 +461,17 @@ td.apretado{white-space:normal; min-width:150px}
           <tbody id="filasCompras"></tbody>
         </table>
       </div>
+      </div>
+      </div>
 
-      <h3 class="titulo-tabla">las entradas</h3>
-      <p class="tenue" style="margin-top:0">
-        Todas, siempre: ninguna fila desaparece. Cada entrada asignada tiene
-        su código, que es lo que se muestra en la puerta. Tocá el código o el
-        nombre para copiarlo.
-      </p>
+      <div class="pliegue" data-pliegue="entradas">
+      <h3 class="titulo-tabla"><span class="flecha">▾</span>las entradas <span class="resumen" id="resEntradas"></span></h3>
+      <div class="pliegue-cuerpo">
+      <p class="tenue">Tocá el código o el nombre para copiarlo.</p>
+      <div class="barra">
+        <input type="search" id="buscarEntradas" placeholder="buscar por nombre, código, código sektario o mail…">
+        <div class="filtros" id="filtrosEntradas"></div>
+      </div>
       <div class="tabla-scroll">
         <table>
           <thead><tr>
@@ -448,14 +481,13 @@ td.apretado{white-space:normal; min-width:150px}
           <tbody id="filasEntradas"></tbody>
         </table>
       </div>
+      </div>
+      </div>
 
-      <h3 class="titulo-tabla">la puerta</h3>
-      <p class="tenue" style="margin-top:0">
-        Se acredita en <strong>sekito.ar/puerta</strong>, desde uno o varios
-        celus a la vez. Cada persona que acredita tiene su llave de puerta:
-        solo sirve para escanear, buscar y marcar; no ve mails, teléfonos ni
-        llaves de nadie. Por si se corta internet, la lista para imprimir.
-      </p>
+      <div class="pliegue cerrado" data-pliegue="puerta">
+      <h3 class="titulo-tabla"><span class="flecha">▾</span>la puerta <span class="resumen" id="resPuerta"></span></h3>
+      <div class="pliegue-cuerpo">
+      <p class="tenue">Se acredita en <strong>sekito.ar/puerta</strong>. Cada llave de puerta solo escanea, busca y marca; si se corta internet, la lista para imprimir.</p>
       <div class="barra-s7">
         <button class="btn" id="btnPuertaNueva">+ llave de puerta</button>
         <button class="btn" id="btnLista">lista para imprimir</button>
@@ -465,6 +497,8 @@ td.apretado{white-space:normal; min-width:150px}
           <thead><tr><th>quién</th><th>llave</th><th>marcó</th><th>último uso</th><th>estado</th><th></th></tr></thead>
           <tbody id="filasPuertas"></tbody>
         </table>
+      </div>
+      </div>
       </div>
     </div>
 
@@ -1171,29 +1205,63 @@ async function cargarCompras(){
   pintarCompras();
 }
 
+/* --- lo que pide algo, primero ---
+   Por defecto se ve solo lo que espera a alguien del panel; lo resuelto está
+   a un toque (los botoncitos) y el buscador busca en todo, oculto o no.
+   Arranca limpio cada vez: los botoncitos no se recuerdan. */
+const VER_COMPRAS  = new Set();   // además de 'a_revisar'
+const VER_ENTRADAS = new Set();   // además de 'sin_asignar'
+
+function pintarFiltros(caja, lista, estados, ver, dice, alTocar){
+  const n = e => lista.filter(x => x.estado === e).length;
+  caja.innerHTML = '<span class="rotulo">ver también:</span>' + estados.map(e =>
+    '<button type="button" class="filtro" data-ver="' + e + '" aria-pressed="' + ver.has(e) + '">' +
+      dice(e) + ' (' + n(e) + ')</button>').join('');
+  caja.onclick = ev => {
+    const b = ev.target.closest('[data-ver]'); if (!b) return;
+    ver.has(b.dataset.ver) ? ver.delete(b.dataset.ver) : ver.add(b.dataset.ver);
+    alTocar();
+  };
+}
+
 /* el buscador de las transferencias: cuando alguien escribe "tengo dos" o
    "no me llegó", se lo encuentra por nombre, apellido, código o mail */
 function pintarCompras(){
   const cuerpo = $('#filasCompras');
+  const pendientes = COMPRAS.filter(c => c.estado === 'a_revisar');
+  $('#resCompras').textContent = pendientes.length
+    ? '· ' + pendientes.length + ' a confirmar' : '· nada para confirmar';
+  $('#resCompras').classList.toggle('pide', !!pendientes.length);
+  pintarFiltros($('#filtrosCompras'), COMPRAS, ['confirmada', 'rechazada'], VER_COMPRAS,
+                e => ({ confirmada:'confirmadas', rechazada:'rechazadas' })[e], pintarCompras);
   if (!COMPRAS.length){
     cuerpo.innerHTML = '<tr><td colspan="7" class="vacio">todavía no compró nadie</td></tr>';
     return;
   }
   const q = $('#buscarCompras').value.trim();
   const t = paraBuscar(q), cod = codigoParaBuscar(q);
-  const lista = !q ? COMPRAS : COMPRAS.filter(c =>
-    [c.comprador, c.email].some(v => v && paraBuscar(v).includes(t)) ||
-    (!!cod && codigoParaBuscar(c.sektario).includes(cod)));
-  if (!lista.length){
+  // las que esperan, de la más vieja a la más nueva; el resto, lo último arriba
+  const orden = (a, b) => (a.estado === 'a_revisar') !== (b.estado === 'a_revisar')
+    ? (a.estado === 'a_revisar' ? -1 : 1)
+    : (a.estado === 'a_revisar' ? 1 : -1) * (new Date(a.creada_en) - new Date(b.creada_en));
+  const lista = (q
+    ? COMPRAS.filter(c =>
+        [c.comprador, c.email].some(v => v && paraBuscar(v).includes(t)) ||
+        (!!cod && codigoParaBuscar(c.sektario).includes(cod)))
+    : COMPRAS.filter(c => c.estado === 'a_revisar' || VER_COMPRAS.has(c.estado))
+  ).slice().sort(orden);
+  if (q && !lista.length){
     cuerpo.innerHTML = '<tr><td colspan="7" class="vacio">ninguna compra con eso</td></tr>';
     return;
   }
+  const tranqui = !q && !pendientes.length
+    ? '<tr class="tranqui"><td colspan="7">no hay transferencias para confirmar</td></tr>' : '';
 
-  cuerpo.innerHTML = lista.map(c => {
+  cuerpo.innerHTML = tranqui + lista.map(c => {
     const d = DICE_COMPRA[c.estado] || ['espera', c.estado];
     const falta = c.estado === 'confirmada' && c.sin_asignar
       ? '<div class="tenue" style="font-size:11px">' + c.sin_asignar + ' sin asignar</div>' : '';
-    return '<tr>' +
+    return '<tr' + (c.estado === 'a_revisar' ? ' class="pendiente"' : '') + '>' +
       '<td>' + esc(c.comprador || '') +
         (c.sektario ? '<div class="tenue" style="font-size:11px">' + esc(c.sektario) + '</div>' : '') + falta + '</td>' +
       '<td>' + c.cantidad + '</td>' +
@@ -1217,6 +1285,17 @@ function pintarCompras(){
 }
 
 $('#buscarCompras').addEventListener('input', pintarCompras);
+$('#buscarEntradas').addEventListener('input', pintarEntradas);
+
+// cada sección recuerda (en este navegador) si la dejaste abierta o cerrada
+document.querySelectorAll('.pliegue').forEach(p => {
+  const clave = 'pliegue:' + p.dataset.pliegue;
+  try { const v = localStorage.getItem(clave); if (v) p.classList.toggle('cerrado', v === 'cerrado'); } catch (e) {}
+  p.querySelector(':scope > .titulo-tabla').addEventListener('click', () => {
+    p.classList.toggle('cerrado');
+    try { localStorage.setItem(clave, p.classList.contains('cerrado') ? 'cerrado' : 'abierto'); } catch (e) {}
+  });
+});
 
 async function cargarEntradasS7(){
   const cuerpo = $('#filasEntradas');
@@ -1227,14 +1306,38 @@ async function cargarEntradasS7(){
     return;
   }
   ENTRADAS = r.datos || [];
+  pintarEntradas();
+}
+
+function pintarEntradas(){
+  const cuerpo = $('#filasEntradas');
+  const sin = ENTRADAS.filter(e => e.estado === 'sin_asignar');
+  $('#resEntradas').textContent = sin.length
+    ? '· ' + sin.length + ' sin asignar' : '· todas asignadas';
+  $('#resEntradas').classList.toggle('pide', !!sin.length);
+  pintarFiltros($('#filtrosEntradas'), ENTRADAS, ['asignada', 'adentro', 'anulada'], VER_ENTRADAS,
+                e => ({ asignada:'asignadas', adentro:'adentro', anulada:'anuladas' })[e], pintarEntradas);
   if (!ENTRADAS.length){
     cuerpo.innerHTML = '<tr><td colspan="8" class="vacio">todavía no hay entradas</td></tr>';
+    return;
+  }
+  const q = $('#buscarEntradas').value.trim();
+  const t = paraBuscar(q), cod = codigoParaBuscar(q);
+  const lista = (q
+    ? ENTRADAS.filter(e =>
+        [e.nombre, e.apodo, e.email, e.contacto, e.tenedor, e.compro, e.nota].some(v => v && paraBuscar(v).includes(t)) ||
+        (!!cod && [e.codigo, e.sektario].some(v => v && codigoParaBuscar(v).includes(cod))))
+    : ENTRADAS.filter(e => e.estado === 'sin_asignar' || VER_ENTRADAS.has(e.estado))
+  ).slice().sort((a, b) => (b.estado === 'sin_asignar') - (a.estado === 'sin_asignar'));
+  if (!lista.length){
+    cuerpo.innerHTML = '<tr><td colspan="8" class="vacio">' +
+      (q ? 'ninguna entrada con eso' : 'no hay entradas sin asignar') + '</td></tr>';
     return;
   }
 
   const copiable = t => '<span class="copiable" data-copiar="' + esc(t) + '">' + esc(t) + '</span>';
 
-  cuerpo.innerHTML = ENTRADAS.map(e => {
+  cuerpo.innerHTML = lista.map(e => {
     const d = DICE_ENTRADA[e.estado] || ['espera', e.estado];
     const quien = e.nombre
       ? copiable(e.nombre) +
@@ -1256,7 +1359,7 @@ async function cargarEntradasS7(){
           '<button data-soltar="' + e.entrada_id + '">soltar</button>' : '') +
       '<button data-anular="' + e.entrada_id + '">anular</button>';
 
-    return '<tr' + (e.estado === 'anulada' ? ' class="fila-anulada"' : '') + '>' +
+    return '<tr' + (e.estado === 'anulada' ? ' class="fila-anulada"' : e.estado === 'sin_asignar' ? ' class="pendiente"' : '') + '>' +
       '<td class="mono-codigo">' + (e.codigo ? copiable(e.codigo) : '<span class="tenue">—</span>') + '</td>' +
       '<td>' + quien + '</td>' +
       '<td class="apretado tenue">' + contacto + '</td>' +
@@ -1279,6 +1382,8 @@ async function cargarPuertas(){
   const r = await rpc('admin_puertas', { p_codigo: CODIGO });
   if (!r.ok){ cuerpo.innerHTML = '<tr><td colspan="6" class="vacio">' + esc(enCastellano(r.motivo)) + '</td></tr>'; return; }
   const lista = r.datos || [];
+  const activas = lista.filter(p => p.estado === 'activa').length;
+  $('#resPuerta').textContent = '· ' + (activas === 1 ? '1 llave activa' : activas + ' llaves activas');
   if (!lista.length){ cuerpo.innerHTML = '<tr><td colspan="6" class="vacio">todavía no hay llaves de puerta</td></tr>'; return; }
   cuerpo.innerHTML = lista.map(p => '<tr' + (p.estado === 'revocada' ? ' class="fila-anulada"' : '') + '>' +
     '<td>' + esc(p.nombre) + '</td>' +
