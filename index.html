@@ -638,7 +638,8 @@
   }
   /* blanco, con el brillo bordo del flyer atrás (le gana a la sombra oscura
      que el perfil le pone a todo el texto) */
-  .member-screen .seccion-titulo span{
+  .member-screen .seccion-titulo span,
+  #preventa-screen .seccion-titulo span{
     text-shadow:0 0 6px rgba(229,0,64,.9), 0 0 16px rgba(var(--bordo-rgb),1),
                 0 0 30px rgba(var(--bordo-rgb),1), 0 0 50px rgba(var(--bordo-rgb),.8);
   }
@@ -994,6 +995,27 @@
     margin-top:14px;
   }
   .pv-llego{ font-size:20px; letter-spacing:.04em; color:var(--white); }
+
+  /* las tres tandas: las mismas tarjetas de la placa del feed y del mail */
+  .pv-tandas{ margin:56px 0 38px; }
+  .pv-t{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:13px 14px; margin-top:8px; text-align:left;
+    border:1px solid rgba(var(--white-rgb),.12);
+  }
+  .pv-t-nombre{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(var(--white-rgb),.6); }
+  .pv-t-estado{ display:flex; align-items:center; gap:7px; font-size:9.5px; letter-spacing:.06em; color:rgba(var(--gray-rgb),.75); margin-top:6px; }
+  .pv-t-estado i{ width:5px; height:5px; border-radius:50%; background:rgba(var(--gray-rgb),.45); flex:0 0 5px; }
+  .pv-t-precio{ font-size:13px; color:rgba(var(--white-rgb),.55); white-space:nowrap; }
+  .pv-t.activa{ border-color:rgba(var(--bordo-rgb),.9); background:rgba(var(--bordo-rgb),.2); box-shadow:0 0 18px rgba(var(--bordo-rgb),.4); }
+  .pv-t.activa .pv-t-nombre, .pv-t.activa .pv-t-precio{ color:var(--white); }
+  .pv-t.activa .pv-t-estado{ color:rgba(var(--white-rgb),.85); }
+  .pv-t.activa .pv-t-estado i{ background:#E50040; box-shadow:0 0 6px #E50040; }
+  /* la que se fue: apagada, sin tachar */
+  .pv-t.cerrada{ border-color:rgba(var(--white-rgb),.06); }
+  .pv-t.cerrada .pv-t-nombre, .pv-t.cerrada .pv-t-precio{ color:rgba(var(--white-rgb),.25); }
+  .pv-t.cerrada .pv-t-estado{ color:rgba(var(--gray-rgb),.45); }
+  .pv-t.cerrada .pv-t-estado i{ background:transparent; border:1px solid rgba(var(--gray-rgb),.4); }
   .pv-otra{ margin-top:22px; }
 
   /* una entrada de la lista */
@@ -4294,6 +4316,7 @@ reveal();
   let tanda   = null;   // {tanda_id, nombre, precio, tope}
   let entradas = [];
   let compras  = [];
+  let tandas   = [];     // las tres, con su estado: cerrada, activa, pendiente
   let pendiente = null; // la compra recién creada, esperando comprobante
   let cuantas   = 1;
   let otraMas   = false; // con un comprobante en revisión, pidió comprar otra
@@ -4359,11 +4382,13 @@ reveal();
 
   window.__refrescarPreventa = async function(){
     if (!codigoActual) return;
-    const [t, e, c] = await Promise.all([
+    const [t, e, c, ts] = await Promise.all([
       llamarRPC('la_tanda',     { p_codigo: codigoActual }),
       llamarRPC('mis_entradas', { p_codigo: codigoActual }),
       llamarRPC('mis_compras',  { p_codigo: codigoActual }),
+      llamarRPC('las_tandas',   { p_codigo: codigoActual }),
     ]);
+    tandas   = (ts.ok && ts.datos) || [];
     tanda    = (t.ok && t.datos && t.datos[0]) || null;
     entradas = (e.ok && e.datos) || [];
     compras  = (c.ok && c.datos) || [];
@@ -4440,6 +4465,27 @@ reveal();
         (cuantas === 1 ? 'quiero mi lugar' : 'quiero ' + cuantas + ' lugares') +
       '</button>' +
     '</div>';
+  }
+
+  /* las tres tandas, debajo de la compra: la que se fue apagada, la activa
+     encendida y las que vienen esperando. Con lo mismo que dicen la placa del
+     feed y el mail: cada una tiene su frase */
+  const FRASE = {
+    'sekreta':   { activa:'se está yendo', cerrada:'se fue' },
+    'hermética': { activa:'no dura nada',  cerrada:'no duró nada', pendiente:'no dura nada' },
+    'abierta':   { activa:'la única tanda real', pendiente:'la única tanda real' },
+  };
+  function bloqueTandas(){
+    if (tandas.length < 2) return '';
+    const filas = tandas.map(t => {
+      const frase = (FRASE[t.nombre] || {})[t.estado];
+      return '<div class="pv-t ' + esc(t.estado) + '">' +
+        '<div><div class="pv-t-nombre">tanda ' + esc(t.nombre) + '</div>' +
+        '<div class="pv-t-estado"><i></i>' + esc(t.estado) + (frase ? ' · ' + esc(frase) : '') + '</div></div>' +
+        '<div class="pv-t-precio">' + plata(t.precio) + '</div>' +
+      '</div>';
+    }).join('');
+    return '<div class="pv-tandas"><div class="seccion-titulo"><span>las tandas</span></div>' + filas + '</div>';
   }
 
   function bloqueCompras(){
@@ -4570,7 +4616,10 @@ reveal();
   }
 
   function pintar(){
-    cuerpo.innerHTML = bloqueTarjeta() + bloqueEntradas() + bloqueCompras() + bloqueComprar();
+    // mientras transfiere, nada más: la lista de tandas le diría "cerrada" a
+    // la sekreta que está pagando (las compras abiertas se respetan al cerrar)
+    cuerpo.innerHTML = bloqueTarjeta() + bloqueEntradas() + bloqueCompras() + bloqueComprar() +
+                       (pendiente ? '' : bloqueTandas());
     pintarTarjeta();
   }
 
