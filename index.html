@@ -581,7 +581,7 @@
   }
   .share-feedback.show{ opacity:1; }
 
-  /* ---------- mi rama: el árbol en miniatura ----------
+  /* ---------- el árbol en miniatura ----------
      es sekito.ar/arbol?mini adentro de un iframe; a los costados las ramas
      se esfuman */
   .arbol-mini{
@@ -598,7 +598,7 @@
   #arbolPantalla iframe{ width:100%; height:100%; border:0; display:block; }
 
   /* ---------- las secciones del perfil ---------- */
-  .seccion{ margin:40px 0; text-align:center; }
+  .seccion{ margin:56px 0; text-align:center; }
   /* la foto de fondo levanta el brillo detrás del texto: una sombra apenas
      perceptible lo devuelve a ser legible sin cambiarle el color */
   body.en-perfil .member-screen{
@@ -608,32 +608,38 @@
     filter:drop-shadow(0 1px 4px rgba(13,13,13,.9)) drop-shadow(0 0 14px rgba(13,13,13,.8));
   }
   /* el gris de siempre se apaga contra el humo: en el perfil sube un escalón */
-  body.en-perfil .member-screen .seccion-titulo span,
   body.en-perfil .member-screen .rt-leyenda,
   body.en-perfil .member-screen .seccion-btn{
     color:rgba(var(--white-rgb),.82);
   }
-  body.en-perfil .member-screen .seccion-titulo::before,
-  body.en-perfil .member-screen .seccion-titulo::after{
-    background:rgba(var(--white-rgb),.3);
-  }
   .seccion-titulo{
-    display:flex; align-items:center; gap:14px;
-    margin-bottom:26px;
+    display:flex; align-items:center; gap:16px;
+    margin-bottom:28px;
   }
-  /* el título parte la línea al medio: separa sin agregar ningún elemento
-     nuevo, usando la misma hairline que ya estaba en todo el sitio */
+  /* el título parte la línea al medio: la hairline de todo el sitio, acá
+     encendida en bordo */
   .seccion-titulo::before,
   .seccion-titulo::after{
     content:"";
     flex:1; height:1px;
-    background:rgba(var(--gray-rgb),.22);
+    background:rgba(201,86,110,.75);
+    box-shadow:0 0 8px rgba(var(--bordo-rgb),.9);
   }
+  /* el título manda sobre lo de adentro: en mayúsculas, blanco y un poco
+     más grande que los botones, como la línea partida del flyer. El margen
+     negativo compensa el espacio que deja la última letra, así queda al medio */
   .seccion-titulo span{
-    font-size:9.5px;
-    letter-spacing:.24em;
-    color:var(--gray);
+    font-size:10.5px; font-weight:500;
+    letter-spacing:.32em; margin-right:-.32em;
+    text-transform:uppercase;
+    color:rgba(var(--white-rgb),.92);
     white-space:nowrap;
+  }
+  /* blanco, con el brillo bordo del flyer atrás (le gana a la sombra oscura
+     que el perfil le pone a todo el texto) */
+  .member-screen .seccion-titulo span{
+    text-shadow:0 0 6px rgba(229,0,64,.9), 0 0 16px rgba(var(--bordo-rgb),1),
+                0 0 30px rgba(var(--bordo-rgb),1), 0 0 50px rgba(var(--bordo-rgb),.8);
   }
   /* más callado que "invitar al sékito", que es la acción principal */
   .seccion-btn{
@@ -2236,23 +2242,21 @@
       <div class="s7-urge" hidden><i></i>se está yendo</div>
     </div>
 
+    <!-- el orden: lo que tiene fecha (S7), de dónde venís y cómo hacerlo
+         crecer (el árbol, invitar), a quién encontrar y qué decirle
+         (devotxs, susurros), y lo que ya pasó (mis ritos) -->
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>mis ritos</span></div>
-      <div class="ritos-preview ritos-abrir" role="button" tabindex="0">
-        <div class="rt-numero">—</div>
-        <div class="rt-leyenda"></div>
-        <div class="rt-avisos"></div>
-      </div>
-      <button class="seccion-btn ritos-abrir">ver mis ritos</button>
+      <div class="seccion-titulo"><span>el árbol</span></div>
+      <!-- el árbol en miniatura: sekito.ar/arbol?mini, quieto; lo carga
+           entrarAlSitio() con la persona que entró. Se abre tocándolo -->
+      <div class="arbol-mini arbol-abrir" role="button" tabindex="0" aria-label="abrir el árbol"></div>
+      <div class="arbol-dato" id="arbolDato"></div>
     </div>
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>mi rama</span></div>
-      <!-- el árbol en miniatura: sekito.ar/arbol?mini, quieto; lo carga
-           entrarAlSitio() con la persona que entró -->
-      <div class="arbol-mini arbol-abrir" role="button" tabindex="0" aria-label="ver el árbol"></div>
-      <div class="arbol-dato" id="arbolDato"></div>
-      <button class="seccion-btn arbol-abrir">ver el árbol</button>
+      <div class="seccion-titulo"><span>invitar</span></div>
+      <button class="invite-trigger">invitar al sékito</button>
+      <div class="invite-trigger-sub">usalo con cuidado</div>
     </div>
 
     <div class="seccion rv-d">
@@ -2275,9 +2279,13 @@
     </div>
 
     <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>invitar</span></div>
-      <button class="invite-trigger">invitar al sékito</button>
-      <div class="invite-trigger-sub">usalo con cuidado</div>
+      <div class="seccion-titulo"><span>mis ritos</span></div>
+      <div class="ritos-preview ritos-abrir" role="button" tabindex="0">
+        <div class="rt-numero">—</div>
+        <div class="rt-leyenda"></div>
+        <div class="rt-avisos"></div>
+      </div>
+      <button class="seccion-btn ritos-abrir">ver mis ritos</button>
     </div>
 
     <!-- las fotos las pone pintarFotos() según quién entró: ver images/perfiles -->
@@ -5250,7 +5258,7 @@ reveal();
     dato.textContent = '';
     fichaDesdeArbol = false;
     if (!mini) return;
-    mini.innerHTML = '<iframe src="/arbol/?mini" tabindex="-1" aria-hidden="true" title="mi rama"></iframe>';
+    mini.innerHTML = '<iframe src="/arbol/?mini" tabindex="-1" aria-hidden="true" title="el árbol"></iframe>';
   };
 
   function abrir(){
