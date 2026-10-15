@@ -5,9 +5,10 @@
 --   select public.programar_cierre(timestamptz '2026-10-15 23:59:00-03');
 --
 -- Quien tocó "quiero mi lugar" en la sekreta y nunca subió el comprobante
--- tiene la compra guardada a ese precio. Se le avisa por mail, y se le
--- mantiene hasta el cierre: cuando la tanda pasa, esas compras se descartan
--- (al volver, el portal le ofrece la tanda que esté abierta).
+-- tiene la compra guardada a ese precio. Se le avisa por mail que se le
+-- mantiene hasta el cierre. Pero al cerrar NO se descartan (Mau, 15/10 a la
+-- noche): quedan abiertas y él decide a la mañana a quién se le da un día más,
+-- sin comunicarlo. Al volver, el portal le muestra su compra a ese precio.
 --
 -- A quién: compras de la sekreta esperando comprobante, sin los fundadores y
 -- sin quien ya tiene entrada u otra compra en camino (esas son restos de un
@@ -96,8 +97,8 @@ begin
 end;
 $$;
 
--- cuando la tanda pasa, las compras suyas que nunca subieron comprobante se
--- descartan: el precio guardado vale hasta el cierre
+-- cuando la tanda pasa, se prende la siguiente; las compras abiertas de la
+-- que cerró quedan como están (se descartan a mano, si hace falta)
 create or replace function public.pasar_tanda_si_cierra()
 returns void language plpgsql security definer set search_path = public as $$
 declare v_act record; v_sig integer;
@@ -108,7 +109,6 @@ begin
   if v_sig is null then return; end if;     -- era la última: queda abierta
   update public.tandas set activa = false, cierra_en = null where id = v_act.id;
   update public.tandas set activa = true where id = v_sig;
-  delete from public.compras where tanda_id = v_act.id and estado = 'esperando_comprobante';
 end;
 $$;
 
