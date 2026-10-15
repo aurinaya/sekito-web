@@ -592,6 +592,7 @@
   .arbol-mini:focus-visible{ outline:1px solid var(--gray); outline-offset:8px; }
   .arbol-mini iframe{ width:100%; height:100%; border:0; display:block; pointer-events:none; }
   .arbol-dato{ font-size:10.5px; letter-spacing:.1em; color:var(--gray); margin-top:4px; min-height:1.2em; }
+  .arbol-invitar{ margin-top:34px; }
   /* el árbol entero, encima de todo */
   #arbolPantalla{ position:fixed; inset:0; z-index:80; background:#0D0D0D; display:none; }
   #arbolPantalla.abierta{ display:block; }
@@ -2243,19 +2244,16 @@
     </div>
 
     <!-- el orden: lo que tiene fecha (S7), de dónde venís y cómo hacerlo
-         crecer (el árbol, invitar), a quién encontrar y qué decirle
-         (devotxs, susurros), y lo que ya pasó (mis ritos) -->
+         crecer (el árbol, con invitar adentro), a quién encontrar y qué
+         decirle (devotxs, susurros), y lo que ya pasó (mis ritos) -->
     <div class="seccion rv-d">
       <div class="seccion-titulo"><span>el árbol</span></div>
       <!-- el árbol en miniatura: sekito.ar/arbol?mini, quieto; lo carga
            entrarAlSitio() con la persona que entró. Se abre tocándolo -->
       <div class="arbol-mini arbol-abrir" role="button" tabindex="0" aria-label="abrir el árbol"></div>
       <div class="arbol-dato" id="arbolDato"></div>
-    </div>
-
-    <div class="seccion rv-d">
-      <div class="seccion-titulo"><span>invitar</span></div>
-      <button class="invite-trigger">invitar al sékito</button>
+      <!-- "trajiste a 14", y justo abajo cómo hacer crecer la rama -->
+      <button class="invite-trigger arbol-invitar">invitar al sékito</button>
       <div class="invite-trigger-sub">usalo con cuidado</div>
     </div>
 
