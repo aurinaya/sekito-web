@@ -876,6 +876,14 @@
   }
   /* la tanda sekreta se va: lo mismo que dice la placa del feed, con el
      punto rojo latiendo. Solo para quien todavía no tiene su lugar */
+  /* cuando la tanda tiene hora de cierre: la cuenta regresiva, como en la historia */
+  .s7-reloj[hidden]{ display:none; }
+  .s7-reloj{ margin-top:12px; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:rgba(var(--white-rgb),.6); }
+  .s7-reloj b{ display:block; margin-top:6px; font-size:22px; font-weight:500; letter-spacing:.08em; color:var(--white);
+    text-shadow:0 0 12px rgba(255,255,255,.45); font-variant-numeric:tabular-nums; }
+  .pv-cierra{ font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:rgba(var(--gray-rgb),.75); margin-top:10px; }
+  .pv-cierra b{ color:var(--white); font-weight:500; letter-spacing:.08em; font-size:12px; margin-left:6px;
+    text-shadow:0 0 10px rgba(255,255,255,.35); font-variant-numeric:tabular-nums; }
   .s7-urge[hidden]{ display:none; }
   .s7-urge{
     display:inline-flex; align-items:center; gap:8px; margin-top:10px;
@@ -2224,6 +2232,7 @@
       <div class="s7-fecha">SÁBADO 14 DE NOVIEMBRE</div>
       <div class="s7-lugar">PALERMO, BUENOS AIRES</div>
       <div class="s7-estado">—</div>
+      <div class="s7-reloj" hidden>cierra en <b data-cierra></b></div>
       <div class="s7-urge" hidden><i></i>se está yendo</div>
     </div>
 
@@ -4319,8 +4328,28 @@ reveal();
       // apurar solo a quien todavía no tiene lugar
       const urge = box.querySelector('.s7-urge');
       if (urge) urge.hidden = !(tanda && !mias);
+      // si la tanda tiene hora de cierre, la cuenta regresiva (solo a quien no tiene lugar)
+      const reloj = box.querySelector('.s7-reloj');
+      if (reloj){
+        reloj.hidden = !(tanda && !mias && tanda.cierra_en);
+        reloj.querySelector('[data-cierra]').dataset.cierra = (tanda && tanda.cierra_en) || '';
+      }
     });
   }
+
+  /* la cuenta regresiva de la tanda: cada segundo, todo lo que tenga data-cierra.
+     La hora la pone la base (tandas.cierra_en); al llegar a cero, la base ya
+     pasó a la tanda siguiente y se vuelve a preguntar. */
+  let yaPidio = false;
+  setInterval(() => {
+    document.querySelectorAll('[data-cierra]').forEach(el => {
+      const fin = Date.parse(el.dataset.cierra || '');
+      if (!fin){ el.textContent = ''; return; }
+      const q = Math.max(0, Math.floor((fin - Date.now()) / 1000));
+      el.textContent = [Math.floor(q / 3600), Math.floor(q % 3600 / 60), q % 60].map(n => String(n).padStart(2, '0')).join(':');
+      if (q === 0 && !yaPidio){ yaPidio = true; setTimeout(() => { yaPidio = false; window.__refrescarPreventa(); }, 4000); }
+    });
+  }, 1000);
 
   window.__refrescarPreventa = async function(){
     if (!codigoActual) return;
@@ -4390,6 +4419,7 @@ reveal();
       '<div class="pv-rotulo">tu lugar</div>' +
       '<div class="pv-precio">' + plata(tanda.precio) + '</div>' +
       '<div class="pv-tanda">tanda ' + esc(tanda.nombre) + '</div>' +
+      (tanda.cierra_en ? '<div class="pv-cierra">cierra en<b data-cierra="' + esc(tanda.cierra_en) + '"></b></div>' : '') +
       '<div class="pv-cantidad">' +
         '<button type="button" id="pvMenos"' + (cuantas <= 1 ? ' disabled' : '') + '>−</button>' +
         '<div class="pv-cuantas">' + cuantas + '</div>' +

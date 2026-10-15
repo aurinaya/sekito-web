@@ -187,6 +187,13 @@
     50%    { box-shadow:0 0 28px 3px rgba(var(--white-rgb),.42), inset 0 0 22px rgba(var(--white-rgb),.16); }
   }
 
+  /* cuando la tanda tiene hora de cierre: la cuenta regresiva, como en la historia */
+  .cierre{ margin-top:26px; font-size:9.5px; letter-spacing:.22em; text-transform:uppercase;
+    color:rgba(var(--white-rgb),.55); opacity:0; transition:opacity .9s ease; }
+  .cierre.llego{ opacity:1; }
+  .cierre b{ display:block; margin-top:8px; font-size:24px; font-weight:500; letter-spacing:.08em;
+    color:var(--white); text-shadow:0 0 14px rgba(var(--white-rgb),.45); font-variant-numeric:tabular-nums; }
+
   /* la rendija */
   .rendija{
     position:fixed;
@@ -256,6 +263,7 @@
 <div class="fecha aparece" id="fecha">SÁBADO 14 · NOVIEMBRE</div>
 <div class="lugar aparece" id="lugar">PALERMO, BUENOS AIRES</div>
 <a class="preventa" id="preventa" href="https://www.sekito.ar/?ir=preventa">tanda sekreta desde el portal</a>
+<div class="cierre" id="cierre" hidden>cierra en <b data-cierra></b></div>
 
 <div class="rendija">
   <button type="button" id="sinCodigo">no tengo mi llave</button>
@@ -287,7 +295,10 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function mostrarResto(){
     document.getElementById('fecha').classList.add('llego');
     document.getElementById('lugar').classList.add('llego');
-    setTimeout(() => document.getElementById('preventa').classList.add('llego'), 650);
+    setTimeout(() => {
+      document.getElementById('preventa').classList.add('llego');
+      document.getElementById('cierre').classList.add('llego');
+    }, 650);
   }
 
   // el S7 no se escribe: aparece, un momento después de la inundación
@@ -307,6 +318,7 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     fan.style.background = BLANCO;
     document.getElementById('nombre').classList.add('cayo');
     mostrarResto();
+    document.getElementById('cierre').classList.add('llego');
     return;
   }
 
@@ -336,6 +348,32 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     fan.style.background = color;
     setTimeout(tick, dur);
   })();
+})();
+
+/* ---------- la tanda abierta y su cierre ----------
+   La base dice qué tanda está abierta y, si tiene hora, cuándo cierra
+   (tanda_publica, sin llave). El botón nombra la tanda de verdad, y la
+   cuenta regresiva baja sola. Sin respuesta, queda como estaba. */
+(async function tanda(){
+  try {
+    const KEY = 'sb_publishable_7KAttE0ISGm_BQHswIH3hg_NCQWelFs';
+    const r = await fetch('https://imhbhkknpgtwmwzflqlk.supabase.co/rest/v1/rpc/tanda_publica', {
+      method:'POST', headers:{ 'apikey':KEY, 'Authorization':'Bearer ' + KEY, 'Content-Type':'application/json' }, body:'{}' });
+    if (!r.ok) return;
+    const t = (await r.json())[0];
+    if (!t) return;
+    document.getElementById('preventa').textContent = 'tanda ' + t.nombre + ' desde el portal';
+    if (!t.cierra_en) return;
+    const caja = document.getElementById('cierre'), b = caja.querySelector('b'), fin = Date.parse(t.cierra_en);
+    const pinta = () => {
+      const q = Math.max(0, Math.floor((fin - Date.now()) / 1000));
+      b.textContent = [Math.floor(q / 3600), Math.floor(q % 3600 / 60), q % 60].map(n => String(n).padStart(2, '0')).join(':');
+      if (q === 0) setTimeout(() => location.reload(), 70000);   // la base ya pasó a la siguiente
+      return q;
+    };
+    pinta(); caja.hidden = false;
+    const reloj = setInterval(() => { if (pinta() === 0) clearInterval(reloj); }, 1000);
+  } catch (e) {}
 })();
 
 /* ---------- el grano ---------- */

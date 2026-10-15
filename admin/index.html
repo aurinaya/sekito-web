@@ -92,6 +92,7 @@ main{padding:20px; flex:1}
 
 /* las tandas: el precio se cambia acá, no publicando el sitio */
 .tandas{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 20px}
+.tanda-cierra{font-size:11px;color:#E5843F;letter-spacing:.04em}
 .tanda{
   display:flex;flex-direction:column;gap:4px;align-items:flex-start;
   background:none;border:1px solid rgba(255,255,255,.18);
@@ -1182,6 +1183,10 @@ async function cargarTandas(){
       '<span class="tanda-nombre">tanda ' + esc(t.nombre) + '</span>' +
       '<span class="tanda-precio">' + plata(t.precio) + '</span>' +
       '<span class="tanda-vendidas">' + t.vendidas + ' vendidas</span>' +
+      // si tiene hora de cierre, la base la pasa sola a la siguiente
+      (t.cierra_en ? '<span class="tanda-cierra">cierra ' +
+        new Date(t.cierra_en).toLocaleString('es-AR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false }) +
+        ' · pasa sola a la siguiente</span>' : '') +
     '</button>').join('');
 }
 
