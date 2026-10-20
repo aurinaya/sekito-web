@@ -247,6 +247,16 @@ a.btn{text-decoration:none;display:inline-block}
   background:var(--black);padding:2px 0 12px;
 }
 #imgComprobante{width:100%;height:auto;display:block;background:#000}
+/* lo que se está mirando y qué hacer con eso, en la misma barra: se ve el
+   comprobante y se confirma ahí, sin cerrar y buscar la fila */
+.comp-dato{font-size:13px; line-height:1.5; min-width:0}
+.comp-dato .tenue{font-size:11.5px}
+.comp-dato .repetido{max-width:none}
+.comp-botones{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+.comp-botones .btn{padding:8px 14px}
+.btn.confirmar{border-color:rgba(242,242,242,.7)}
+.btn.confirmar:hover{border-color:var(--white); background:rgba(242,242,242,.06)}
+.comp-barra{gap:14px; flex-wrap:wrap}
 .barra{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px}
 .barra input[type="search"]{
   background:transparent; border:1px solid var(--linea); color:var(--white);
@@ -610,8 +620,8 @@ td.apretado{white-space:normal; min-width:150px}
 <div class="fondo" id="modalComprobante">
   <div class="ventana caja-comprobante">
     <div class="comp-barra">
-      <span class="tenue">comprobante</span>
-      <button class="btn" data-cerrar>cerrar</button>
+      <div class="comp-dato" id="compDato"><span class="tenue">comprobante</span></div>
+      <div class="comp-botones" id="compBotones"><button class="btn" data-cerrar>cerrar</button></div>
     </div>
     <img id="imgComprobante" alt="comprobante de transferencia">
   </div>
@@ -1660,6 +1670,18 @@ document.addEventListener('click', async e => {
   if (ver){
     const img = $('#imgComprobante');
     img.removeAttribute('src');
+    // arriba, de quién es y lo que pagó; si espera revisión, los botones ahí
+    const c = COMPRAS.find(x => x.compra_id === ver.dataset.vercomp);
+    $('#compDato').innerHTML = c
+      ? esc(c.comprador || '') + (c.sektario ? ' <span class="tenue">' + esc(c.sektario) + '</span>' : '') +
+        '<div class="tenue">' + c.cantidad + (c.cantidad === 1 ? ' entrada' : ' entradas') + ' · ' +
+          plata(c.total) + ' · tanda ' + esc(c.tanda) + '</div>' +
+        (REPETIDOS[c.compra_id] ? '<div class="repetido">⚠ mismo comprobante que la compra de ' + esc(REPETIDOS[c.compra_id]) + '</div>' : '')
+      : '<span class="tenue">comprobante</span>';
+    $('#compBotones').innerHTML = (c && c.estado === 'a_revisar'
+        ? '<button class="btn confirmar" data-okcompra="' + c.compra_id + '" data-visto>confirmar</button>' +
+          '<button class="btn peligro" data-nocompra="' + c.compra_id + '">rechazar</button>' : '') +
+      '<button class="btn" data-cerrar>cerrar</button>';
     abrir('#modalComprobante');
     const r = await rpc('admin_comprobante', { p_codigo: CODIGO, p_compra: ver.dataset.vercomp });
     if (r.ok && r.datos && r.datos[0]){
@@ -1673,10 +1695,13 @@ document.addEventListener('click', async e => {
     const igual = REPETIDOS[ok.dataset.okcompra];
     if (igual && !confirm('Ojo: este comprobante es idéntico al de la compra de ' + igual +
                           '. Una transferencia no paga dos compras. ¿Confirmamos igual?')) return;
-    if (!igual && !confirm('¿Confirmamos? Nacen las entradas y le llega el mail con su código.')) return;
+    // desde el comprobante abierto no se pregunta de nuevo: ya lo estás mirando
+    if (!igual && !ok.hasAttribute('data-visto') &&
+        !confirm('¿Confirmamos? Nacen las entradas y le llega el mail con su código.')) return;
     ok.disabled = true;
     const r = await rpc('admin_confirmar_compra', { p_codigo: CODIGO, p_compra: ok.dataset.okcompra });
     if (!r.ok){ alert(enCastellano(r.motivo)); ok.disabled = false; return; }
+    cerrarComprobante(ok);
     refrescarS7();
     return;
   }
@@ -1689,6 +1714,7 @@ document.addEventListener('click', async e => {
     const r = await rpc('admin_rechazar_compra',
                         { p_codigo: CODIGO, p_compra: no.dataset.nocompra, p_motivo: motivo });
     if (!r.ok){ alert(enCastellano(r.motivo)); no.disabled = false; return; }
+    cerrarComprobante(no);
     refrescarS7();
     return;
   }
@@ -1731,6 +1757,8 @@ document.addEventListener('click', async e => {
   if (e.target.closest('[data-cerrar]') || e.target.id === 'modalComprobante'){
     const img = $('#imgComprobante');
     if (img) img.removeAttribute('src');
+    // el "cerrar" de la barra se dibuja cada vez que se abre: no tiene su propio oyente
+    if (e.target.closest('#modalComprobante')) cerrar('#modalComprobante');
   }
 });
 
@@ -1876,6 +1904,12 @@ const eligeEditar = elige('edInvitador', m => m.id !== editandoId);
 // ---------------------------------------------------------------- crear
 
 function abrir(id){ $(id).classList.add('abierta'); }
+// si la decisión se tomó desde el comprobante abierto, se cierra solo
+function cerrarComprobante(boton){
+  if (!boton.closest('#modalComprobante')) return;
+  cerrar('#modalComprobante');
+  $('#imgComprobante').removeAttribute('src');
+}
 function cerrar(id){ $(id).classList.remove('abierta'); }
 
 document.querySelectorAll('[data-cerrar]').forEach(b =>
