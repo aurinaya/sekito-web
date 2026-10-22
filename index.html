@@ -1658,6 +1658,9 @@
      dos fotos a pantalla completa; colapso se revela arriba-derecha de una
      costura diagonal (esquina sup. izq. → esquina inf. der.), y sobre la
      costura una banda negra fina con bordes quemados. */
+  /* la historia es la bienvenida: se ve la primera vez que alguien entra en
+     este celular; después se entra directo al perfil */
+  body.sin-historia #historia{ display:none !important; }
   .historia{
     position:relative;
     width:100%;
@@ -2685,6 +2688,12 @@ function grant(miembro){
 /* la historia va primero para todos; el perfil queda debajo */
 function entrarAlSitio(miembro){
   miembroActual = miembro;
+  // la historia, solo la primera vez en este celular (si no se puede
+  // recordar, se muestra siempre, como antes)
+  let vista = false;
+  try { vista = localStorage.getItem('sekito.historia') === 'vista';
+        localStorage.setItem('sekito.historia', 'vista'); } catch (e) {}
+  document.body.classList.toggle('sin-historia', vista);
   document.getElementById('bienvenida').classList.remove('active');
   historiaScreen.classList.add('active');
   scrollToTop();
