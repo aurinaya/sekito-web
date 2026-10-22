@@ -355,6 +355,14 @@
     opacity:0; transition:opacity .3s ease;
   }
   .gr-copiado.show{ opacity:1; }
+  /* el pedido: los mismos campos que el registro, alineados a la izquierda */
+  .gr-pedido{ margin:30px auto 0; max-width:320px; text-align:left; }
+  .gr-o{ text-align:center; color:var(--gray); margin:0 0 22px !important; }
+  .gr-pedir{ display:block; width:100%; margin-top:6px; background:none; cursor:pointer;
+             font-family:inherit; border-color:rgba(var(--bordo-rgb),.9) !important; background:rgba(var(--bordo-rgb),.14); }
+  .gr-pedir:disabled{ opacity:.4; cursor:default; }
+  .gr-pedido-dicho{ font-size:11px; line-height:1.7; color:var(--gray); text-align:center; min-height:1.4em; margin-top:12px; }
+  .gr-pedido-dicho.listo{ color:var(--white); }
 
   .code-row .chevron{
     position:absolute;
@@ -592,7 +600,14 @@
   .arbol-mini:focus-visible{ outline:1px solid var(--gray); outline-offset:8px; }
   .arbol-mini iframe{ width:100%; height:100%; border:0; display:block; pointer-events:none; }
   .arbol-dato{ font-size:10.5px; letter-spacing:.1em; color:var(--gray); margin-top:4px; min-height:1.2em; }
-  .arbol-invitar{ margin-top:34px; }
+  /* invitar, destacado en bordo encendido (opción B, 22/10) */
+  .arbol-invitar{
+    margin-top:34px; width:100%; max-width:340px; padding:17px 26px;
+    font-size:12px; letter-spacing:.22em;
+    border-color:rgba(204,40,80,.95); background:rgba(var(--bordo-rgb),.3);
+    animation:none; box-shadow:0 0 34px rgba(var(--bordo-rgb),.9), inset 0 0 18px rgba(var(--bordo-rgb),.4);
+  }
+  .arbol-invitar:hover{ border-color:#E50040; background:rgba(var(--bordo-rgb),.42); }
   /* el árbol entero, encima de todo */
   #arbolPantalla{ position:fixed; inset:0; z-index:80; background:#0D0D0D; display:none; }
   #arbolPantalla.abierta{ display:block; }
@@ -995,6 +1010,24 @@
     margin-top:14px;
   }
   .pv-llego{ font-size:20px; letter-spacing:.04em; color:var(--white); }
+  /* invitar con la entrada: la caja que aparece cuando la búsqueda no encuentra a nadie */
+  .pv-invitar{
+    border:1px solid rgba(var(--bordo-rgb),.7); background:rgba(var(--bordo-rgb),.12);
+    padding:14px 14px 16px; margin-top:12px; text-align:left;
+  }
+  .pv-invitar p{ font-size:11px; line-height:1.7; color:rgba(var(--white-rgb),.85); margin:0 0 12px; }
+  .pv-invitar-btn{ border-color:rgba(var(--white-rgb),.7) !important; color:var(--white) !important; }
+  .pv-botones{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
+  .pv-no-es{ margin-top:14px; padding-top:12px; border-top:1px solid rgba(var(--gray-rgb),.14);
+             display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
+  .pv-no-es span{ font-size:10.5px; line-height:1.6; color:rgba(var(--gray-rgb),.85); }
+  /* el link para mandar por whatsapp, debajo de la entrada guardada */
+  .pv-link{ border:1px solid rgba(var(--bordo-rgb),.7); background:rgba(var(--bordo-rgb),.12);
+            padding:14px; margin:4px 0 12px; text-align:left; }
+  .pv-link p{ font-size:11px; line-height:1.7; color:rgba(var(--white-rgb),.85); margin:0 0 10px; }
+  .pv-link-url{ font-size:12px; letter-spacing:.04em; color:var(--white); word-break:break-all; margin-bottom:12px; }
+  .pv-link-botones{ display:flex; flex-wrap:wrap; gap:8px; }
+  .pv-wsp{ text-decoration:none; border-color:rgba(var(--white-rgb),.7) !important; color:var(--white) !important; }
 
   /* las tres tandas: las mismas tarjetas de la placa del feed y del mail */
   .pv-tandas{ margin:56px 0 38px; }
@@ -2150,6 +2183,20 @@
         <p class="gr-frase" id="grFrase">quiero mi llave para el portal</p>
         <a class="gr-ir" id="grIr" href="https://ig.me/m/sekito.gde" target="_blank" rel="noopener">ir a instagram</a>
         <div class="gr-copiado" id="grCopiado"></div>
+        <!-- o dejar los datos: el pedido le llega al panel, y la llave por dm -->
+        <form class="gr-pedido" id="grPedido" novalidate>
+          <p class="gr-o">o dejá tus datos y la sekta te escribe</p>
+          <div class="bv-campo"><label for="gpNombre">nombre y apellido</label>
+            <input id="gpNombre" type="text" maxlength="80" autocomplete="name" autocapitalize="words"></div>
+          <div class="bv-campo"><label for="gpIg">tu instagram · por ahí te llega tu llave</label>
+            <input id="gpIg" type="text" maxlength="60" placeholder="@" autocapitalize="off" autocomplete="off" spellcheck="false"></div>
+          <div class="bv-campo"><label for="gpMail">tu mail</label>
+            <input id="gpMail" type="email" maxlength="120" autocomplete="email" autocapitalize="off" spellcheck="false"></div>
+          <div class="bv-campo"><label for="gpComo">contanos cómo llegaste al sékito</label>
+            <textarea id="gpComo" maxlength="500" rows="2"></textarea></div>
+          <button type="submit" class="gr-ir gr-pedir" id="gpPedir">pedir mi llave</button>
+          <div class="gr-pedido-dicho" id="gpDicho"></div>
+        </form>
       </div>
     </div>
   </section>
@@ -2882,7 +2929,9 @@ reveal();
     const refe = document.getElementById('bvReferente');
     refe.hidden = !porInvitacion;
     if (porInvitacion){
-      refe.textContent = invitacionActual.referente + ' es tu guía hacia el sékito.';
+      refe.textContent = invitacionActual.referente + ' es tu guía hacia el sékito.' +
+        // la entrada que viene con la invitación: pasa a su nombre al terminar
+        (invitacionActual.conEntrada ? ' Y te guardó una entrada para S7: cuando termines de entrar, es tuya.' : '');
     }
 
     // busca a LA SEKTA una sola vez, para poder fijarla en la lista
@@ -4546,6 +4595,14 @@ reveal();
         if (e.soy_duenio && e.puede_cambiar){
           boton = '<button class="pv-mini" data-soltar="' + e.entrada_id + '">dársela a otro</button>';
         }
+      } else if (e.estado === 'guardada'){
+        // guardada para una invitación: cuando esa persona entre, es suya
+        quien = '<div class="pv-quien">guardada para ' + esc(e.guardada_para || 'tu invitación') + '</div>';
+        detalle = '<div class="pv-detalle">todavía no entró · vence el ' + diaMes(e.guardada_vence) + '</div>';
+        boton = '<div class="pv-botones">' +
+                  '<button class="pv-mini" data-ver-link="' + e.entrada_id + '">ver el link</button>' +
+                  '<button class="pv-mini" data-cancelar-inv="' + e.entrada_id + '">cancelar</button>' +
+                '</div>';
       } else {
         quien = '<div class="pv-quien vacia">sin asignar</div>' ;
         if (e.quien_me_la_dio){
@@ -4566,9 +4623,12 @@ reveal();
           '</div>'
         : '';
 
+      // recién guardada (o "ver el link"): el link para mandarle por whatsapp
+      const link = (e.estado === 'guardada' && linkAbierto === e.entrada_id)
+        ? panelLink(e.guardada_codigo, e.guardada_para) : '';
       return '<div class="pv-entrada">' +
                '<div>' + quien + detalle + '</div>' + boton +
-             '</div>' + buscador;
+             '</div>' + link + buscador;
     }).join('');
 
     return '<div class="pv-bloque"><div class="pv-rotulo">tus entradas</div>' + filas + '</div>';
@@ -4706,6 +4766,35 @@ reveal();
     pintar();
   }
 
+  // --- invitar con la entrada -------------------------------------------------
+  /* el mismo link de una invitación, con otro mensaje: dice que hay una entrada
+     esperándolo. En el celu se abre el compartir del sistema (whatsapp, ig…);
+     en la compu se copia el mensaje entero */
+  function diaMes(t){
+    if (!t) return '—';
+    const d = new Date(t);
+    return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+  let linkAbierto = null;   // la entrada guardada cuyo link se está mostrando
+  function mensajeEntrada(codigo){
+    return (miembroActual && miembroActual.nombre_sektario ? miembroActual.nombre_sektario : 'alguien del sékito') +
+      ' te guardó una entrada para S7 · sábado 14 de noviembre.\n\n' +
+      'entrá al sékito con este link y es tuya: ' + location.origin + '/i/' + codigo + '\n\n' +
+      'el link sirve una sola vez y vence en 7 días.';
+  }
+  function panelLink(codigo, quien){
+    return '<div class="pv-link">' +
+      '<p>Listo: la entrada queda guardada para ' + esc(quien || 'tu invitación') + '. ' +
+      'Mandale este link: cuando entre al sékito, la entrada es suya.</p>' +
+      '<div class="pv-link-url">' + esc(location.host + '/i/' + codigo) + '</div>' +
+      '<div class="pv-link-botones">' +
+        '<a class="pv-mini pv-wsp" href="https://wa.me/?text=' + encodeURIComponent(mensajeEntrada(codigo)) +
+          '" target="_blank" rel="noopener">mandar por whatsapp</a>' +
+        '<button class="pv-mini" data-copiar-msj="' + esc(codigo) + '">copiar mensaje</button>' +
+        '<button class="pv-mini" data-cerrar-link="1">listo</button>' +
+      '</div></div>';
+  }
+
   // --- asignar ---------------------------------------------------------------
   let debounce = null;
 
@@ -4715,13 +4804,28 @@ reveal();
     const r = await llamarRPC('buscar_para_entrada',
                               { p_codigo: codigoActual, p_query: q });
     const gente = (r.ok && r.datos) || [];
-    if (!gente.length){ lista.innerHTML = '<div class="pv-detalle">nadie con ese nombre</div>'; return; }
+    if (!gente.length){
+      // no está en el portal: se le manda la invitación con la entrada
+      lista.innerHTML = '<div class="pv-detalle">nadie con ese nombre en el portal</div>' +
+        (q.length >= 2
+          ? '<div class="pv-invitar"><p>¿Todavía no está en el portal? Mandale la entrada por acá.</p>' +
+            '<button class="pv-mini pv-invitar-btn" data-invitar="' + esc(caja.dataset.para) + '" data-quien="' + esc(q) + '">' +
+            'mandarle la entrada a ' + esc(q) + '</button></div>'
+          : '');
+      return;
+    }
     lista.innerHTML = gente.map(g =>
       '<div class="pv-op' + (g.ya_tiene ? ' tiene' : '') + '" data-id="' + g.id + '" ' +
            'data-nombre="' + esc(g.nombre || g.sektario) + '">' +
         esc(g.nombre || g.sektario) +
         (g.ya_tiene ? '<span>ya tiene</span>' : '<span>' + esc(g.sektario || '') + '</span>') +
-      '</div>').join('');
+      '</div>').join('') +
+      // puede ser otra persona con el mismo nombre, que todavía no está
+      (q.length >= 2
+        ? '<div class="pv-no-es"><span>¿no es ninguna? ¿todavía no está en el portal? mandale la entrada por acá</span>' +
+          '<button class="pv-mini" data-invitar="' + esc(caja.dataset.para) + '" data-quien="' + esc(q) + '">' +
+          'mandarle la entrada a ' + esc(q) + '</button></div>'
+        : '');
   }
 
   async function darSela(entrada, quien, nombre, caja){
@@ -4786,6 +4890,46 @@ reveal();
       return;
     }
 
+    // invitar con la entrada: se guarda para esa invitación y se manda
+    const invitar = t.closest('[data-invitar]');
+    if (invitar){
+      invitar.disabled = true; invitar.textContent = 'guardando...';
+      const r = await llamarRPC('invitar_con_entrada', {
+        p_codigo: codigoActual, p_entrada: invitar.dataset.invitar, p_para: invitar.dataset.quien });
+      if (!r.ok || !r.datos || !r.datos[0]){
+        const dice = (r.motivo || '') + '';
+        invitar.disabled = false;
+        invitar.textContent = dice.indexOf('demasiadas_abiertas') !== -1
+          ? 'ya tenés todas tus invitaciones abiertas'
+          : dice.indexOf('cambios_cerrados') !== -1 ? 'ya no se puede: escribile a la sekta' : 'no se pudo, probá de nuevo';
+        return;
+      }
+      asignando = null;
+      linkAbierto = invitar.dataset.invitar;     // se abre el panel con el link
+      await window.__refrescarPreventa();
+      pintar();
+      return;
+    }
+
+    const verLink = t.closest('[data-ver-link]');
+    if (verLink){ linkAbierto = linkAbierto === verLink.dataset.verLink ? null : verLink.dataset.verLink; pintar(); return; }
+    if (t.closest('[data-cerrar-link]')){ linkAbierto = null; pintar(); return; }
+    const copiarMsj = t.closest('[data-copiar-msj]');
+    if (copiarMsj){
+      try { await navigator.clipboard.writeText(mensajeEntrada(copiarMsj.dataset.copiarMsj)); copiarMsj.textContent = 'copiado'; }
+      catch (e2) { prompt('Copiá este mensaje y mandáselo:', mensajeEntrada(copiarMsj.dataset.copiarMsj)); }
+      return;
+    }
+
+    const cancelarInv = t.closest('[data-cancelar-inv]');
+    if (cancelarInv){
+      if (!confirm('¿Cancelás la invitación? El link deja de servir y la entrada vuelve a quedar sin asignar.')) return;
+      await llamarRPC('soltar_invitacion_de_entrada', { p_codigo: codigoActual, p_entrada: cancelarInv.dataset.cancelarInv });
+      await window.__refrescarPreventa();
+      pintar();
+      return;
+    }
+
     const otro = t.closest('[data-otro]');
     if (otro){ pintar(); const i = cuerpo.querySelector('.pv-buscar input'); if (i) i.focus(); return; }
 
@@ -4811,7 +4955,7 @@ reveal();
       caja.querySelector('.pv-resultados').innerHTML =
         '<div class="pv-dilema">' +
           '<p>¿Le das esta entrada a <strong>' + esc(op.dataset.nombre) + '</strong>?<br>' +
-          'Le llega un mail con su código. Una vez dada, no la podés sacar.</p>' +
+          'Le llega un mail con su código.</p>' +
           '<button class="pv-mini" data-confirmar="' + op.dataset.id + '" data-nombre="' +
             esc(op.dataset.nombre) + '">sí, dársela</button>' +
           '<button class="pv-mini" data-otro="1">elegir a otra persona</button>' +
@@ -5220,6 +5364,42 @@ reveal();
 
   frase.addEventListener('click', copiar);
   ir.addEventListener('click', copiar);
+
+  // desde /s7 ("dejá tus datos"): llega con ?pedir y la caja ya abierta
+  if (new URLSearchParams(location.search).has('pedir')){
+    caja.hidden = false; boton.hidden = true;
+    setTimeout(() => { const n = document.getElementById('gpNombre'); if (n) n.scrollIntoView({ block:'center' }); }, 300);
+  }
+
+  // el pedido de llave: sin llave, lo mira el panel
+  const form = document.getElementById('grPedido'), dichoP = document.getElementById('gpDicho'), pedir = document.getElementById('gpPedir');
+  const MAL = {
+    faltan_datos:       'faltan datos: nombre, instagram y mail',
+    mail_invalido:      'ese mail no parece un mail',
+    instagram_invalido: 'ese instagram no parece un usuario',
+    muchos_pedidos:     'hoy hay muchos pedidos: escribinos por instagram',
+  };
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const datos = {
+      p_nombre:     document.getElementById('gpNombre').value,
+      p_instagram:  document.getElementById('gpIg').value,
+      p_email:      document.getElementById('gpMail').value,
+      p_como_llego: document.getElementById('gpComo').value,
+    };
+    if (!datos.p_nombre.trim() || !datos.p_instagram.trim() || !datos.p_email.trim()){
+      dichoP.className = 'gr-pedido-dicho'; dichoP.textContent = MAL.faltan_datos; return;
+    }
+    pedir.disabled = true; pedir.textContent = 'mandando...';
+    const r = await llamarRPC('pedir_llave', datos);
+    if (r.ok){
+      form.innerHTML = '<p class="gr-pedido-dicho listo">listo. la sekta te va a escribir por instagram.</p>';
+      return;
+    }
+    const k = Object.keys(MAL).find(k => ((r.motivo || '') + '').indexOf(k) !== -1);
+    dichoP.className = 'gr-pedido-dicho'; dichoP.textContent = k ? MAL[k] : 'no se pudo mandar, probá de nuevo';
+    pedir.disabled = false; pedir.textContent = 'pedir mi llave';
+  });
 })();
 
 /* ---------- entrar solo, con la llave guardada ----------
@@ -5292,7 +5472,7 @@ reveal();
     return;
   }
 
-  invitacionActual = { codigo: codigo, referente: res.referente_nombre };
+  invitacionActual = { codigo: codigo, referente: res.referente_nombre, conEntrada: !!res.con_entrada };
   gateScreen.classList.remove('active');
   if (window.__prepararBienvenida) await window.__prepararBienvenida();
   document.getElementById('bienvenida').classList.add('active');
