@@ -1691,9 +1691,6 @@
      dos fotos a pantalla completa; colapso se revela arriba-derecha de una
      costura diagonal (esquina sup. izq. → esquina inf. der.), y sobre la
      costura una banda negra fina con bordes quemados. */
-  /* la historia es la bienvenida: se ve la primera vez que alguien entra en
-     este celular; después se entra directo al perfil */
-  body.sin-historia #historia{ display:none !important; }
   .historia{
     position:relative;
     width:100%;
@@ -2732,15 +2729,15 @@ function grant(miembro){
   entrarAlSitio(miembro);
 }
 
-/* la historia va primero para todos; el perfil queda debajo */
+/* la historia va arriba para todos, y el perfil debajo. La primera vez en este
+   celular se arranca por la historia; las siguientes, directo en el perfil, con
+   la historia ahí arriba para quien suba a verla (si no se puede recordar, se
+   arranca por la historia, como antes) */
 function entrarAlSitio(miembro){
   miembroActual = miembro;
-  // la historia, solo la primera vez en este celular (si no se puede
-  // recordar, se muestra siempre, como antes)
   let vista = false;
   try { vista = localStorage.getItem('sekito.historia') === 'vista';
         localStorage.setItem('sekito.historia', 'vista'); } catch (e) {}
-  document.body.classList.toggle('sin-historia', vista);
   document.getElementById('bienvenida').classList.remove('active');
   historiaScreen.classList.add('active');
   scrollToTop();
@@ -2756,6 +2753,7 @@ function entrarAlSitio(miembro){
   if (window.__pintarApodo) window.__pintarApodo();
   pintarFotos(miembro.nombre_sektario);
   memberScreen.classList.add('active');
+  if (vista) requestAnimationFrame(() => memberScreen.scrollIntoView({ block: 'start' }));
 }
 
 /* el código recién creado se muestra una sola vez: después de esta pantalla el
