@@ -4820,9 +4820,9 @@ reveal();
       '</div>').join('') +
       // puede ser otra persona con el mismo nombre, que todavía no está
       (q.length >= 2
-        ? '<div class="pv-no-es"><span>¿no es ninguna? ¿todavía no está en el portal? mandale la entrada por acá</span>' +
-          '<button class="pv-mini" data-invitar="' + esc(caja.dataset.para) + '" data-quien="' + esc(q) + '">' +
-          'mandarle la entrada a ' + esc(q) + '</button></div>'
+        ? '<div class="pv-no-es"><span>¿no es ninguna? ¿todavía no está en el portal? mandale un link con la entrada</span>' +
+          '<button class="pv-mini" data-invitar="' + esc(caja.dataset.para) + '" data-quien="' + esc(q) + '" data-hay-gente="1">' +
+          'no es ninguna: mandarle un link</button></div>'
         : '');
   }
 
@@ -4891,6 +4891,9 @@ reveal();
     // invitar con la entrada: se guarda para esa invitación y se manda
     const invitar = t.closest('[data-invitar]');
     if (invitar){
+      // si la búsqueda encontró gente, puede ser que sí esté (Vikingo y Gatita, 24/10)
+      if (invitar.dataset.hayGente && !confirm('Hay alguien en el portal que coincide con "' + invitar.dataset.quien +
+          '". Para darle la entrada a esa persona, tocá su nombre en la lista.\n\n¿Seguro que es otra persona y todavía no está en el portal?')) return;
       invitar.disabled = true; invitar.textContent = 'guardando...';
       const r = await llamarRPC('invitar_con_entrada', {
         p_codigo: codigoActual, p_entrada: invitar.dataset.invitar, p_para: invitar.dataset.quien });
