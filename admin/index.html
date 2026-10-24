@@ -311,6 +311,7 @@ td.apretado{white-space:normal; min-width:150px}
 .btn-ig:hover{color:var(--white); border-color:var(--gray)}
 #irAlChat.btn-ig{display:inline-block; padding:8px 14px; font-size:12px; color:var(--white)}
 #irAlChat[hidden]{display:none}
+.msj-link{white-space:pre-wrap; background:#141414; border:1px solid var(--linea); padding:12px; font-size:12.5px; line-height:1.6; margin:0}
 
 /* ---------- linaje ---------- */
 #listaLinaje{margin:0; padding:0; list-style:none; font-size:13.5px}
@@ -580,6 +581,7 @@ td.apretado{white-space:normal; min-width:150px}
         <div class="segmento" id="enPara">
           <button type="button" data-para="portal" class="activo">alguien del portal</button>
           <button type="button" data-para="afuera">alguien de afuera</button>
+          <button type="button" data-para="link">por link (todavía no está en el portal)</button>
           <button type="button" data-para="nadie">sin asignar</button>
         </div>
       </div>
@@ -597,6 +599,16 @@ td.apretado{white-space:normal; min-width:150px}
         <div class="campo"><label for="enApellido">apellido</label><input id="enApellido" autocomplete="off"></div>
         <div class="campo"><label for="enApodo">apodo (opcional)</label><input id="enApodo" autocomplete="off"></div>
         <div class="campo"><label for="enContacto">teléfono o mail (opcional)</label><input id="enContacto" autocomplete="off"></div>
+      </div>
+
+      <div id="enLink" hidden>
+        <div class="campo"><label for="enLinkPara">para quién (nombre, para reconocerla)</label>
+          <input id="enLinkPara" autocomplete="off" placeholder="Lucía Gómez · @lucia.g"></div>
+        <p class="tenue" style="font-size:12.5px; margin-top:0">
+          Se crea la entrada guardada y te damos un link para mandarle por DM o WhatsApp.
+          Cuando entre al sékito con ese link y complete sus datos, la entrada es suya
+          y le llega el mail con su código. El link vale 14 días.
+        </p>
       </div>
 
       <p class="tenue" id="enNadie" hidden style="font-size:12.5px">
@@ -1158,6 +1170,7 @@ const DICE_COMPRA = {
 
 const DICE_ENTRADA = {
   sin_asignar: ['pide',   'sin asignar'],
+  guardada:    ['espera', 'guardada (link)'],
   asignada:    ['ok',     'asignada'],
   adentro:     ['ok',     'adentro'],
   anulada:     ['mal',    'anulada'],
@@ -1367,7 +1380,7 @@ function pintarEntradas(){
     ? ENTRADAS.filter(e =>
         [e.nombre, e.apodo, e.email, e.contacto, e.tenedor, e.compro, e.nota].some(v => v && paraBuscar(v).includes(t)) ||
         (!!cod && [e.codigo, e.sektario].some(v => v && codigoParaBuscar(v).includes(cod))))
-    : ENTRADAS.filter(e => e.estado === 'sin_asignar' || VER_ENTRADAS.has(e.estado))
+    : ENTRADAS.filter(e => e.estado === 'sin_asignar' || e.estado === 'guardada' || VER_ENTRADAS.has(e.estado))
   ).slice().sort((a, b) => (b.estado === 'sin_asignar') - (a.estado === 'sin_asignar'));
   if (!lista.length){
     cuerpo.innerHTML = '<tr><td colspan="8" class="vacio">' +
@@ -1384,7 +1397,10 @@ function pintarEntradas(){
         (e.apodo ? ' <span class="tenue">· ' + esc(e.apodo) + '</span>' : '') +
         (e.de_afuera ? ' <span class="tenue">(de afuera)</span>' : '') +
         (e.sektario ? '<div class="tenue" style="font-size:11px">' + esc(e.sektario) + '</div>' : '')
-      : '<span class="tenue">la tiene ' + esc(e.tenedor || '—') + '</span>';
+      : e.estado === 'guardada'
+        ? 'para ' + esc(e.guardada_para || '?') + ' <span class="tenue">· por link, vence el ' +
+          esc(new Date(e.guardada_vence).toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit' })) + '</span>'
+        : '<span class="tenue">la tiene ' + esc(e.tenedor || '—') + '</span>';
     const contacto = [e.email, e.contacto].filter(Boolean).map(esc).join('<br>') || '<span class="tenue">—</span>';
     const deDonde = (e.compro ? 'la compró ' + esc(e.compro) : 'panel') +
       (e.nota ? '<div class="tenue" style="font-size:11px">' + esc(e.nota) + '</div>' : '');
@@ -1394,6 +1410,7 @@ function pintarEntradas(){
 
     const botones = e.estado === 'anulada' ? '' :
       (e.estado === 'sin_asignar' ? '<button data-asignar="' + e.entrada_id + '">asignar</button>' : '') +
+      (e.estado === 'guardada' ? '<button data-ver-link="' + e.entrada_id + '">ver link</button>' : '') +
       (e.estado === 'asignada'
         ? '<button data-tarjeta="' + e.entrada_id + '">tarjeta</button>' +
           '<button data-soltar="' + e.entrada_id + '">soltar</button>' : '') +
@@ -1511,12 +1528,14 @@ function precioDe(tipo){
 function pintarPara(){
   $$('#enPara button').forEach(b => b.classList.toggle('activo', b.dataset.para === enPara));
   $('#enPara [data-para="nadie"]').hidden = enModo === 'asignar';
+  $('#enPara [data-para="link"]').hidden = enModo === 'asignar';
+  $('#enLink').hidden = enPara !== 'link';
   $('#enPortal').hidden = enPara !== 'portal';
   $('#enAfuera').hidden = enPara !== 'afuera';
   $('#enNadie').hidden  = enPara !== 'nadie';
-  // alguien de afuera tiene una sola: es su nombre en la puerta
-  if (enPara === 'afuera'){ $('#enCuantas').value = 1; }
-  $('#enCuantas').disabled = enPara === 'afuera';
+  // alguien de afuera tiene una sola: es su nombre en la puerta (y por link, una por link)
+  if (enPara === 'afuera' || enPara === 'link'){ $('#enCuantas').value = 1; }
+  $('#enCuantas').disabled = enPara === 'afuera' || enPara === 'link';
   resumir();
 }
 
@@ -1532,6 +1551,30 @@ function resumir(){
     (enPara === 'portal' && n > 1 ? '<br>Una es suya; las otras le quedan para repartir.' : '');
 }
 
+/* la entrada por link: el mensaje listo para el DM o WhatsApp */
+function mensajeEntradaLink(codigo){
+  return 'La sekta te guardó tu entrada para S7 · sábado 14 de noviembre.\n\n' +
+         'Entrá al sékito con este link y es tuya:\n' +
+         'https://www.sekito.ar/i/' + codigo + '\n\n' +
+         'El link sirve una sola vez. Cuando entres, completá tus datos y vas a ver tu entrada en el portal.';
+}
+function mostrarLinkEntrada(codigo, para, vence){
+  const msj = mensajeEntradaLink(codigo);
+  $('#enListo').innerHTML =
+    '<p style="margin-top:0">La entrada quedó guardada para <strong>' + esc(para || '') + '</strong>' +
+    (vence ? ' · el link vence el ' + esc(new Date(vence).toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit' })) : '') + '.</p>' +
+    '<p class="tenue" style="margin:0 0 8px; font-size:12px">el mensaje para mandarle:</p>' +
+    '<pre class="msj-link">' + esc(msj) + '</pre>' +
+    '<div class="pie" style="justify-content:flex-start; margin-top:10px">' +
+      '<button class="btn btn-principal" type="button" data-copiar-link="' + esc(codigo) + '">copiar mensaje</button>' +
+      '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(msj) + '" target="_blank" rel="noopener">mandar por whatsapp</a>' +
+    '</div>';
+  $('#enTitulo').textContent = 'entrada por link';
+  $('#enPaso1').hidden = true;
+  $('#enPaso2').hidden = false;
+  abrir('#modalEntradas');
+}
+
 function abrirEntradas(modo, entrada){
   enModo = modo; enEntrada = entrada || null; enQuien = null; enPrecioTocado = false;
   enPara = 'portal';
@@ -1545,7 +1588,7 @@ function abrirEntradas(modo, entrada){
   $('#enTipo').value = activa ? activa.nombre : 'sekreta';
   $('#enPrecio').value = precioDe($('#enTipo').value);
   $('#enCuantas').value = 1;
-  ['#enBuscar', '#enNombre', '#enApellido', '#enApodo', '#enContacto', '#enNota'].forEach(id => $(id).value = '');
+  ['#enBuscar', '#enNombre', '#enApellido', '#enApodo', '#enContacto', '#enNota', '#enLinkPara'].forEach(id => $(id).value = '');
   $('#enResultados').innerHTML = '';
   $('#enElegido').hidden = true;
   $('#enAviso').textContent = '';
@@ -1607,6 +1650,17 @@ $('#enConfirmar').addEventListener('click', async () => {
   aviso.textContent = '';
   if (enPara === 'portal' && !enQuien){ aviso.textContent = 'elegí a alguien'; return; }
   if (enPara === 'afuera' && !$('#enNombre').value.trim()){ aviso.textContent = 'falta el nombre'; return; }
+  if (enPara === 'link'){
+    if (!$('#enLinkPara').value.trim()){ aviso.textContent = 'falta para quién es'; return; }
+    const b = $('#enConfirmar'); b.disabled = true;
+    const rl = await rpc('admin_entrada_con_link', {
+      p_codigo: CODIGO, p_para: $('#enLinkPara').value, p_tipo: $('#enTipo').value,
+      p_precio: Math.max(0, Number($('#enPrecio').value) || 0), p_nota: $('#enNota').value });
+    if (!rl.ok || !rl.datos || !rl.datos[0]){ aviso.textContent = enCastellano(rl.motivo); b.disabled = false; return; }
+    refrescarS7();
+    mostrarLinkEntrada(rl.datos[0].codigo, $('#enLinkPara').value, rl.datos[0].vence_en);
+    return;
+  }
 
   const afuera = enPara === 'afuera' ? {
     p_externo_nombre: $('#enNombre').value, p_externo_apellido: $('#enApellido').value,
@@ -1662,6 +1716,15 @@ document.addEventListener('click', async e => {
     }).catch(() => {});
     return;
   }
+
+  const vl = e.target.closest('[data-ver-link]');
+  if (vl){
+    const en = ENTRADAS.find(x => x.entrada_id === vl.dataset.verLink);
+    if (en && en.guardada_codigo) mostrarLinkEntrada(en.guardada_codigo, en.guardada_para, en.guardada_vence);
+    return;
+  }
+  const cl = e.target.closest('[data-copiar-link]');
+  if (cl){ copiar(mensajeEntradaLink(cl.dataset.copiarLink), cl, 'copiar mensaje'); return; }
 
   const mp = e.target.closest('[data-msj-puerta]');
   if (mp){ copiar(mensajePuerta(mp.dataset.nombre, mp.dataset.msjPuerta), mp, 'copiar mensaje'); return; }

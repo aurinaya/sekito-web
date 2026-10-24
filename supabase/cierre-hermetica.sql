@@ -1,0 +1,11 @@
+-- ---------------------------------------------------------------------------
+-- LA HERMÉTICA CIERRA EL DOMINGO 25/10 A LAS 23:59 (24/10) — preparado, sin correr
+--
+-- Una sola línea. Al correrla aparece la cuenta regresiva en el cartel S7 del
+-- perfil, en la pantalla de compra, en /s7 y en el panel; a esa hora la base
+-- (cron pasar-tanda) apaga la hermética y prende la abierta ($40.000).
+-- Las compras de la hermética que queden sin comprobante NO se borran: quedan
+-- abiertas a $35.000 hasta que Mau decida (como con la sekreta).
+-- Para cancelar el cierre:  select public.programar_cierre(null);
+-- ---------------------------------------------------------------------------
+select public.programar_cierre(timestamptz '2026-10-25 23:59:00-03');
