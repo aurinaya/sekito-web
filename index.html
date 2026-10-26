@@ -4412,7 +4412,8 @@ reveal();
       est.classList.toggle('pide', pide);
       // apurar solo a quien todavía no tiene lugar
       const urge = box.querySelector('.s7-urge');
-      if (urge) urge.hidden = !(tanda && !mias);
+      // "se está yendo" solo si la tanda tiene hora de cierre: la abierta no se va
+      if (urge) urge.hidden = !(tanda && tanda.cierra_en && !mias);
       // si la tanda tiene hora de cierre, la cuenta regresiva (solo a quien no tiene lugar)
       const reloj = box.querySelector('.s7-reloj');
       if (reloj){
