@@ -17,7 +17,10 @@
   var m = location.pathname.match(/^\/i\/([A-Za-z0-9]{6,32})\/?$/);
   // /c/LLAVE: el link de venta
   var c = location.pathname.match(/^\/c\/([A-Za-z0-9]{6,32})\/?$/);
-  location.replace(m ? '/?i=' + encodeURIComponent(m[1]) : c ? '/?c=' + encodeURIComponent(c[1]) : '/');
+  // /cumplefede: el link de anfitrión (si la palabra no es de nadie, el portal sigue de largo)
+  var a = location.pathname.match(/^\/([A-Za-z0-9]{3,30})\/?$/);
+  location.replace(m ? '/?i=' + encodeURIComponent(m[1]) : c ? '/?c=' + encodeURIComponent(c[1]) :
+                   a ? '/?a=' + encodeURIComponent(a[1].toLowerCase()) : '/');
 })();
 </script>
 </head>

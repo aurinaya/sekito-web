@@ -127,6 +127,13 @@ main{padding:20px; flex:1}
 .numero-rotulo{font-size:10px;letter-spacing:.1em;opacity:.5;margin-top:5px}
 
 .barra-s7{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 26px}
+/* los links de anfitrión (los cumples) */
+.cumple{border:1px solid var(--linea);padding:14px 16px;margin:0 0 12px}
+.cumple-cabeza{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.cumple-link{font-size:15px;color:#fff}
+.cumple-cupo{font-size:22px;margin-top:10px}
+.cumple-cupo small{font-size:12px;opacity:.6;margin-left:6px}
+.cumple table{margin-top:12px}
 .titulo-tabla{
   font-size:11px;letter-spacing:.18em;text-transform:uppercase;
   opacity:.55;margin:32px 0 6px;font-weight:400;
@@ -476,6 +483,12 @@ td.apretado{white-space:normal; min-width:150px}
       <div class="barra-s7">
         <button class="btn btn-principal" id="btnEntradas">+ entradas</button>
         <button class="btn btn-principal" id="btnLinkVenta">+ link de venta</button>
+        <button class="btn btn-principal" id="btnAnfitrion">+ link de anfitrión</button>
+      </div>
+
+      <div class="pliegue" data-pliegue="cumples" id="pliegueCumples" hidden>
+      <h3 class="titulo-tabla"><span class="flecha">▾</span>los cumples <span class="resumen" id="resCumples"></span></h3>
+      <div class="pliegue-cuerpo"><div id="cumples"></div></div>
       </div>
 
       <div class="pliegue" data-pliegue="transferencias">
@@ -664,6 +677,44 @@ td.apretado{white-space:normal; min-width:150px}
   </div>
 </div>
 
+<!-- el link de anfitrión: alguien que cumple trae a su gente (sekito.ar/cumplefede) -->
+<div class="fondo" id="modalAnfitrion">
+  <div class="ventana">
+    <h2>link de anfitrión</h2>
+    <div id="anPaso1">
+      <div class="campo"><label for="anBuscar">anfitrión (alguien del portal: su gente cuelga de su rama)</label>
+        <input id="anBuscar" placeholder="buscá por apodo, nombre, apellido o código" autocomplete="off" spellcheck="false"></div>
+      <div id="anResultados" class="dar-resultados"></div>
+      <div id="anElegido" class="dar-elegido" hidden></div>
+      <div class="campo"><label for="anPalabra">el link · sekito.ar/…</label>
+        <input id="anPalabra" autocomplete="off" spellcheck="false" placeholder="cumplefede"></div>
+      <div class="campo"><label for="anFrase">la frase (la coma la parte en dos)</label>
+        <input id="anFrase" autocomplete="off" placeholder="Fede cumple el 14, el sékito lo celebra en S7"></div>
+      <div class="fila-campos">
+        <div class="campo"><label for="anCupo">cupo con el precio del cumple</label>
+          <input id="anCupo" type="number" min="0" max="500" value="25"></div>
+        <div class="campo"><label for="anHasta">funciona hasta</label>
+          <input id="anHasta" type="datetime-local" value="2026-11-14T20:00"></div>
+      </div>
+      <p class="tenue" style="font-size:12.5px; margin-top:0">
+        Dos precios: <strong>venís al cumple</strong> (el de la hermética, cuenta como hermética) mientras
+        quede cupo, y <strong>bancás la fiesta</strong> (el de la abierta). Quien compra deja nombre y mail y sube
+        el comprobante, sin llave. Si el mail ya es de alguien del portal, se suma a su cuenta. Las compras te
+        aparecen en "las transferencias" como cualquier otra.
+      </p>
+      <p class="aviso" id="anAviso"></p>
+      <div class="pie">
+        <button class="btn" type="button" data-cerrar>cancelar</button>
+        <button class="btn btn-principal" type="button" id="anCrear">crear</button>
+      </div>
+    </div>
+    <div id="anPaso2" hidden>
+      <div id="anListo"></div>
+      <div class="pie"><button class="btn" type="button" data-cerrar>listo</button></div>
+    </div>
+  </div>
+</div>
+
 <!-- la tarjeta de una entrada: para mandarla por WhatsApp -->
 <div class="fondo" id="modalTarjeta">
   <div class="ventana">
@@ -819,6 +870,11 @@ function enCastellano(motivo){
     entrada_invalida:  'esa entrada ya no está',
     falta_nombre:      'falta el nombre',
     puerta_invalida:   'esa llave de puerta ya estaba revocada',
+    palabra_invalida:  'el link: de 3 a 30 letras o números, sin espacios ni acentos',
+    palabra_reservada: 'esa palabra ya la usa el sitio',
+    palabra_usada:     'ese link ya existe',
+    anfitrion_invalido:'el anfitrión tiene que estar registrado en el portal',
+    falta_frase:       'falta la frase',
   };
   for (const k in S7) if (String(motivo || '').indexOf(k) !== -1) return S7[k];
   return motivo || 'algo salió mal';
@@ -1343,7 +1399,9 @@ function pintarCompras(){
     return '<tr' + (c.estado === 'a_revisar' ? ' class="pendiente"' : '') + '>' +
       '<td>' + esc(c.comprador || '') +
         (c.sektario ? '<div class="tenue" style="font-size:11px">' + esc(c.sektario) + '</div>' : '') +
-        (c.por_link ? '<div class="tenue" style="font-size:11px">por link de venta · todavía sin sus datos</div>' : '') + falta + '</td>' +
+        (c.anfitrion ? '<div class="tenue" style="font-size:11px">por sekito.ar/' + esc(c.anfitrion) + (c.por_link ? ' · todavía sin sus datos' : '') + '</div>'
+         : c.por_link ? '<div class="tenue" style="font-size:11px">por link de venta · todavía sin sus datos</div>' : '') +
+        (c.mail_ya_estaba ? '<div class="repetido">⚠ el mail ya estaba en el portal: se sumó a esta cuenta</div>' : '') + falta + '</td>' +
       '<td>' + c.cantidad + '</td>' +
       '<td>' + plata(c.total) + '</td>' +
       '<td class="tenue">' + esc(c.tanda) + '</td>' +
@@ -1359,7 +1417,8 @@ function pintarCompras(){
         (c.estado === 'a_revisar'
           ? '<button data-okcompra="' + c.compra_id + '">confirmar</button>' +
             '<button data-nocompra="' + c.compra_id + '">rechazar</button>' : '') +
-        (c.por_link ? '<button data-link-venta="' + esc(c.por_link) + '" data-para="' + esc(c.comprador || '') + '">ver link</button>' : '') +
+        (c.por_link ? '<button data-link-venta="' + esc(c.por_link) + '" data-para="' + esc(c.comprador || '') + '"' +
+                      (c.anfitrion ? ' data-cumple="1"' : '') + '>ver link</button>' : '') +
       '</div></td>' +
     '</tr>';
   }).join('');
@@ -1458,8 +1517,109 @@ function pintarEntradas(){
 }
 
 function refrescarS7(){
-  cargarResumenS7(); cargarTandas(); cargarCompras(); cargarEntradasS7(); cargarPuertas();
+  cargarResumenS7(); cargarTandas(); cargarCompras(); cargarEntradasS7(); cargarPuertas(); cargarCumples();
 }
+
+/* --- los cumples: cada link de anfitrión, con su cupo y quién compró --- */
+async function cargarCumples(){
+  const r = await rpc('admin_anfitriones', { p_codigo: CODIGO });
+  const lista = (r.ok && r.datos) || [];
+  $('#pliegueCumples').hidden = !lista.length;
+  if (!lista.length) return;
+  const abiertos = lista.filter(a => a.activo && new Date(a.hasta) > new Date()).length;
+  $('#resCumples').textContent = '· ' + abiertos + (abiertos === 1 ? ' abierto' : ' abiertos');
+  const DICE = { a_revisar:'a revisar', confirmada:'confirmada', rechazada:'rechazada', esperando_comprobante:'sin comprobante' };
+  $('#cumples').innerHTML = lista.map(a => {
+    const vencido = new Date(a.hasta) <= new Date();
+    const estado = vencido ? 'cerrado' : a.activo ? 'abierto' : 'pausado';
+    const filas = (a.compras || []).map(c =>
+      '<tr><td>' + esc(c.nombre || '') +
+        (c.sektario ? ' <span class="tenue" style="font-size:11px">' + esc(c.sektario) + (c.nuevo ? '' : ' · ya era de la sekta') + '</span>' : '') +
+        (c.ya_estaba ? '<div class="repetido">⚠ el mail ya estaba en el portal: se sumó a esta cuenta</div>' : '') + '</td>' +
+      '<td>' + c.cantidad + '</td><td>' + plata(c.precio) + '</td>' +
+      '<td class="tenue">' + esc(DICE[c.estado] || c.estado) + '</td></tr>').join('');
+    return '<div class="cumple">' +
+      '<div class="cumple-cabeza">' +
+        '<div><div class="cumple-link">sekito.ar/' + esc(a.palabra) + '</div>' +
+          '<div class="tenue" style="font-size:12px;margin-top:4px">de ' + esc(a.quien || '') + ' · ' + esc(a.sektario || '') +
+          ' · hasta ' + new Date(a.hasta).toLocaleString('es-AR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false }) +
+          ' · <span class="' + (estado === 'abierto' ? 'est-ok' : 'est-espera') + '">' + estado + '</span></div>' +
+          '<div class="tenue" style="font-size:12px;margin-top:4px">“' + esc(a.frase) + '”</div></div>' +
+        '<div class="acciones">' +
+          '<button data-copiar-cumple="' + esc(a.palabra) + '">copiar mensaje</button>' +
+          (vencido ? '' : '<button data-pausar="' + a.id + '" data-activo="' + (a.activo ? 1 : 0) + '">' + (a.activo ? 'pausar' : 'reanudar') + '</button>') +
+        '</div>' +
+      '</div>' +
+      '<div class="cumple-cupo">' + a.usado + '<small>de ' + a.cupo + ' con el precio del cumple · ' + a.bancaron + ' bancaron la fiesta</small></div>' +
+      (filas ? '<div class="tabla-scroll"><table><thead><tr><th>quién</th><th>cuántas</th><th>c/u</th><th>estado</th></tr></thead>' +
+               '<tbody>' + filas + '</tbody></table></div>'
+             : '<p class="tenue" style="margin:10px 0 0">todavía no compró nadie</p>') +
+    '</div>';
+  }).join('');
+}
+
+// el mensaje para el anfitrión: su link, para que lo comparta
+function mensajeCumple(palabra){
+  return 'Tu link para el cumple en S7 · sábado 14 de noviembre:\n' +
+         'https://www.sekito.ar/' + palabra + '\n\n' +
+         'Compartilo con tu gente: ahí sacan su entrada sin llave ni registro, y quedan en tu rama del sékito.';
+}
+
+let anQuien = null, anDebounce = null;
+$('#btnAnfitrion').addEventListener('click', () => {
+  anQuien = null;
+  ['#anBuscar', '#anPalabra', '#anFrase'].forEach(id => { $(id).value = ''; });
+  $('#anCupo').value = 25; $('#anHasta').value = '2026-11-14T20:00';
+  $('#anElegido').hidden = true; $('#anResultados').innerHTML = ''; $('#anAviso').textContent = '';
+  $('#anPaso1').hidden = false; $('#anPaso2').hidden = true; $('#anCrear').disabled = false;
+  abrir('#modalAnfitrion'); $('#anBuscar').focus();
+});
+$('#anBuscar').addEventListener('input', () => {
+  clearTimeout(anDebounce);
+  const q = $('#anBuscar').value.trim();
+  anDebounce = setTimeout(async () => {
+    const caja = $('#anResultados');
+    if (!q){ caja.innerHTML = ''; return; }
+    const r = await rpc('admin_buscar_persona', { p_codigo: CODIGO, p_query: q });
+    const gente = (r.ok && r.datos) || [];
+    caja.innerHTML = gente.length
+      ? gente.map(g => '<div class="dar-op" data-persona="' + g.id + '" data-nombre="' + esc(g.nombre || g.sektario) + '">' +
+          esc(g.nombre || g.sektario) + '<span class="tenue">' + esc(g.sektario || '') + '</span></div>').join('')
+      : '<div class="tenue">nadie con eso</div>';
+  }, 220);
+});
+$('#anResultados').addEventListener('click', e => {
+  const op = e.target.closest('[data-persona]'); if (!op) return;
+  anQuien = op.dataset.persona;
+  $('#anElegido').textContent = op.dataset.nombre; $('#anElegido').hidden = false;
+  $('#anResultados').innerHTML = ''; $('#anBuscar').value = '';
+  // de paso, una propuesta de link y de frase con su nombre
+  const nombre = op.dataset.nombre.split(' ')[0];
+  const llano = nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!$('#anPalabra').value) $('#anPalabra').value = 'cumple' + llano;
+  if (!$('#anFrase').value) $('#anFrase').value = nombre + ' cumple el 14, el sékito lo celebra en S7';
+});
+$('#anCrear').addEventListener('click', async () => {
+  const aviso = $('#anAviso'); aviso.textContent = '';
+  if (!anQuien){ aviso.textContent = 'elegí al anfitrión'; return; }
+  const hasta = new Date($('#anHasta').value);
+  if (isNaN(hasta)){ aviso.textContent = 'falta hasta cuándo'; return; }
+  $('#anCrear').disabled = true;
+  const r = await rpc('admin_crear_anfitrion', {
+    p_codigo: CODIGO, p_palabra: $('#anPalabra').value, p_anfitrion: anQuien, p_frase: $('#anFrase').value,
+    p_cupo: Math.max(0, Number($('#anCupo').value) || 0), p_hasta: hasta.toISOString() });
+  if (!r.ok || !r.datos || !r.datos[0]){ aviso.textContent = enCastellano(r.motivo); $('#anCrear').disabled = false; return; }
+  const palabra = r.datos[0].palabra, msj = mensajeCumple(palabra);
+  $('#anListo').innerHTML =
+    '<p style="margin-top:0">Listo: <strong>sekito.ar/' + esc(palabra) + '</strong>. El mensaje para mandarle:</p>' +
+    '<pre class="msj-link">' + esc(msj) + '</pre>' +
+    '<div class="pie" style="justify-content:flex-start; margin-top:10px">' +
+      '<button class="btn btn-principal" type="button" data-copiar-cumple="' + esc(palabra) + '">copiar mensaje</button>' +
+      '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(msj) + '" target="_blank" rel="noopener">mandar por whatsapp</a>' +
+    '</div>';
+  $('#anPaso1').hidden = true; $('#anPaso2').hidden = false;
+  cargarCumples();
+});
 
 /* --- la puerta: llaves para quienes acreditan, y la lista de papel --- */
 async function cargarPuertas(){
@@ -1580,18 +1740,21 @@ function resumir(){
 }
 
 /* el link de venta: el mensaje para el DM, con el link personal */
-function mensajeLinkVenta(llave){
+function mensajeLinkVenta(llave, cumple){
+  if (cumple) return 'Tu link de S7 · sábado 14 de noviembre:\n' +
+         'https://www.sekito.ar/c/' + llave + '\n\n' +
+         'Con este link completás tus datos y ves tu entrada. Es solo tuyo.';
   return 'Tu link para sacar tu entrada para S7 · sábado 14 de noviembre:\n' +
          'https://www.sekito.ar/c/' + llave + '\n\n' +
          'Ahí elegís cuántas, transferís y subís el comprobante. Es solo tuyo: con el mismo link después vas a ver tu entrada.';
 }
-function mostrarLinkVenta(llave, para){
-  const msj = mensajeLinkVenta(llave);
+function mostrarLinkVenta(llave, para, cumple){
+  const msj = mensajeLinkVenta(llave, cumple);
   $('#lvListo').innerHTML =
-    '<p style="margin-top:0">El link de venta de <strong>' + esc(para || '') + '</strong>:</p>' +
+    '<p style="margin-top:0">El link ' + (cumple ? '' : 'de venta ') + 'de <strong>' + esc(para || '') + '</strong>:</p>' +
     '<pre class="msj-link">' + esc(msj) + '</pre>' +
     '<div class="pie" style="justify-content:flex-start; margin-top:10px">' +
-      '<button class="btn btn-principal" type="button" data-copiar-venta="' + esc(llave) + '">copiar mensaje</button>' +
+      '<button class="btn btn-principal" type="button" data-copiar-venta="' + esc(llave) + '"' + (cumple ? ' data-cumple="1"' : '') + '>copiar mensaje</button>' +
       '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(msj) + '" target="_blank" rel="noopener">mandar por whatsapp</a>' +
     '</div>';
   $('#lvPaso1').hidden = true; $('#lvPaso2').hidden = false;
@@ -1785,9 +1948,21 @@ document.addEventListener('click', async e => {
     return;
   }
   const lv = e.target.closest('[data-link-venta]');
-  if (lv){ mostrarLinkVenta(lv.dataset.linkVenta, lv.dataset.para); return; }
+  if (lv){ mostrarLinkVenta(lv.dataset.linkVenta, lv.dataset.para, !!lv.dataset.cumple); return; }
   const cv = e.target.closest('[data-copiar-venta]');
-  if (cv){ copiar(mensajeLinkVenta(cv.dataset.copiarVenta), cv, 'copiar mensaje'); return; }
+  if (cv){ copiar(mensajeLinkVenta(cv.dataset.copiarVenta, !!cv.dataset.cumple), cv, 'copiar mensaje'); return; }
+
+  const ca = e.target.closest('[data-copiar-cumple]');
+  if (ca){ copiar(mensajeCumple(ca.dataset.copiarCumple), ca, 'copiar mensaje'); return; }
+  const pa = e.target.closest('[data-pausar]');
+  if (pa){
+    const activo = pa.dataset.activo === '1';
+    if (activo && !confirm('¿Pausar este link? Quien lo abra va a ver que cerró, hasta que lo reanudes.')) return;
+    const r = await rpc('admin_pausar_anfitrion', { p_codigo: CODIGO, p_id: Number(pa.dataset.pausar), p_activo: !activo });
+    if (!r.ok){ alert(enCastellano(r.motivo)); return; }
+    cargarCumples();
+    return;
+  }
   const cl = e.target.closest('[data-copiar-link]');
   if (cl){ copiar(mensajeEntradaLink(cl.dataset.copiarLink), cl, 'copiar mensaje'); return; }
 

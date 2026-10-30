@@ -1029,6 +1029,29 @@
   /* el mail del link de venta, arriba del botón del comprobante */
   .pv-mail{ text-align:left; margin:18px 0 6px; }
   .pv-mail-dicho{ font-size:10px; letter-spacing:.06em; color:rgba(var(--gray-rgb),.8); min-height:1.3em; margin-top:6px; }
+  /* ---------- el link de anfitrión (sekito.ar/cumplefede) ----------
+     la misma compra, sin llave: la frase del cumple arriba y los dos precios */
+  #cumple-screen{ text-align:center; padding-top:34px; }
+  .cu-cabeza{ margin-bottom:34px; }
+  .cu-frase{ font-size:15px; line-height:1.6; letter-spacing:.06em; color:rgba(var(--white-rgb),.85);
+             margin-top:30px; text-shadow:0 0 12px rgba(255,255,255,.3); }
+  .cu-frase b{ display:block; font-weight:500; color:var(--white); }
+  .cu-hola{ font-size:11px; letter-spacing:.08em; color:var(--white); margin-top:14px; }
+  .cu-op{ display:flex; justify-content:space-between; align-items:center; gap:12px; width:100%;
+          padding:14px 16px; margin-top:8px; text-align:left; cursor:pointer;
+          background:none; border:1px solid rgba(var(--gray-rgb),.3); color:var(--white); font-family:inherit; }
+  .cu-op.si{ border-color:rgba(var(--bordo-rgb),.9); background:rgba(var(--bordo-rgb),.14);
+             box-shadow:0 0 14px rgba(var(--bordo-rgb),.35); }
+  .cu-op:disabled{ opacity:.35; cursor:default; }
+  .cu-op:disabled .cu-op-precio{ text-decoration:line-through; }
+  .cu-op-que{ font-size:12px; letter-spacing:.06em; }
+  .cu-op-que small{ display:block; font-size:9px; letter-spacing:.16em; text-transform:uppercase;
+                    color:rgba(var(--gray-rgb),.8); margin-top:5px; }
+  .cu-op-precio{ font-size:20px; letter-spacing:.03em; white-space:nowrap; }
+  #cumple-screen .pv-aviso:not(.se-ve){ margin-top:0; padding-top:0; padding-bottom:0; }
+  .cu-datos{ text-align:left; margin-top:28px; }
+  .cu-dicho{ font-size:10.5px; letter-spacing:.04em; color:var(--bordo-claro); min-height:1.4em; margin-top:10px; }
+
   /* invitar con la entrada: la caja que aparece cuando la búsqueda no encuentra a nadie */
   .pv-invitar{
     border:1px solid rgba(var(--bordo-rgb),.7); background:rgba(var(--bordo-rgb),.12);
@@ -2267,7 +2290,7 @@
         <div class="bv-resultados" id="bvResultados"></div>
       </div>
 
-      <div class="bv-campo">
+      <div class="bv-campo" id="bvCampoComo">
         <label for="bvComo">¿cómo llegaste? <span class="bv-opcional">(opcional)</span></label>
         <textarea id="bvComo" rows="2" autocapitalize="sentences"></textarea>
       </div>
@@ -2478,6 +2501,18 @@
     <div class="ritos-titulo">seki 7</div>
 
     <div id="preventaCuerpo"><div class="ritos-cargando">buscando...</div></div>
+  </section>
+
+  <!-- ===================== EL LINK DE ANFITRIÓN (sekito.ar/cumplefede) ===================== -->
+  <section id="cumple-screen" class="screen">
+    <div class="cu-cabeza">
+      <div class="s7-nombre">S7</div>
+      <div class="s7-fecha">SÁBADO 14 DE NOVIEMBRE</div>
+      <div class="s7-lugar">PALERMO, BUENOS AIRES</div>
+      <div class="cu-frase" id="cuFrase"></div>
+      <div class="cu-hola" id="cuHola" hidden></div>
+    </div>
+    <div id="cuCuerpo"></div>
   </section>
 
   <!-- ===================== LA FICHA DE ALGUIEN ===================== -->
@@ -2972,10 +3007,14 @@ reveal();
     // compró por link: sus entradas ya están, y el mail ya lo dejó al comprar
     if (ventaActual){
       const n = ventaActual.entradas || 0;
-      refe.textContent = (n > 1 ? 'Tus ' + n + ' entradas para S7 ya están.' : 'Tu entrada para S7 ya está.') +
+      refe.textContent = (ventaActual.cumple ? 'Llegaste por el cumple de ' + ventaActual.cumple + '. ' : '') +
+                         (n > 1 ? 'Tus ' + n + ' entradas para S7 ya están.' : 'Tu entrada para S7 ya está.') +
                          ' Completá tus datos y ' + (n > 1 ? 'son tuyas.' : 'es tuya.');
       if (ventaActual.email) campos.email.value = ventaActual.email;
+      if (ventaActual.nombre) campos.nombre.value = ventaActual.nombre;
     }
+    // por un cumple, cómo llegó ya se sabe
+    document.getElementById('bvCampoComo').hidden = !!(ventaActual && ventaActual.cumple);
     if (porInvitacion){
       refe.textContent = invitacionActual.referente + ' es tu guía hacia el sékito.' +
         // la entrada que viene con la invitación: pasa a su nombre al terminar
@@ -4808,6 +4847,8 @@ reveal();
     });
   }
 
+  window.__achicar = achicar;   // lo usa también la compra del cumple
+
   async function subirComprobante(archivo){
     const dicho = document.getElementById('pvDicho');
     const btn   = document.getElementById('pvSubir');
@@ -5518,7 +5559,7 @@ reveal();
    llega con uno, viene a hacer otra cosa. */
 (async function llaveRecordada(){
   const params = new URLSearchParams(location.search);
-  if (params.get('i') || params.get('baja') || params.get('c')) return;
+  if (params.get('i') || params.get('baja') || params.get('c') || params.get('a')) return;
 
   const guardada = llaveGuardada();
   if (!guardada) return;
@@ -5573,6 +5614,186 @@ reveal();
   codigoActual = llave;
   guardarLlave(llave);
   grant(miembro);
+})();
+
+/* ---------- el link de anfitrión (sekito.ar/cumplefede) ----------
+   404.html convierte /cumplefede en /?a=cumplefede. Quien lo abre compra sin
+   llave: elige el precio del cumple o "bancás la fiesta", deja nombre y mail y
+   sube el comprobante, todo junto. Si el navegador ya tiene su llave, compra
+   con ella. Si el mail ya es de alguien del portal, la base lo suma a esa
+   cuenta sin decir nada. El link personal le llega por mail al confirmarse:
+   nunca se muestra acá, para no darle a nadie la llave de otra persona. */
+(async function porLinkDeAnfitrion(){
+  const palabra = (new URLSearchParams(location.search).get('a') || '').trim().toLowerCase();
+  if (!palabra) return;
+  history.replaceState(null, '', '/' + palabra);
+
+  const r = await llamarRPC('anfitrion_publico', { p_palabra: palabra });
+  const a = r.ok && r.datos && r.datos[0];
+  if (!a){ history.replaceState(null, '', '/'); return; }   // no es un cumple: el portón de siempre
+
+  const ALIAS = 'seki.7', ATITULAR = 'Florencia Di Rocco';
+  const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const plata = n => '$' + Number(n).toLocaleString('es-AR');
+  const pantalla = document.getElementById('cumple-screen');
+  const cuerpo   = document.getElementById('cuCuerpo');
+
+  // la frase, partida en la coma: la segunda mitad encendida
+  const i = a.frase.indexOf(',');
+  document.getElementById('cuFrase').innerHTML = i > 0
+    ? esc(a.frase.slice(0, i + 1)) + '<b>' + esc(a.frase.slice(i + 1).trim()) + '</b>'
+    : '<b>' + esc(a.frase) + '</b>';
+
+  // ¿el navegador ya tiene su llave?
+  let llave = null;
+  const guardada = llaveGuardada();
+  if (guardada){
+    const { ok, miembro } = await consultarCodigo(guardada);
+    if (ok && miembro){
+      llave = guardada;
+      const hola = document.getElementById('cuHola');
+      const dice = (miembro.apodo || miembro.nombre_real || '').trim();
+      hola.textContent = (dice ? dice + ', ' : '') + 'venís de parte de ' + a.quien;
+      hola.hidden = false;
+    }
+  }
+
+  let banca   = a.quedan < 1;
+  let cuantas = 1;
+  let listo   = null;    // el mail al que le escribimos, o '' si compró con su llave
+  const tope = () => banca ? 7 : Math.min(7, a.quedan);
+
+  function pintar(){
+    if (listo !== null){
+      cuerpo.innerHTML = '<div class="pv-bloque" style="text-align:left">' +
+        '<div class="pv-rotulo">listo</div>' +
+        '<div class="pv-llego">tu comprobante llegó</div>' +
+        (llave
+          ? '<div class="pv-nota">La sekta lo está mirando. Cuando esté confirmado, tu entrada aparece en tu perfil.</div>' +
+            '<a class="pv-btn" href="/" style="display:block;text-align:center;text-decoration:none;margin-top:26px">ir a mi perfil</a>'
+          : '<div class="pv-nota">La sekta lo está mirando. Cuando esté confirmado te escribimos a ' + esc(listo) +
+            ' con tu link: con él vas a ver tus entradas.<br><br>Si no te llega, fijate en spam.</div>') +
+      '</div>';
+      return;
+    }
+    if (!a.abierto){
+      cuerpo.innerHTML = '<div class="pv-bloque"><div class="pv-nota">Este link ya cerró.<br>Las entradas siguen en el portal.</div>' +
+        '<a class="pv-btn" href="/s7" style="display:block;text-decoration:none;margin-top:22px">ver S7</a></div>';
+      return;
+    }
+    if (cuantas > tope()) cuantas = tope();
+    const precio = banca ? a.precio_bancar : a.precio_cumple;
+    const sinCupo = a.quedan < 1;
+    cuerpo.innerHTML = '<div class="pv-bloque">' +
+      '<div class="pv-rotulo" style="text-align:left">tu lugar</div>' +
+      '<button type="button" class="cu-op' + (!banca ? ' si' : '') + '" data-banca="0"' + (sinCupo ? ' disabled' : '') + '>' +
+        '<span class="cu-op-que">venís al cumple<small>' + (sinCupo ? 'ya no quedan con este precio' : 'precio del cumple') + '</small></span>' +
+        '<span class="cu-op-precio">' + plata(a.precio_cumple) + '</span></button>' +
+      '<button type="button" class="cu-op' + (banca ? ' si' : '') + '" data-banca="1">' +
+        (sinCupo ? '<span class="cu-op-que">tu entrada<small>tanda abierta</small></span>'
+                 : '<span class="cu-op-que">bancás la fiesta<small>si podés, sumás</small></span>') +
+        '<span class="cu-op-precio">' + plata(a.precio_bancar) + '</span></button>' +
+      '<div class="pv-cantidad">' +
+        '<button type="button" id="cuMenos"' + (cuantas <= 1 ? ' disabled' : '') + '>−</button>' +
+        '<div class="pv-cuantas">' + cuantas + '</div>' +
+        '<button type="button" id="cuMas"' + (cuantas >= tope() ? ' disabled' : '') + '>+</button>' +
+      '</div>' +
+      '<div class="pv-total">' + cuantas + ' × ' + plata(precio) + ' = ' + plata(precio * cuantas) + '</div>' +
+      '<div class="pv-aviso' + (cuantas > 1 ? ' se-ve' : '') + '">' +
+        'Cada entrada se asigna a <strong>una persona</strong>, y esa persona tiene que estar en el portal.<br>' +
+        'Podés asignarlas después. Las que no asignes, quedan esperando.' +
+      '</div>' +
+      (llave ? '' :
+        '<div class="cu-datos">' +
+          '<div class="bv-campo"><label for="cuNombre">tu nombre</label>' +
+            '<input id="cuNombre" type="text" maxlength="60" autocomplete="given-name" autocapitalize="words" value="' + esc(datos.nombre) + '"></div>' +
+          '<div class="bv-campo"><label for="cuMail">tu mail · ahí te avisamos</label>' +
+            '<input id="cuMail" type="email" maxlength="120" autocomplete="email" autocapitalize="off" spellcheck="false" value="' + esc(datos.mail) + '"></div>' +
+        '</div>') +
+      '<div class="pv-rotulo" style="text-align:left;margin-top:26px">transferí</div>' +
+      '<div class="pv-alias" id="cuAlias" role="button" tabindex="0">' +
+        '<div class="pv-alias-dato">' + ALIAS + '</div>' +
+        '<div class="pv-alias-nombre">a nombre de ' + ATITULAR + '</div>' +
+        '<div class="pv-alias-copiar" id="cuCopiado">copiar alias</div>' +
+      '</div>' +
+      '<button class="pv-btn" id="cuSubir">ya transferí, subo el comprobante</button>' +
+      '<input type="file" id="cuArchivo" accept="image/*" hidden>' +
+      '<div class="cu-dicho" id="cuDicho"></div>' +
+    '</div>';
+  }
+
+  const datos = { nombre: '', mail: '' };
+  const decir = t => { const d = document.getElementById('cuDicho'); if (d) d.textContent = t; };
+  const MAL = {
+    sin_cupo:           'ya no quedan con el precio del cumple',
+    cerrado:            'este link ya cerró',
+    falta_nombre:       'poné tu nombre',
+    mail_invalido:      'ese mail no parece un mail',
+    ya_hay_compras:     'ya tenés compras esperando: escribinos por instagram',
+    muchos_pedidos:     'hoy hay muchos pedidos: escribinos por instagram',
+    comprobante_pesado: 'esa imagen es muy pesada',
+  };
+
+  cuerpo.addEventListener('input', e => {
+    if (e.target.id === 'cuNombre') datos.nombre = e.target.value;
+    if (e.target.id === 'cuMail')   datos.mail   = e.target.value;
+  });
+
+  cuerpo.addEventListener('click', e => {
+    const t = e.target;
+    const op = t.closest('.cu-op');
+    if (op && !op.disabled){ banca = op.dataset.banca === '1'; pintar(); return; }
+    if (t.id === 'cuMas'  ){ cuantas++; pintar(); return; }
+    if (t.id === 'cuMenos'){ cuantas--; pintar(); return; }
+    if (t.closest('#cuAlias')){
+      navigator.clipboard.writeText(ALIAS).then(() => {
+        const d = document.getElementById('cuCopiado');
+        d.textContent = 'alias copiado';
+        setTimeout(() => { if (d) d.textContent = 'copiar alias'; }, 2400);
+      }).catch(() => {});
+      return;
+    }
+    if (t.id === 'cuSubir'){
+      if (!llave){
+        if (!datos.nombre.trim()){ decir(MAL.falta_nombre); document.getElementById('cuNombre').focus(); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.mail.trim())){ decir(MAL.mail_invalido); document.getElementById('cuMail').focus(); return; }
+      }
+      document.getElementById('cuArchivo').click();
+    }
+  });
+
+  cuerpo.addEventListener('change', async e => {
+    if (e.target.id !== 'cuArchivo' || !e.target.files || !e.target.files[0]) return;
+    const btn = document.getElementById('cuSubir');
+    btn.disabled = true; decir('subiendo...');
+    let base64;
+    try { base64 = await window.__achicar(e.target.files[0]); }
+    catch (err){ decir('esa imagen no se pudo leer'); btn.disabled = false; return; }
+
+    const r = await llamarRPC('anfitrion_comprar', {
+      p_palabra: palabra, p_codigo: llave, p_nombre: datos.nombre, p_email: datos.mail,
+      p_cantidad: cuantas, p_banca: banca, p_base64: base64, p_tipo: 'image/jpeg',
+    });
+    if (r.ok){ listo = llave ? '' : datos.mail.trim().toLowerCase(); pintar(); scrollToTop(); return; }
+
+    const k = Object.keys(MAL).find(k => ((r.motivo || '') + '').indexOf(k) !== -1);
+    // se llenó el cupo mientras elegía: se vuelve a preguntar cuántas quedan
+    if (k === 'sin_cupo' || k === 'cerrado'){
+      const n = await llamarRPC('anfitrion_publico', { p_palabra: palabra });
+      const nuevo = n.ok && n.datos && n.datos[0];
+      if (nuevo) Object.assign(a, nuevo);
+      banca = banca || a.quedan < 1;
+      pintar();
+    }
+    decir(k ? MAL[k] : 'no se pudo subir, probá de nuevo');
+    const b = document.getElementById('cuSubir'); if (b) b.disabled = false;
+  });
+
+  gateScreen.classList.remove('active');
+  pantalla.classList.add('active');
+  scrollToTop();
+  pintar();
 })();
 
 /* ---------- llegada por link de invitación (sekito.ar/i/CODIGO) ----------
