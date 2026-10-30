@@ -1026,6 +1026,9 @@
     margin-top:14px;
   }
   .pv-llego{ font-size:20px; letter-spacing:.04em; color:var(--white); }
+  /* el mail del link de venta, arriba del botón del comprobante */
+  .pv-mail{ text-align:left; margin:18px 0 6px; }
+  .pv-mail-dicho{ font-size:10px; letter-spacing:.06em; color:rgba(var(--gray-rgb),.8); min-height:1.3em; margin-top:6px; }
   /* invitar con la entrada: la caja que aparece cuando la búsqueda no encuentra a nadie */
   .pv-invitar{
     border:1px solid rgba(var(--bordo-rgb),.7); background:rgba(var(--bordo-rgb),.12);
@@ -2745,12 +2748,28 @@ function grant(miembro){
 
   // la primera vez, antes de todo, el formulario de bienvenida
   if (!miembro.registro_completo){
-    if (window.__prepararBienvenida) window.__prepararBienvenida();
-    document.getElementById('bienvenida').classList.add('active');
+    sinRegistro(miembro);
     return;
   }
 
   entrarAlSitio(miembro);
+}
+
+/* una llave que todavía no completó sus datos. Si es de un link de venta
+   (sekito.ar/c/LLAVE) y todavía no tiene entradas, primero compra; si ya las
+   tiene, completa sus datos con el mail puesto y entra a verlas. Cualquier otra
+   llave, la bienvenida de siempre. */
+let ventaActual = null;   // {email, entradas, para} si la llave es de un link de venta
+async function sinRegistro(miembro){
+  ventaActual = null;
+  const r = await llamarRPC('venta_estado', { p_codigo: codigoActual });
+  const v = r.ok && r.datos && r.datos[0];
+  if (v && v.para){
+    ventaActual = v;
+    if (!v.entradas && window.__abrirVenta){ window.__abrirVenta(miembro, v); return; }
+  }
+  if (window.__prepararBienvenida) await window.__prepararBienvenida();
+  document.getElementById('bienvenida').classList.add('active');
 }
 
 /* la historia va arriba para todos, y el perfil debajo. La primera vez en este
@@ -2946,10 +2965,17 @@ reveal();
     // quien llega por un link ya tiene referente: la invitación dice quién lo
     // trajo, y no es algo que pueda elegir. A los fundadores no los trajo nadie.
     const porInvitacion = !!invitacionActual;
-    campoTrajo.hidden = porInvitacion || !!(miembroActual && miembroActual.es_fundador);
+    campoTrajo.hidden = porInvitacion || !!ventaActual || !!(miembroActual && miembroActual.es_fundador);
 
     const refe = document.getElementById('bvReferente');
-    refe.hidden = !porInvitacion;
+    refe.hidden = !porInvitacion && !ventaActual;
+    // compró por link: sus entradas ya están, y el mail ya lo dejó al comprar
+    if (ventaActual){
+      const n = ventaActual.entradas || 0;
+      refe.textContent = (n > 1 ? 'Tus ' + n + ' entradas para S7 ya están.' : 'Tu entrada para S7 ya está.') +
+                         ' Completá tus datos y ' + (n > 1 ? 'son tuyas.' : 'es tuya.');
+      if (ventaActual.email) campos.email.value = ventaActual.email;
+    }
     if (porInvitacion){
       refe.textContent = invitacionActual.referente + ' es tu guía hacia el sékito.' +
         // la entrada que viene con la invitación: pasa a su nombre al terminar
@@ -3049,6 +3075,8 @@ reveal();
       return;
     }
 
+    // compró por link: entra derecho a ver su entrada
+    if (ventaActual){ ventaActual = null; entrarAlSitio(miembro); if (window.__verMisEntradas) window.__verMisEntradas(); return; }
     entrarAlSitio(miembro);
   });
 })();
@@ -4401,6 +4429,8 @@ reveal();
   let cuantas   = 1;
   let otraMas   = false; // con un comprobante en revisión, pidió comprar otra
   let asignando = null; // la entrada que estoy repartiendo
+  let enVenta   = false; // llegó por un link de venta y todavía no completó sus datos
+  let mailVenta = '';    // el mail que dejó (guardado en la base)
 
   const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -4511,6 +4541,12 @@ reveal();
           '<div class="pv-alias-nombre">a nombre de ' + ATITULAR + '</div>' +
           '<div class="pv-alias-copiar" id="pvCopiado">' + ICONO_COPIAR + 'copiar alias</div>' +
         '</div>' +
+        // por link de venta: primero el mail, para poder avisarle
+        (enVenta
+          ? '<div class="bv-campo pv-mail"><label for="pvMail">tu mail · ahí te avisamos</label>' +
+            '<input id="pvMail" type="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="' + esc(mailVenta) + '">' +
+            '<div class="pv-mail-dicho" id="pvMailDicho">' + (mailVenta ? 'guardado' : '') + '</div></div>'
+          : '') +
         '<button class="pv-btn" id="pvSubir">ya transferí, subo el comprobante</button>' +
         '<input type="file" id="pvArchivo" accept="image/*" hidden>' +
         '<div class="pv-dicho" id="pvDicho"></div>' +
@@ -4525,8 +4561,11 @@ reveal();
       return '<div class="pv-bloque">' +
         '<div class="pv-rotulo">listo</div>' +
         '<div class="pv-llego">tu comprobante llegó</div>' +
-        '<div class="pv-nota">La sekta lo está mirando. Cuando esté confirmado,<br>te escribimos y tu entrada aparece acá.</div>' +
-        '<button type="button" class="pv-mini pv-otra" id="pvOtra">comprar otra</button>' +
+        (enVenta
+          ? '<div class="pv-nota">La sekta lo está mirando. Cuando esté confirmado te escribimos' +
+            (mailVenta ? ' a ' + esc(mailVenta) : '') + '.<br><br>Guardá este link: con él vas a ver tus entradas.</div>'
+          : '<div class="pv-nota">La sekta lo está mirando. Cuando esté confirmado,<br>te escribimos y tu entrada aparece acá.</div>' +
+            '<button type="button" class="pv-mini pv-otra" id="pvOtra">comprar otra</button>') +
       '</div>';
     }
 
@@ -4894,7 +4933,16 @@ reveal();
     if (t.id === 'pvReservar'){ reservar(); return; }
     if (t.id === 'pvOtra'){ otraMas = true; pintar(); return; }
     if (t.closest('#pvAlias')){ copiarAlias(); return; }
-    if (t.id === 'pvSubir'){ document.getElementById('pvArchivo').click(); return; }
+    if (t.id === 'pvSubir'){
+      // por link de venta, sin mail no hay cómo avisarle
+      if (enVenta && !mailVenta){
+        const d = document.getElementById('pvMailDicho');
+        if (d) d.textContent = 'poné tu mail primero';
+        const i = document.getElementById('pvMail'); if (i) i.focus();
+        return;
+      }
+      document.getElementById('pvArchivo').click(); return;
+    }
     if (t.id === 'pvGuardar'){ guardarTarjeta(); return; }
 
     const asignar = t.closest('[data-asignar]');
@@ -5012,6 +5060,21 @@ reveal();
     }
   });
 
+  // el mail del link de venta se guarda apenas se escribe (al salir del campo)
+  cuerpo.addEventListener('change', async e => {
+    if (e.target.id !== 'pvMail') return;
+    const d = document.getElementById('pvMailDicho');
+    const mail = e.target.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)){ mailVenta = ''; d.textContent = 'revisá el mail'; return; }
+    d.textContent = 'guardando...';
+    const r = await llamarRPC('guardar_mail_venta', { p_codigo: codigoActual, p_email: mail });
+    if (r.ok){ mailVenta = mail.toLowerCase(); d.textContent = 'guardado'; return; }
+    mailVenta = '';
+    d.textContent = ((r.motivo || '') + '').indexOf('mail_ya_esta') !== -1
+      ? 'ese mail ya tiene un lugar en el sékito.. escribinos por instagram'
+      : 'no se pudo guardar, probá de nuevo';
+  });
+
   cuerpo.addEventListener('change', e => {
     if (e.target.id === 'pvArchivo' && e.target.files && e.target.files[0]){
       subirComprobante(e.target.files[0]);
@@ -5029,6 +5092,23 @@ reveal();
     scrollToTop();
     pintar();
   }
+
+  window.__abrirVenta = async function(miembro, v){
+    miembroActual = miembro;
+    enVenta = true; mailVenta = (v && v.email) || '';
+    volverA = null;
+    salir.hidden = true;                 // no hay perfil al que volver
+    await window.__refrescarPreventa();
+    document.getElementById('bienvenida').classList.remove('active');
+    pantalla.classList.add('active');
+    scrollToTop();
+    pintar();
+  };
+  // después de completar los datos: derecho a sus entradas
+  window.__verMisEntradas = function(){
+    enVenta = false; salir.hidden = false;
+    setTimeout(() => { const b = document.querySelector('.member-screen.active .s7-cartel'); if (b) b.click(); }, 400);
+  };
 
   document.querySelectorAll('.pv-abrir').forEach(el => {
     el.addEventListener('click', () => abrir(el));
@@ -5438,7 +5518,7 @@ reveal();
    llega con uno, viene a hacer otra cosa. */
 (async function llaveRecordada(){
   const params = new URLSearchParams(location.search);
-  if (params.get('i') || params.get('baja')) return;
+  if (params.get('i') || params.get('baja') || params.get('c')) return;
 
   const guardada = llaveGuardada();
   if (!guardada) return;
@@ -5473,6 +5553,26 @@ reveal();
     'listo, el portal no te escribe más.<br>' +
     'si cambiás de idea, entrá con tu código y volvé a activarlos.';
   gateAviso.classList.add('show');
+})();
+
+/* ---------- llegada por link de venta (sekito.ar/c/LLAVE) ----------
+   404.html convierte /c/LLAVE en /?c=LLAVE. La llave queda guardada, como
+   cuando se tipea en el portón: es el mismo link para comprar, para ver si ya
+   la confirmaron, para completar los datos y para entrar. */
+(async function porLinkDeVenta(){
+  const llave = (new URLSearchParams(location.search).get('c') || '').trim().toUpperCase();
+  if (!llave) return;
+  history.replaceState(null, '', location.pathname);
+  const { ok, miembro } = await consultarCodigo(llave);
+  if (!ok){ sinConexion(); return; }
+  if (!miembro){
+    gateAviso.textContent = 'este link no sirve.. escribinos por instagram';
+    gateAviso.classList.add('show');
+    return;
+  }
+  codigoActual = llave;
+  guardarLlave(llave);
+  grant(miembro);
 })();
 
 /* ---------- llegada por link de invitación (sekito.ar/i/CODIGO) ----------

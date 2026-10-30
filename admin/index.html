@@ -475,6 +475,7 @@ td.apretado{white-space:normal; min-width:150px}
 
       <div class="barra-s7">
         <button class="btn btn-principal" id="btnEntradas">+ entradas</button>
+        <button class="btn btn-principal" id="btnLinkVenta">+ link de venta</button>
       </div>
 
       <div class="pliegue" data-pliegue="transferencias">
@@ -634,6 +635,31 @@ td.apretado{white-space:normal; min-width:150px}
       <div class="pie">
         <button class="btn" type="button" data-cerrar>listo</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- el link de venta: para quien compra por instagram sin pasar por la llave -->
+<div class="fondo" id="modalVenta">
+  <div class="ventana">
+    <h2>link de venta</h2>
+    <div id="lvPaso1">
+      <div class="campo"><label for="lvPara">para quién (nombre o instagram, para reconocerla)</label>
+        <input id="lvPara" autocomplete="off" placeholder="Lucía · @lucia.g"></div>
+      <p class="tenue" style="font-size:12.5px; margin-top:0">
+        Con el link elige cuántas (hasta 7), ve el alias, deja su mail y sube el comprobante, sin llave ni
+        registro. La compra te aparece en "las transferencias" como cualquier otra. Cuando la confirmás le
+        llega el mail con su link: completa sus datos y ve su entrada.
+      </p>
+      <p class="aviso" id="lvAviso"></p>
+      <div class="pie">
+        <button class="btn" type="button" data-cerrar>cancelar</button>
+        <button class="btn btn-principal" type="button" id="lvGenerar">generar</button>
+      </div>
+    </div>
+    <div id="lvPaso2" hidden>
+      <div id="lvListo"></div>
+      <div class="pie"><button class="btn" type="button" data-cerrar>listo</button></div>
     </div>
   </div>
 </div>
@@ -1316,7 +1342,8 @@ function pintarCompras(){
       ? '<div class="tenue" style="font-size:11px">' + c.sin_asignar + ' sin asignar</div>' : '';
     return '<tr' + (c.estado === 'a_revisar' ? ' class="pendiente"' : '') + '>' +
       '<td>' + esc(c.comprador || '') +
-        (c.sektario ? '<div class="tenue" style="font-size:11px">' + esc(c.sektario) + '</div>' : '') + falta + '</td>' +
+        (c.sektario ? '<div class="tenue" style="font-size:11px">' + esc(c.sektario) + '</div>' : '') +
+        (c.por_link ? '<div class="tenue" style="font-size:11px">por link de venta · todavía sin sus datos</div>' : '') + falta + '</td>' +
       '<td>' + c.cantidad + '</td>' +
       '<td>' + plata(c.total) + '</td>' +
       '<td class="tenue">' + esc(c.tanda) + '</td>' +
@@ -1332,6 +1359,7 @@ function pintarCompras(){
         (c.estado === 'a_revisar'
           ? '<button data-okcompra="' + c.compra_id + '">confirmar</button>' +
             '<button data-nocompra="' + c.compra_id + '">rechazar</button>' : '') +
+        (c.por_link ? '<button data-link-venta="' + esc(c.por_link) + '" data-para="' + esc(c.comprador || '') + '">ver link</button>' : '') +
       '</div></td>' +
     '</tr>';
   }).join('');
@@ -1551,6 +1579,39 @@ function resumir(){
     (enPara === 'portal' && n > 1 ? '<br>Una es suya; las otras le quedan para repartir.' : '');
 }
 
+/* el link de venta: el mensaje para el DM, con el link personal */
+function mensajeLinkVenta(llave){
+  return 'Tu link para sacar tu entrada para S7 · sábado 14 de noviembre:\n' +
+         'https://www.sekito.ar/c/' + llave + '\n\n' +
+         'Ahí elegís cuántas, transferís y subís el comprobante. Es solo tuyo: con el mismo link después vas a ver tu entrada.';
+}
+function mostrarLinkVenta(llave, para){
+  const msj = mensajeLinkVenta(llave);
+  $('#lvListo').innerHTML =
+    '<p style="margin-top:0">El link de venta de <strong>' + esc(para || '') + '</strong>:</p>' +
+    '<pre class="msj-link">' + esc(msj) + '</pre>' +
+    '<div class="pie" style="justify-content:flex-start; margin-top:10px">' +
+      '<button class="btn btn-principal" type="button" data-copiar-venta="' + esc(llave) + '">copiar mensaje</button>' +
+      '<a class="btn" href="https://wa.me/?text=' + encodeURIComponent(msj) + '" target="_blank" rel="noopener">mandar por whatsapp</a>' +
+    '</div>';
+  $('#lvPaso1').hidden = true; $('#lvPaso2').hidden = false;
+  abrir('#modalVenta');
+}
+$('#btnLinkVenta').addEventListener('click', () => {
+  $('#lvPara').value = ''; $('#lvAviso').textContent = '';
+  $('#lvPaso1').hidden = false; $('#lvPaso2').hidden = true; $('#lvGenerar').disabled = false;
+  abrir('#modalVenta'); $('#lvPara').focus();
+});
+$('#lvGenerar').addEventListener('click', async () => {
+  const para = $('#lvPara').value.trim();
+  if (!para){ $('#lvAviso').textContent = 'falta para quién es'; return; }
+  $('#lvGenerar').disabled = true;
+  const r = await rpc('admin_link_de_venta', { p_codigo: CODIGO, p_para: para });
+  if (!r.ok || !r.datos || !r.datos[0]){ $('#lvAviso').textContent = enCastellano(r.motivo); $('#lvGenerar').disabled = false; return; }
+  mostrarLinkVenta(r.datos[0].codigo_acceso, para);
+  cargarTodo();
+});
+
 /* la entrada por link: el mensaje listo para el DM o WhatsApp */
 function mensajeEntradaLink(codigo){
   return 'La sekta te guardó tu entrada para S7 · sábado 14 de noviembre.\n\n' +
@@ -1723,6 +1784,10 @@ document.addEventListener('click', async e => {
     if (en && en.guardada_codigo) mostrarLinkEntrada(en.guardada_codigo, en.guardada_para, en.guardada_vence);
     return;
   }
+  const lv = e.target.closest('[data-link-venta]');
+  if (lv){ mostrarLinkVenta(lv.dataset.linkVenta, lv.dataset.para); return; }
+  const cv = e.target.closest('[data-copiar-venta]');
+  if (cv){ copiar(mensajeLinkVenta(cv.dataset.copiarVenta), cv, 'copiar mensaje'); return; }
   const cl = e.target.closest('[data-copiar-link]');
   if (cl){ copiar(mensajeEntradaLink(cl.dataset.copiarLink), cl, 'copiar mensaje'); return; }
 
