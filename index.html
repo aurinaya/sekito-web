@@ -908,6 +908,7 @@
     background:none; border:none; color:var(--white); cursor:pointer;
     font-family:inherit; font-size:12px; font-weight:500; letter-spacing:.2em; text-transform:uppercase;
     white-space:nowrap; text-shadow:0 0 10px rgba(229,0,64,.85);
+    position:relative; z-index:2;   /* el halo del cartel no le pasa por encima */
   }
   .fe-linea{ display:block; height:1px; max-width:340px; margin:0 auto; background:#E50040; box-shadow:0 0 10px #E50040; }
   .fe-texto{ display:block; padding:14px 0 12px; }
@@ -916,6 +917,14 @@
   .fe-punto{ display:inline-block; width:7px; height:7px; border-radius:50%; background:#E50040; box-shadow:0 0 8px #E50040;
     margin-right:10px; vertical-align:2px; animation:latir 1.8s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce){ .fe-punto{ animation:none; } }
+  .fe-punto[hidden], .falta-entrada small[hidden]{ display:none; }
+  /* con entrada: lo que falta para S7 */
+  .falta-entrada small.fe-falta{ margin-top:10px; font-size:15px; line-height:20px; font-weight:500; letter-spacing:.1em; color:var(--white);
+    text-shadow:0 0 10px rgba(255,255,255,.4); font-variant-numeric:tabular-nums;
+    animation:feRespira 3.6s ease-in-out infinite; }
+  /* apenas: que se note que está vivo, no que pide algo */
+  @keyframes feRespira{ 0%,100%{ opacity:1; } 50%{ opacity:.68; } }
+  @media (prefers-reduced-motion: reduce){ .falta-entrada small.fe-falta{ animation:none; } }
   .s7-reloj[hidden]{ display:none; }
   .s7-reloj{ margin-top:12px; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:rgba(var(--white-rgb),.6); }
   .s7-reloj b{ display:block; margin-top:6px; font-size:22px; font-weight:500; letter-spacing:.08em; color:var(--white);
@@ -2344,11 +2353,13 @@
 
 
 
-    <!-- arriba de todo lo de S7, a quien todavía no tiene su lugar: lleva a la compra -->
+    <!-- arriba de todo lo de S7, cómo estás vos: sin entrada lleva a la compra,
+         con entrada a verla. El cartel de abajo es igual para todos -->
     <button type="button" class="falta-entrada pv-abrir rv-d" id="faltaEntrada" hidden>
       <span class="fe-linea" aria-hidden="true"></span>
-      <span class="fe-texto"><span class="fe-punto" aria-hidden="true"></span>todavía no tenés tu entrada
-        <small>sacala acá</small></span>
+      <span class="fe-texto"><span class="fe-punto" id="fePunto" aria-hidden="true"></span><span id="feDice">todavía no tenés tu entrada</span>
+        <small class="fe-falta" id="feFalta" hidden></small>
+        <small id="feBajada">sacala acá</small></span>
       <span class="fe-linea" aria-hidden="true"></span>
     </button>
 
@@ -4485,40 +4496,57 @@ reveal();
      ya decidiste mirar. */
   function pintarPreview(){
     const sinDuenio = entradas.filter(e => e.estado === 'sin_asignar').length;
-    const mias      = entradas.length;
+    const suya      = entradas.some(e => e.soy_duenio);
 
-    let dice, pide = false;
-    if (sinDuenio){
-      dice = sinDuenio === 1 ? 'TENÉS 1 SIN ASIGNAR' : 'TENÉS ' + sinDuenio + ' SIN ASIGNAR';
-      pide = true;
-    } else if (mias){
-      dice = mias === 1 ? 'TU LUGAR ESTÁ' : 'TENÉS ' + mias + ' LUGARES';
-    } else if (tanda){
-      dice = tanda.nombre === 'abierta' ? 'TANDA ABIERTA' : 'TANDA ' + tanda.nombre.toUpperCase() + ' ABIERTA';
-    } else {
-      dice = 'TODAVÍA NO ABRIÓ';
+    // el cartel dice lo mismo para todos, tengas entrada o no
+    const dice = !tanda ? 'TODAVÍA NO ABRIÓ'
+               : tanda.nombre === 'abierta' ? 'TANDA ABIERTA'
+               : 'TANDA ' + tanda.nombre.toUpperCase() + ' ABIERTA';
+
+    // lo tuyo va arriba, entre las líneas rojas
+    const falta = document.getElementById('faltaEntrada');
+    if (falta){
+      const tiene = suya || sinDuenio > 0;
+      falta.hidden = !(tanda || tiene);
+      const una = sinDuenio === 1;
+      document.getElementById('fePunto').hidden = suya;
+      document.getElementById('feDice').textContent = suya ? 'ya tenés tu entrada'
+        : sinDuenio ? 'tenés ' + sinDuenio + ' sin asignar' : 'todavía no tenés tu entrada';
+      const bajada = document.getElementById('feBajada');
+      bajada.textContent = suya ? (sinDuenio ? 'te ' + (una ? 'queda 1' : 'quedan ' + sinDuenio) + ' sin asignar' : '')
+        : sinDuenio ? (una ? 'asignala acá' : 'asignalas acá') : 'sacala acá';
+      bajada.hidden = !bajada.textContent;
+      document.getElementById('feFalta').hidden = !tiene;
     }
 
-    // el botón de arriba: solo si hay tanda abierta y todavía no tiene su lugar
-    const falta = document.getElementById('faltaEntrada');
-    if (falta) falta.hidden = !(tanda && !mias && !sinDuenio);
-
     document.querySelectorAll('.s7-cartel').forEach(box => {
-      const est = box.querySelector('.s7-estado');
-      est.textContent = dice;
-      est.classList.toggle('pide', pide);
-      // apurar solo a quien todavía no tiene lugar
-      const urge = box.querySelector('.s7-urge');
+      box.querySelector('.s7-estado').textContent = dice;
       // "se está yendo" solo si la tanda tiene hora de cierre: la abierta no se va
-      if (urge) urge.hidden = !(tanda && tanda.cierra_en && !mias);
-      // si la tanda tiene hora de cierre, la cuenta regresiva (solo a quien no tiene lugar)
+      const urge = box.querySelector('.s7-urge');
+      if (urge) urge.hidden = !(tanda && tanda.cierra_en);
+      // si la tanda tiene hora de cierre, la cuenta regresiva
       const reloj = box.querySelector('.s7-reloj');
       if (reloj){
-        reloj.hidden = !(tanda && !mias && tanda.cierra_en);
+        reloj.hidden = !(tanda && tanda.cierra_en);
         reloj.querySelector('[data-cierra]').dataset.cierra = (tanda && tanda.cierra_en) || '';
       }
     });
+    contarLoQueFalta();
   }
+
+  // lo que falta para S7, para quien ya tiene entrada
+  const S7_ARRANCA = Date.parse('2026-11-14T23:50:00-03:00');
+  function contarLoQueFalta(){
+    const el = document.getElementById('feFalta');
+    if (!el || el.hidden) return;
+    const q = Math.floor((S7_ARRANCA - Date.now()) / 1000);
+    if (q <= 0){ el.textContent = 'ya empezó'; return; }
+    // por ahora, días; el último día, las 24 horas para atrás
+    const dias = Math.floor(q / 86400);
+    el.textContent = dias ? (dias === 1 ? 'falta 1 día' : 'faltan ' + dias + ' días')
+      : 'faltan ' + [Math.floor(q / 3600), Math.floor(q % 3600 / 60), q % 60].map(n => String(n).padStart(2, '0')).join(':');
+  }
+  setInterval(contarLoQueFalta, 1000);
 
   /* la cuenta regresiva de la tanda: cada segundo, todo lo que tenga data-cierra.
      La hora la pone la base (tandas.cierra_en); al llegar a cero, la base ya
