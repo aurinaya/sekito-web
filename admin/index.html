@@ -487,7 +487,7 @@ td.apretado{white-space:normal; min-width:150px}
       </div>
 
       <div class="pliegue" data-pliegue="cumples" id="pliegueCumples" hidden>
-      <h3 class="titulo-tabla"><span class="flecha">▾</span>los cumples <span class="resumen" id="resCumples"></span></h3>
+      <h3 class="titulo-tabla"><span class="flecha">▾</span>los links de anfitrión <span class="resumen" id="resCumples"></span></h3>
       <div class="pliegue-cuerpo"><div id="cumples"></div></div>
       </div>
 
@@ -1526,6 +1526,7 @@ async function cargarCumples(){
   const lista = (r.ok && r.datos) || [];
   $('#pliegueCumples').hidden = !lista.length;
   if (!lista.length) return;
+  linksSinCumple = new Set(lista.filter(a => !a.es_cumple).map(a => a.palabra));
   const abiertos = lista.filter(a => a.activo && new Date(a.hasta) > new Date()).length;
   $('#resCumples').textContent = '· ' + abiertos + (abiertos === 1 ? ' abierto' : ' abiertos');
   const DICE = { a_revisar:'a revisar', confirmada:'confirmada', rechazada:'rechazada', esperando_comprobante:'sin comprobante' };
@@ -1550,7 +1551,9 @@ async function cargarCumples(){
           (vencido ? '' : '<button data-pausar="' + a.id + '" data-activo="' + (a.activo ? 1 : 0) + '">' + (a.activo ? 'pausar' : 'reanudar') + '</button>') +
         '</div>' +
       '</div>' +
-      '<div class="cumple-cupo">' + a.usado + '<small>de ' + a.cupo + ' con el precio del cumple · ' + a.bancaron + ' bancaron la fiesta</small></div>' +
+      '<div class="cumple-cupo">' + a.usado + '<small>' + (a.es_cumple
+        ? 'de ' + a.cupo + ' con el precio del cumple · ' + a.bancaron + ' bancaron la fiesta'
+        : 'de compromiso · ' + a.bancaron + ' bancaron la fiesta · ' + a.remil + ' remil banco') + '</small></div>' +
       (filas ? '<div class="tabla-scroll"><table><thead><tr><th>quién</th><th>cuántas</th><th>c/u</th><th>estado</th></tr></thead>' +
                '<tbody>' + filas + '</tbody></table></div>'
              : '<p class="tenue" style="margin:10px 0 0">todavía no compró nadie</p>') +
@@ -1559,8 +1562,9 @@ async function cargarCumples(){
 }
 
 // el mensaje para el anfitrión: su link, para que lo comparta
+let linksSinCumple = new Set();
 function mensajeCumple(palabra){
-  return 'Tu link para el cumple en S7 · sábado 14 de noviembre:\n' +
+  return 'Tu link ' + (linksSinCumple.has(palabra) ? 'para' : 'para el cumple en') + ' S7 · sábado 14 de noviembre:\n' +
          'https://www.sekito.ar/' + palabra + '\n\n' +
          'Compartilo con tu gente: ahí sacan su entrada sin llave ni registro, y quedan en tu rama del sékito.';
 }

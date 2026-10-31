@@ -1060,6 +1060,14 @@
   #cumple-screen .pv-aviso:not(.se-ve){ margin-top:0; padding-top:0; padding-bottom:0; }
   .cu-datos{ text-align:left; margin-top:28px; }
   .cu-dicho{ font-size:10.5px; letter-spacing:.04em; color:var(--bordo-claro); min-height:1.4em; margin-top:10px; }
+  /* el link sin cumple (sekito.ar/mau): su foto, y abajo el pedido de un free */
+  .cu-foto{ display:block; width:176px; aspect-ratio:4/5; object-fit:cover; margin:26px auto 0;
+            border:1px solid rgba(var(--gray-rgb),.25); }
+  .cu-foto[hidden]{ display:none; }
+  .cu-foto:not([hidden]) + .cu-frase{ margin-top:18px; }
+  .cu-cierre{ font-size:12.5px; line-height:1.7; letter-spacing:.03em; color:var(--white); margin-top:24px; text-align:center; }
+  .cu-free{ display:block; margin-top:14px; padding:14px; text-align:center; text-decoration:none; color:var(--white);
+            border:1px solid rgba(var(--white-rgb),.75); font-size:11px; font-weight:500; letter-spacing:.22em; }
 
   /* invitar con la entrada: la caja que aparece cuando la búsqueda no encuentra a nadie */
   .pv-invitar{
@@ -2520,6 +2528,7 @@
       <div class="s7-nombre">S7</div>
       <div class="s7-fecha">SÁBADO 14 DE NOVIEMBRE</div>
       <div class="s7-lugar">PALERMO, BUENOS AIRES</div>
+      <img class="cu-foto" id="cuFoto" alt="" hidden>
       <div class="cu-frase" id="cuFrase"></div>
       <div class="cu-hola" id="cuHola" hidden></div>
     </div>
@@ -3018,7 +3027,7 @@ reveal();
     // compró por link: sus entradas ya están, y el mail ya lo dejó al comprar
     if (ventaActual){
       const n = ventaActual.entradas || 0;
-      refe.textContent = (ventaActual.cumple ? 'Llegaste por el cumple de ' + ventaActual.cumple + '. ' : '') +
+      refe.textContent = (ventaActual.cumple ? 'Llegaste por ' + (ventaActual.es_cumple ? 'el cumple de ' : '') + ventaActual.cumple + '. ' : '') +
                          (n > 1 ? 'Tus ' + n + ' entradas para S7 ya están.' : 'Tu entrada para S7 ya está.') +
                          ' Completá tus datos y ' + (n > 1 ? 'son tuyas.' : 'es tuya.');
       if (ventaActual.email) campos.email.value = ventaActual.email;
@@ -5650,7 +5659,8 @@ reveal();
    sube el comprobante, todo junto. Si el navegador ya tiene su llave, compra
    con ella. Si el mail ya es de alguien del portal, la base lo suma a esa
    cuenta sin decir nada. El link personal le llega por mail al confirmarse:
-   nunca se muestra acá, para no darle a nadie la llave de otra persona. */
+   nunca se muestra acá, para no darle a nadie la llave de otra persona.
+   Sin cumple (sekito.ar/mau): su foto, tres precios y el botón del free. */
 (async function porLinkDeAnfitrion(){
   const palabra = (new URLSearchParams(location.search).get('a') || '').trim().toLowerCase();
   if (!palabra) return;
@@ -5673,6 +5683,12 @@ reveal();
     ? esc(a.frase.slice(0, i + 1)) + '<b>' + esc(a.frase.slice(i + 1).trim()) + '</b>'
     : '<b>' + esc(a.frase) + '</b>';
 
+  if (a.foto){
+    const foto = document.getElementById('cuFoto');
+    foto.src = '/images/perfiles/' + a.foto + '/1.jpg';
+    foto.hidden = false;
+  }
+
   // ¿el navegador ya tiene su llave?
   let llave = null;
   const guardada = llaveGuardada();
@@ -5682,15 +5698,15 @@ reveal();
       llave = guardada;
       const hola = document.getElementById('cuHola');
       const dice = (miembro.apodo || miembro.nombre_real || '').trim();
-      hola.textContent = (dice ? dice + ', ' : '') + 'venís de parte de ' + a.quien;
+      hola.textContent = (dice ? dice + ', ' : '') + 'venís de parte ' + (a.quien.startsWith('el ') ? 'del ' + a.quien.slice(3) : 'de ' + a.quien);
       hola.hidden = false;
     }
   }
 
-  let banca   = a.quedan < 1;
+  let elige   = a.quedan < 1 ? 'bancar' : 'cumple';   // cumple, bancar o remil
   let cuantas = 1;
   let listo   = null;    // el mail al que le escribimos, o '' si compró con su llave
-  const tope = () => banca ? 7 : Math.min(7, a.quedan);
+  const tope = () => elige === 'cumple' ? Math.min(7, a.quedan) : 7;
 
   function pintar(){
     if (listo !== null){
@@ -5711,17 +5727,25 @@ reveal();
       return;
     }
     if (cuantas > tope()) cuantas = tope();
-    const precio = banca ? a.precio_bancar : a.precio_cumple;
+    const precio = elige === 'remil' ? a.precio_remil : elige === 'bancar' ? a.precio_bancar : a.precio_cumple;
     const sinCupo = a.quedan < 1;
+    const dicen = a.es_cumple
+      ? { cumple: 'venís al cumple<small>' + (sinCupo ? 'ya no quedan con este precio' : 'precio del cumple') + '</small>',
+          bancar: sinCupo ? 'tu entrada<small>tanda abierta</small>' : 'bancás la fiesta<small>si podés, sumás</small>' }
+      : { cumple: 'venís de compromiso' + (sinCupo ? '<small>ya no quedan con este precio</small>' : ''),
+          bancar: 'bancás la fiesta' };
     cuerpo.innerHTML = '<div class="pv-bloque">' +
       '<div class="pv-rotulo" style="text-align:left">tu lugar</div>' +
-      '<button type="button" class="cu-op' + (!banca ? ' si' : '') + '" data-banca="0"' + (sinCupo ? ' disabled' : '') + '>' +
-        '<span class="cu-op-que">venís al cumple<small>' + (sinCupo ? 'ya no quedan con este precio' : 'precio del cumple') + '</small></span>' +
+      '<button type="button" class="cu-op' + (elige === 'cumple' ? ' si' : '') + '" data-elige="cumple"' + (sinCupo ? ' disabled' : '') + '>' +
+        '<span class="cu-op-que">' + dicen.cumple + '</span>' +
         '<span class="cu-op-precio">' + plata(a.precio_cumple) + '</span></button>' +
-      '<button type="button" class="cu-op' + (banca ? ' si' : '') + '" data-banca="1">' +
-        (sinCupo ? '<span class="cu-op-que">tu entrada<small>tanda abierta</small></span>'
-                 : '<span class="cu-op-que">bancás la fiesta<small>si podés, sumás</small></span>') +
+      '<button type="button" class="cu-op' + (elige === 'bancar' ? ' si' : '') + '" data-elige="bancar">' +
+        '<span class="cu-op-que">' + dicen.bancar + '</span>' +
         '<span class="cu-op-precio">' + plata(a.precio_bancar) + '</span></button>' +
+      (a.precio_remil ?
+        '<button type="button" class="cu-op' + (elige === 'remil' ? ' si' : '') + '" data-elige="remil">' +
+          '<span class="cu-op-que">remil banco,<br>hagan más jodas</span>' +
+          '<span class="cu-op-precio">' + plata(a.precio_remil) + '</span></button>' : '') +
       '<div class="pv-cantidad">' +
         '<button type="button" id="cuMenos"' + (cuantas <= 1 ? ' disabled' : '') + '>−</button>' +
         '<div class="pv-cuantas">' + cuantas + '</div>' +
@@ -5748,13 +5772,16 @@ reveal();
       '<button class="pv-btn" id="cuSubir">ya transferí, subo el comprobante</button>' +
       '<input type="file" id="cuArchivo" accept="image/*" hidden>' +
       '<div class="cu-dicho" id="cuDicho"></div>' +
+      (a.instagram ?
+        '<div class="cu-cierre">Si no podés pagar pero querés venir,<br>hablá con ' + esc(a.quien) + ', que te lo resuelve.</div>' +
+        '<a class="cu-free" href="https://ig.me/m/' + esc(a.instagram) + '" target="_blank" rel="noopener">QUIERO UN FREE</a>' : '') +
     '</div>';
   }
 
   const datos = { nombre: '', mail: '' };
   const decir = t => { const d = document.getElementById('cuDicho'); if (d) d.textContent = t; };
   const MAL = {
-    sin_cupo:           'ya no quedan con el precio del cumple',
+    sin_cupo:           a.es_cumple ? 'ya no quedan con el precio del cumple' : 'ya no quedan con ese precio',
     cerrado:            'este link ya cerró',
     falta_nombre:       'poné tu nombre',
     mail_invalido:      'ese mail no parece un mail',
@@ -5771,7 +5798,7 @@ reveal();
   cuerpo.addEventListener('click', e => {
     const t = e.target;
     const op = t.closest('.cu-op');
-    if (op && !op.disabled){ banca = op.dataset.banca === '1'; pintar(); return; }
+    if (op && !op.disabled){ elige = op.dataset.elige; pintar(); return; }
     if (t.id === 'cuMas'  ){ cuantas++; pintar(); return; }
     if (t.id === 'cuMenos'){ cuantas--; pintar(); return; }
     if (t.closest('#cuAlias')){
@@ -5801,7 +5828,7 @@ reveal();
 
     const r = await llamarRPC('anfitrion_comprar', {
       p_palabra: palabra, p_codigo: llave, p_nombre: datos.nombre, p_email: datos.mail,
-      p_cantidad: cuantas, p_banca: banca, p_base64: base64, p_tipo: 'image/jpeg',
+      p_cantidad: cuantas, p_banca: elige !== 'cumple', p_remil: elige === 'remil', p_base64: base64, p_tipo: 'image/jpeg',
     });
     if (r.ok){ listo = llave ? '' : datos.mail.trim().toLowerCase(); pintar(); scrollToTop(); return; }
 
@@ -5811,7 +5838,7 @@ reveal();
       const n = await llamarRPC('anfitrion_publico', { p_palabra: palabra });
       const nuevo = n.ok && n.datos && n.datos[0];
       if (nuevo) Object.assign(a, nuevo);
-      banca = banca || a.quedan < 1;
+      if (elige === 'cumple' && a.quedan < 1) elige = 'bancar';
       pintar();
     }
     decir(k ? MAL[k] : 'no se pudo subir, probá de nuevo');
