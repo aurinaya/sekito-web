@@ -5732,13 +5732,14 @@ reveal();
     const dicen = a.es_cumple
       ? { cumple: 'venís al cumple<small>' + (sinCupo ? 'ya no quedan con este precio' : 'precio del cumple') + '</small>',
           bancar: sinCupo ? 'tu entrada<small>tanda abierta</small>' : 'bancás la fiesta<small>si podés, sumás</small>' }
-      : { cumple: 'venís de compromiso' + (sinCupo ? '<small>ya no quedan con este precio</small>' : ''),
-          bancar: 'bancás la fiesta' };
+      : { cumple: 'venís de compromiso', bancar: 'bancás la fiesta' };
     cuerpo.innerHTML = '<div class="pv-bloque">' +
       '<div class="pv-rotulo" style="text-align:left">tu lugar</div>' +
-      '<button type="button" class="cu-op' + (elige === 'cumple' ? ' si' : '') + '" data-elige="cumple"' + (sinCupo ? ' disabled' : '') + '>' +
-        '<span class="cu-op-que">' + dicen.cumple + '</span>' +
-        '<span class="cu-op-precio">' + plata(a.precio_cumple) + '</span></button>' +
+      // sin cumple, cupo 0 quiere decir que este link no tiene ese precio (sekito.ar/flor)
+      (a.es_cumple || !sinCupo ?
+        '<button type="button" class="cu-op' + (elige === 'cumple' ? ' si' : '') + '" data-elige="cumple"' + (sinCupo ? ' disabled' : '') + '>' +
+          '<span class="cu-op-que">' + dicen.cumple + '</span>' +
+          '<span class="cu-op-precio">' + plata(a.precio_cumple) + '</span></button>' : '') +
       '<button type="button" class="cu-op' + (elige === 'bancar' ? ' si' : '') + '" data-elige="bancar">' +
         '<span class="cu-op-que">' + dicen.bancar + '</span>' +
         '<span class="cu-op-precio">' + plata(a.precio_bancar) + '</span></button>' +
