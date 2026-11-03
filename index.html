@@ -4662,8 +4662,7 @@ reveal();
       '</div>' +
       '<div class="pv-total">' + (cuantas > 1 ? cuantas + ' × ' + plata(tanda.precio) + ' = ' + plata(total) : '') + '</div>' +
       '<div class="pv-aviso' + (cuantas > 1 ? ' se-ve' : '') + '">' +
-        'Cada entrada se asigna a <strong>una persona</strong>, y esa persona tiene que estar en el portal.<br>' +
-        'Podés asignarlas después. Las que no asignes, quedan esperando.' +
+        'Las entradas son personales, las asignás una vez que ya las tengas.' +
       '</div>' +
       '<button class="pv-btn" id="pvReservar">' +
         (cuantas === 1 ? 'quiero mi lugar' : 'quiero ' + cuantas + ' lugares') +
@@ -5697,6 +5696,11 @@ reveal();
   const ALIAS = 'seki.7', ATITULAR = 'Florencia Di Rocco';
   // links donde el free va en chiquito, sin el botón grande
   const FREE_SUTIL = { flor: { con: 'Flor', cola: 'ella soluciona todo' } };
+  // links con sus propias palabras para el 35 y para el free
+  const PROPIO = { mau: { cumple: 'el sékito te banca<br>la hermética',
+                          cierre: 'Soy consciente del esfuerzo, pero necesito<br>que el sékito me banque esta vez.',
+                          boton: 'MAU TE LO RESUELVE' } };
+  const propio = PROPIO[palabra] || {};
   const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const plata = n => '$' + Number(n).toLocaleString('es-AR');
@@ -5764,7 +5768,7 @@ reveal();
       ? { cumple: 'venís al cumple<small>' + (sinCupo ? 'ya no quedan con este precio' : 'precio del cumple') + '</small>',
           bancar: sinCupo ? 'tu entrada<small>tanda abierta</small>' : 'bancás la fiesta<small>si podés, sumás</small>' }
       : campania ? { cumple: 'venís<small>precio de la hermética</small>', bancar: 'bancás la fiesta' }
-      : { cumple: 'venís de compromiso', bancar: 'bancás la fiesta' };
+      : { cumple: propio.cumple || 'venís de compromiso', bancar: 'bancás la fiesta' };
     cuerpo.innerHTML = '<div class="pv-bloque">' +
       '<div class="pv-rotulo" style="text-align:left">tu lugar</div>' +
       // sin cumple, cupo 0 quiere decir que este link no tiene ese precio (sekito.ar/flor)
@@ -5786,8 +5790,7 @@ reveal();
       '</div>' +
       '<div class="pv-total">' + cuantas + ' × ' + plata(precio) + ' = ' + plata(precio * cuantas) + '</div>' +
       '<div class="pv-aviso' + (cuantas > 1 ? ' se-ve' : '') + '">' +
-        'Cada entrada se asigna a <strong>una persona</strong>, y esa persona tiene que estar en el portal.<br>' +
-        'Podés asignarlas después. Las que no asignes, quedan esperando.' +
+        'Las entradas son personales, las asignás una vez que ya las tengas.' +
       '</div>' +
       (llave ? '' :
         '<div class="cu-datos">' +
@@ -5810,8 +5813,8 @@ reveal();
           '<a href="https://ig.me/m/' + esc(a.instagram) + '" target="_blank" rel="noopener">hablá con ' + FREE_SUTIL[palabra].con + '</a>, ' +
           FREE_SUTIL[palabra].cola + '.</div>' :
        a.instagram ?
-        '<div class="cu-cierre">Si no podés pagar pero querés venir,<br>hablá con ' + esc(a.quien) + ', que te lo resuelve.</div>' +
-        '<a class="cu-free" href="https://ig.me/m/' + esc(a.instagram) + '" target="_blank" rel="noopener">QUIERO UN FREE</a>' : '') +
+        '<div class="cu-cierre">' + (propio.cierre || 'Si no podés pagar pero querés venir,<br>hablá con ' + esc(a.quien) + ', que te lo resuelve.') + '</div>' +
+        '<a class="cu-free" href="https://ig.me/m/' + esc(a.instagram) + '" target="_blank" rel="noopener">' + (propio.boton || 'QUIERO UN FREE') + '</a>' : '') +
     '</div>';
   }
 
