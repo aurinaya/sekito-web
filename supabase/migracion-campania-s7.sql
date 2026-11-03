@@ -168,7 +168,7 @@ begin
     '<tr><td style="padding:0 0 34px"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>' ||
       '<td style="padding:0 14px 0 0;vertical-align:middle"><img src="https://www.sekito.ar/images/abanico-disco.png" width="44" height="44" alt="" ' ||
       'style="display:block;border:0;width:44px;height:44px;border-radius:50%"></td>' ||
-      '<td style="vertical-align:middle;font-size:13px;line-height:1.5">El SÉKITO<br><span style="color:#93A8AC">de SEKI PARTY</span></td>' ||
+      '<td style="vertical-align:middle;font-size:13px;line-height:1.5">el SÉKITO<br><span style="color:#93A8AC">de SEKI PARTY</span></td>' ||
     '</tr></table></td></tr>' ||
     '<tr><td style="border-top:1px solid #2a2a2a;padding:18px 0 0;font-size:10.5px;line-height:1.8;color:#5C6B6E">' ||
       case when p_origen = 'portal' then 'Te escribimos porque sos parte del portal.'
