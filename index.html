@@ -5600,7 +5600,7 @@ reveal();
    llega con uno, viene a hacer otra cosa. */
 (async function llaveRecordada(){
   const params = new URLSearchParams(location.search);
-  if (params.get('i') || params.get('baja') || params.get('c') || params.get('a')) return;
+  if (params.get('i') || params.get('baja') || params.get('c') || params.get('a') || params.get('r')) return;
 
   const guardada = llaveGuardada();
   if (!guardada) return;
@@ -5627,11 +5627,13 @@ reveal();
 
   history.replaceState(null, '', location.pathname);
 
-  await llamarRPC('baja_de_mails', { p_token: token });
+  // los de la campaña de SEKI 7 (sekiparty@) tienen su propio token, más corto
+  const campania = /^[0-9a-f]{16}$/.test(token);
+  await llamarRPC(campania ? 'campania_s7_baja' : 'baja_de_mails', { p_token: token });
 
   // siempre el mismo mensaje, haya existido el token o no: decir "ese no
   // existe" sería confirmarle a cualquiera cuáles sí
-  gateAviso.innerHTML =
+  gateAviso.innerHTML = campania ? 'listo, no te escribimos más.' :
     'listo, el portal no te escribe más.<br>' +
     'si cambiás de idea, entrá con tu código y volvé a activarlos.';
   gateAviso.classList.add('show');
@@ -5664,11 +5666,29 @@ reveal();
    con ella. Si el mail ya es de alguien del portal, la base lo suma a esa
    cuenta sin decir nada. El link personal le llega por mail al confirmarse:
    nunca se muestra acá, para no darle a nadie la llave de otra persona.
-   Sin cumple (sekito.ar/mau): su foto, tres precios y el botón del free. */
+   Sin cumple (sekito.ar/mau): su foto, tres precios y el botón del free.
+   El link personal del mail de SEKI 7 (sekito.ar/r/TOKEN) es uno de estos,
+   con el nombre y el mail ya puestos. */
 (async function porLinkDeAnfitrion(){
-  const palabra = (new URLSearchParams(location.search).get('a') || '').trim().toLowerCase();
-  if (!palabra) return;
-  history.replaceState(null, '', '/' + palabra);
+  const params = new URLSearchParams(location.search);
+  const token  = (params.get('r') || '').trim().toLowerCase();
+  let palabra  = (params.get('a') || '').trim().toLowerCase();
+  let campania = null;
+  if (token){
+    history.replaceState(null, '', '/r/' + token);
+    const c = await llamarRPC('campania_s7_publico', { p_token: token });
+    campania = c.ok && c.datos && c.datos[0];
+    if (!campania){
+      history.replaceState(null, '', '/');
+      gateAviso.textContent = c.ok ? 'este link no sirve.. escribinos por instagram' : 'no hay conexión, probá de nuevo';
+      gateAviso.classList.add('show');
+      return;
+    }
+    palabra = campania.palabra;
+  } else {
+    if (!palabra) return;
+    history.replaceState(null, '', '/' + palabra);
+  }
 
   const r = await llamarRPC('anfitrion_publico', { p_palabra: palabra });
   const a = r.ok && r.datos && r.datos[0];
@@ -5708,6 +5728,11 @@ reveal();
       hola.hidden = false;
     }
   }
+  if (campania){
+    const hola = document.getElementById('cuHola');
+    hola.textContent = (campania.nombre ? campania.nombre + ', ' : '') + 'tu lugar te espera';
+    hola.hidden = false;
+  }
 
   let elige   = a.quedan < 1 ? 'bancar' : 'cumple';   // cumple, bancar o remil
   let cuantas = 1;
@@ -5738,6 +5763,7 @@ reveal();
     const dicen = a.es_cumple
       ? { cumple: 'venís al cumple<small>' + (sinCupo ? 'ya no quedan con este precio' : 'precio del cumple') + '</small>',
           bancar: sinCupo ? 'tu entrada<small>tanda abierta</small>' : 'bancás la fiesta<small>si podés, sumás</small>' }
+      : campania ? { cumple: 'venís<small>precio de la hermética</small>', bancar: 'bancás la fiesta' }
       : { cumple: 'venís de compromiso', bancar: 'bancás la fiesta' };
     cuerpo.innerHTML = '<div class="pv-bloque">' +
       '<div class="pv-rotulo" style="text-align:left">tu lugar</div>' +
@@ -5789,7 +5815,7 @@ reveal();
     '</div>';
   }
 
-  const datos = { nombre: '', mail: '' };
+  const datos = { nombre: campania ? campania.nombre || '' : '', mail: campania ? campania.mail : '' };
   const decir = t => { const d = document.getElementById('cuDicho'); if (d) d.textContent = t; };
   const MAL = {
     sin_cupo:           a.es_cumple ? 'ya no quedan con el precio del cumple' : 'ya no quedan con ese precio',
