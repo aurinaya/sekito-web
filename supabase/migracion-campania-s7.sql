@@ -128,12 +128,15 @@ begin
     asunto  := coalesce(v_s || ', volvemos el 14', 'Volvemos el 14');
     v_vista := 'La séptima, en un lugar nuevo.';
     v_cuerpo :=
-      v_p || 'Ya fuiste parte de nuestros ritos.<br>El sékito no olvida a los suyos.</td></tr>' ||
+      v_p || case when p_origen = 'portal'
+                  then 'Estás en el portal, y eso ya te hace parte del sékito.'
+                  else 'Te llega este mail porque alguna vez estuviste en una de nuestras noches.<br>Y eso te hace parte del sékito.' end ||
+             '</td></tr>' ||
       v_p || 'El sábado 14 volvemos con ' || v_b || 'SEKI 7</b>: lugar nuevo, el mismo cuidado en cada detalle.<br>' ||
              'Dorrego 1735, Palermo, desde las 23:50.</td></tr>' ||
       v_p || 'La entrada hoy está a $40.000. A quienes ya estuvieron les guardamos el precio de la hermética: ' ||
              v_b || '$35.000, hasta el ' || v_dia || ' a las 23:59</b>.</td></tr>' ||
-      v_p || 'La sekta no tiene sponsors: se sostiene con los suyos. Elegís cuánto ponés:</td></tr>' ||
+      v_p || 'Nuestras fiestas no tienen sponsors: el sékito se sostiene con los suyos. Vos elegís cuánto aportás:</td></tr>' ||
       '<tr><td style="padding:0 0 28px">' ||
         '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.9;color:#F2F2F2">' ||
         '<tr><td style="padding:0 18px 0 0">' || v_b || '$35.000</b></td><td style="color:#93A8AC">venís</td></tr>' ||
@@ -170,10 +173,8 @@ begin
       'style="display:block;border:0;width:44px;height:44px;border-radius:50%"></td>' ||
       '<td style="vertical-align:middle;font-size:13px;line-height:1.5">el SÉKITO<br><span style="color:#93A8AC">de SEKI PARTY</span></td>' ||
     '</tr></table></td></tr>' ||
-    '<tr><td style="border-top:1px solid #2a2a2a;padding:18px 0 0;font-size:10.5px;line-height:1.8;color:#5C6B6E">' ||
-      case when p_origen = 'portal' then 'Te escribimos porque sos parte del portal.'
-           else 'Te escribimos porque viniste a una de nuestras fiestas.' end || '<br>' ||
-      '<a href="' || v_baja || '" style="color:#5C6B6E;text-decoration:underline">No quiero más estos mails</a></td></tr>' ||
+    '<tr><td style="border-top:1px solid #2a2a2a;padding:14px 0 0;font-size:9.5px;line-height:1.6;color:#4A5759">' ||
+      '<a href="' || v_baja || '" style="color:#4A5759;text-decoration:underline">No quiero más estos mails</a></td></tr>' ||
     '</table></td></tr></table></body></html>';
   return next;
 end;
