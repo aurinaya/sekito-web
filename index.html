@@ -1068,6 +1068,20 @@
   .cu-cierre{ font-size:12.5px; line-height:1.7; letter-spacing:.03em; color:var(--white); margin-top:24px; text-align:center; }
   .cu-free{ display:block; margin-top:14px; padding:14px; text-align:center; text-decoration:none; color:var(--white);
             border:1px solid rgba(var(--white-rgb),.75); font-size:11px; font-weight:500; letter-spacing:.22em; }
+  /* el cumple del Tano: los memes pisando la foto, y abajo lo que cada uno puede */
+  .cu-collage{ position:relative; width:176px; margin:26px auto 0; }
+  .cu-collage .cu-foto{ margin:0; }
+  .cu-collage + .cu-frase{ margin-top:22px; }
+  .cu-meme{ position:absolute; display:block; border:3px solid #f2f2f2; box-shadow:0 8px 22px rgba(0,0,0,.7); }
+  .cu-meme.m1{ width:128px; left:-92px; top:18px; transform:rotate(-6deg); }
+  .cu-meme.m2{ width:118px; right:-86px; top:118px; transform:rotate(7deg); }
+  .cu-frase .cu-nombres{ display:block; font-size:17px; font-weight:400; color:var(--white); letter-spacing:.04em; }
+  .cu-frase .cu-nombres i{ font-style:normal; color:var(--bordo-claro); margin:0 6px; }
+  .cu-frase small{ display:block; font-size:10.5px; font-style:italic; color:rgba(var(--white-rgb),.55); margin:6px 0 4px; }
+  .cu-aportes{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-top:10px; }
+  .cu-ap{ background:none; border:1px solid rgba(var(--white-rgb),.22); color:var(--white); font:inherit; font-size:12px;
+          letter-spacing:.03em; padding:15px 0; cursor:pointer; }
+  .cu-ap.si{ border-color:rgba(var(--bordo-rgb),.9); background:rgba(var(--bordo-rgb),.14); }
   /* la versión chiquita, sin botón (sekito.ar/flor) */
   .cu-sutil{ font-size:10.5px; line-height:1.8; letter-spacing:.04em; color:rgba(var(--white-rgb),.6); margin-top:30px; text-align:center; }
   .cu-sutil a{ color:var(--white); text-decoration:underline; text-decoration-color:var(--bordo-claro);
@@ -5699,7 +5713,14 @@ reveal();
   // links con sus propias palabras para el 35 y para el free
   const PROPIO = { mau: { cumple: 'el sékito te banca<br>la hermética',
                           cierre: 'Soy consciente del esfuerzo, pero necesito<br>que el sékito me banque esta vez.',
-                          boton: 'MAU TE LO RESUELVE' } };
+                          boton: 'MAU TE LO RESUELVE' },
+                  tano: { frase: '<span class="cu-nombres">El Tano<i>/</i>NAYA<i>/</i>Ramiro</span>' +
+                                 '<small>o como te dijo que se llama</small><b>festeja su cumple el 14 en la S7</b>',
+                          memes: ['/images/tano/meme-escorpio.jpg', '/images/tano/meme-invito.jpg'],
+                          cumple: 'venís al cumple<small>precio del cumple</small>',
+                          bancar: 'bancás la fiesta<small>si podés, sumás</small>',
+                          cierre: 'Si no estás pudiendo con estos valores ahora, el sékito quiere que igual vengas a la S7.<br><br>' +
+                                  '<b>El Tano te banca y pone de su bolsillo por vos, <u>porque te ama</u>.</b>' } };
   const propio = PROPIO[palabra] || {};
   const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -5713,10 +5734,23 @@ reveal();
     ? esc(a.frase.slice(0, i + 1)) + '<b>' + esc(a.frase.slice(i + 1).trim()) + '</b>'
     : '<b>' + esc(a.frase) + '</b>';
 
+  if (propio.frase) document.getElementById('cuFrase').innerHTML = propio.frase;
+
   if (a.foto){
     const foto = document.getElementById('cuFoto');
     foto.src = '/images/perfiles/' + a.foto + '/1.jpg';
     foto.hidden = false;
+    if (propio.memes){
+      const collage = document.createElement('div');
+      collage.className = 'cu-collage';
+      foto.replaceWith(collage);
+      collage.appendChild(foto);
+      propio.memes.forEach((m, i) => {
+        const img = document.createElement('img');
+        img.className = 'cu-meme m' + (i + 1); img.src = m; img.alt = '';
+        collage.appendChild(img);
+      });
+    }
   }
 
   // ¿el navegador ya tiene su llave?
@@ -5738,10 +5772,11 @@ reveal();
     hola.hidden = false;
   }
 
-  let elige   = a.quedan < 1 ? 'bancar' : 'cumple';   // cumple, bancar o remil
+  let elige   = a.quedan < 1 ? 'bancar' : 'cumple';   // cumple, bancar, remil o aporte
+  let aporte  = null;                                 // lo que puede, si eligió de abajo
   let cuantas = 1;
   let listo   = null;    // el mail al que le escribimos, o '' si compró con su llave
-  const tope = () => elige === 'cumple' ? Math.min(7, a.quedan) : 7;
+  const tope = () => elige === 'aporte' ? 1 : elige === 'cumple' ? Math.min(7, a.quedan) : 7;
 
   function pintar(){
     if (listo !== null){
@@ -5762,13 +5797,13 @@ reveal();
       return;
     }
     if (cuantas > tope()) cuantas = tope();
-    const precio = elige === 'remil' ? a.precio_remil : elige === 'bancar' ? a.precio_bancar : a.precio_cumple;
+    const precio = elige === 'aporte' ? aporte : elige === 'remil' ? a.precio_remil : elige === 'bancar' ? a.precio_bancar : a.precio_cumple;
     const sinCupo = a.quedan < 1;
     const dicen = a.es_cumple
       ? { cumple: 'venís al cumple<small>' + (sinCupo ? 'ya no quedan con este precio' : 'precio del cumple') + '</small>',
           bancar: sinCupo ? 'tu entrada<small>tanda abierta</small>' : 'bancás la fiesta<small>si podés, sumás</small>' }
       : campania ? { cumple: 'venís<small>precio de la hermética</small>', bancar: 'bancás la fiesta' }
-      : { cumple: propio.cumple || 'venís de compromiso', bancar: 'bancás la fiesta' };
+      : { cumple: propio.cumple || 'venís de compromiso', bancar: propio.bancar || 'bancás la fiesta' };
     cuerpo.innerHTML = '<div class="pv-bloque">' +
       '<div class="pv-rotulo" style="text-align:left">tu lugar</div>' +
       // sin cumple, cupo 0 quiere decir que este link no tiene ese precio (sekito.ar/flor)
@@ -5808,7 +5843,14 @@ reveal();
       '<button class="pv-btn" id="cuSubir">ya transferí, subo el comprobante</button>' +
       '<input type="file" id="cuArchivo" accept="image/*" hidden>' +
       '<div class="cu-dicho" id="cuDicho"></div>' +
-      (a.instagram && FREE_SUTIL[palabra] ?
+      // los botones de abajo (sekito.ar/tano): desaparecen cuando se llena su cupo
+      (a.aportes && a.quedan_aporte > 0 ?
+        '<div class="cu-cierre">' + (propio.cierre || '') + '</div>' +
+        '<div class="pv-rotulo" style="text-align:left;margin-top:26px">puedo con esto</div>' +
+        '<div class="cu-aportes">' + a.aportes.map(n =>
+          '<button type="button" class="cu-ap' + (elige === 'aporte' && aporte === n ? ' si' : '') + '" data-aporte="' + n + '">' + plata(n) + '</button>').join('') +
+        '</div>' :
+       a.instagram && FREE_SUTIL[palabra] ?
         '<div class="cu-sutil">Si no estás pudiendo con estos valores ahora,<br>el sékito quiere que vengas igual.<br>' +
           '<a href="https://ig.me/m/' + esc(a.instagram) + '" target="_blank" rel="noopener">hablá con ' + FREE_SUTIL[palabra].con + '</a>, ' +
           FREE_SUTIL[palabra].cola + '.</div>' :
@@ -5828,6 +5870,8 @@ reveal();
     ya_hay_compras:     'ya tenés compras esperando: escribinos por instagram',
     muchos_pedidos:     'hoy hay muchos pedidos: escribinos por instagram',
     comprobante_pesado: 'esa imagen es muy pesada',
+    sin_aportes:        'ya no quedan lugares con esos precios',
+    ya_aportaste:       'ya tenés una entrada con esos precios',
   };
 
   cuerpo.addEventListener('input', e => {
@@ -5839,6 +5883,14 @@ reveal();
     const t = e.target;
     const op = t.closest('.cu-op');
     if (op && !op.disabled){ elige = op.dataset.elige; pintar(); return; }
+    // lo de abajo: elige su aporte y vuelve arriba, al total
+    const ap = t.closest('.cu-ap');
+    if (ap){
+      elige = 'aporte'; aporte = Number(ap.dataset.aporte); cuantas = 1; pintar();
+      const tot = cuerpo.querySelector('.pv-total');
+      if (tot) tot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     if (t.id === 'cuMas'  ){ cuantas++; pintar(); return; }
     if (t.id === 'cuMenos'){ cuantas--; pintar(); return; }
     if (t.closest('#cuAlias')){
@@ -5869,16 +5921,18 @@ reveal();
     const r = await llamarRPC('anfitrion_comprar', {
       p_palabra: palabra, p_codigo: llave, p_nombre: datos.nombre, p_email: datos.mail,
       p_cantidad: cuantas, p_banca: elige !== 'cumple', p_remil: elige === 'remil', p_base64: base64, p_tipo: 'image/jpeg',
+      ...(elige === 'aporte' ? { p_aporte: aporte } : {}),
     });
     if (r.ok){ listo = llave ? '' : datos.mail.trim().toLowerCase(); pintar(); scrollToTop(); return; }
 
     const k = Object.keys(MAL).find(k => ((r.motivo || '') + '').indexOf(k) !== -1);
     // se llenó el cupo mientras elegía: se vuelve a preguntar cuántas quedan
-    if (k === 'sin_cupo' || k === 'cerrado'){
+    if (k === 'sin_cupo' || k === 'cerrado' || k === 'sin_aportes'){
       const n = await llamarRPC('anfitrion_publico', { p_palabra: palabra });
       const nuevo = n.ok && n.datos && n.datos[0];
       if (nuevo) Object.assign(a, nuevo);
       if (elige === 'cumple' && a.quedan < 1) elige = 'bancar';
+      if (elige === 'aporte' && !(a.quedan_aporte > 0)){ elige = a.quedan < 1 ? 'bancar' : 'cumple'; aporte = null; }
       pintar();
     }
     decir(k ? MAL[k] : 'no se pudo subir, probá de nuevo');

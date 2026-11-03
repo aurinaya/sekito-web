@@ -1553,7 +1553,8 @@ async function cargarCumples(){
       '</div>' +
       '<div class="cumple-cupo">' + a.usado + '<small>' + (a.es_cumple
         ? 'de ' + a.cupo + ' con el precio del cumple · ' + a.bancaron + ' bancaron la fiesta'
-        : 'de compromiso · ' + a.bancaron + ' bancaron la fiesta · ' + a.remil + ' remil banco') + '</small></div>' +
+        : 'de compromiso · ' + a.bancaron + ' bancaron la fiesta · ' + a.remil + ' remil banco' +
+          (a.aportaron ? ' · ' + a.aportaron + ' con lo que pueden' : '')) + '</small></div>' +
       (filas ? '<div class="tabla-scroll"><table><thead><tr><th>quién</th><th>cuántas</th><th>c/u</th><th>estado</th></tr></thead>' +
                '<tbody>' + filas + '</tbody></table></div>'
              : '<p class="tenue" style="margin:10px 0 0">todavía no compró nadie</p>') +
