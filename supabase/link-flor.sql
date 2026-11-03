@@ -8,3 +8,7 @@ select 'flor', m.id, 'La Reina te llama...',
        0, '2026-11-14 20:00:00-03'::timestamptz,
        false, 'la Reina', 'flr-000', null, 50000
   from public.miembros m where m.nombre_sektario = 'FLR·000';
+
+-- 02/11: vuelve el free, en chiquito y sin botón ("hablá con Flor", ver
+-- FREE_SUTIL en index.html). Se corre recién con ese sitio publicado.
+update public.anfitriones set instagram = 'flordirocco' where palabra = 'flor';

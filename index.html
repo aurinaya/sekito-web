@@ -1068,6 +1068,10 @@
   .cu-cierre{ font-size:12.5px; line-height:1.7; letter-spacing:.03em; color:var(--white); margin-top:24px; text-align:center; }
   .cu-free{ display:block; margin-top:14px; padding:14px; text-align:center; text-decoration:none; color:var(--white);
             border:1px solid rgba(var(--white-rgb),.75); font-size:11px; font-weight:500; letter-spacing:.22em; }
+  /* la versión chiquita, sin botón (sekito.ar/flor) */
+  .cu-sutil{ font-size:10.5px; line-height:1.8; letter-spacing:.04em; color:rgba(var(--white-rgb),.6); margin-top:30px; text-align:center; }
+  .cu-sutil a{ color:var(--white); text-decoration:underline; text-decoration-color:var(--bordo-claro);
+               text-underline-offset:4px; text-decoration-thickness:1px; padding:6px 2px; }
 
   /* invitar con la entrada: la caja que aparece cuando la búsqueda no encuentra a nadie */
   .pv-invitar{
@@ -5671,6 +5675,8 @@ reveal();
   if (!a){ history.replaceState(null, '', '/'); return; }   // no es un cumple: el portón de siempre
 
   const ALIAS = 'seki.7', ATITULAR = 'Florencia Di Rocco';
+  // links donde el free va en chiquito, sin el botón grande
+  const FREE_SUTIL = { flor: { con: 'Flor', cola: 'ella soluciona todo' } };
   const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const plata = n => '$' + Number(n).toLocaleString('es-AR');
@@ -5773,7 +5779,11 @@ reveal();
       '<button class="pv-btn" id="cuSubir">ya transferí, subo el comprobante</button>' +
       '<input type="file" id="cuArchivo" accept="image/*" hidden>' +
       '<div class="cu-dicho" id="cuDicho"></div>' +
-      (a.instagram ?
+      (a.instagram && FREE_SUTIL[palabra] ?
+        '<div class="cu-sutil">Si no estás pudiendo con estos valores ahora,<br>el sékito quiere que vengas igual.<br>' +
+          '<a href="https://ig.me/m/' + esc(a.instagram) + '" target="_blank" rel="noopener">hablá con ' + FREE_SUTIL[palabra].con + '</a>, ' +
+          FREE_SUTIL[palabra].cola + '.</div>' :
+       a.instagram ?
         '<div class="cu-cierre">Si no podés pagar pero querés venir,<br>hablá con ' + esc(a.quien) + ', que te lo resuelve.</div>' +
         '<a class="cu-free" href="https://ig.me/m/' + esc(a.instagram) + '" target="_blank" rel="noopener">QUIERO UN FREE</a>' : '') +
     '</div>';
