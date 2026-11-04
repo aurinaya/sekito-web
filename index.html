@@ -1060,6 +1060,16 @@
   #cumple-screen .pv-aviso:not(.se-ve){ margin-top:0; padding-top:0; padding-bottom:0; }
   .cu-datos{ text-align:left; margin-top:28px; }
   .cu-dicho{ font-size:10.5px; letter-spacing:.04em; color:var(--bordo-claro); min-height:1.4em; margin-top:10px; }
+  /* sekito.ar/s7: faltan x días, y la llave en lugar del nombre y el mail */
+  .cu-faltan{ margin-top:22px; font-size:9.5px; letter-spacing:.22em; text-transform:uppercase; color:rgba(var(--white-rgb),.55); }
+  .cu-faltan b{ display:block; margin-top:8px; font-size:24px; font-weight:500; letter-spacing:.08em; color:var(--white);
+                text-shadow:0 0 14px rgba(var(--white-rgb),.45); }
+  .cu-llave{ display:flex; gap:8px; }
+  .cu-llave input{ flex:1; min-width:0; letter-spacing:.2em; text-transform:uppercase; }
+  .cu-llave button{ flex:none; width:48px; background:none; border:1px solid rgba(var(--bordo-rgb),.9);
+                    background:rgba(var(--bordo-rgb),.14); color:var(--white); font-family:inherit; font-size:16px; cursor:pointer; }
+  .cu-sin-llave{ display:block; margin-top:14px; text-align:center; font-size:10px; letter-spacing:.18em; color:rgba(var(--white-rgb),.72);
+                 text-decoration:underline; text-underline-offset:5px; text-decoration-color:rgba(var(--white-rgb),.3); }
   /* el link sin cumple (sekito.ar/mau): su foto, y abajo el pedido de un free */
   .cu-foto{ display:block; width:176px; aspect-ratio:4/5; object-fit:cover; margin:26px auto 0;
             border:1px solid rgba(var(--gray-rgb),.25); }
@@ -5714,6 +5724,11 @@ reveal();
   const PROPIO = { mau: { cumple: 'el sékito te banca<br>la hermética',
                           cierre: 'Soy consciente del esfuerzo, pero necesito<br>que el sékito me banque esta vez.',
                           boton: 'MAU TE LO RESUELVE' },
+                  // sekito.ar/s7 (04/11): la compra directa, pero con llave. Se sube
+                  // a instagram: la sekta sigue sabiendo a quién le vende
+                  s7: { bancar: 'tu entrada<small>tanda abierta</small>',
+                        conLlave: true, hola: 'tu lugar te espera', faltan: true,
+                        cerrado: 'Las entradas de S7 ya cerraron.' },
                   lapochi: { bancar: 'voy,<br>banco la fiesta',
                              cierre: 'Soy consciente del esfuerzo, pero necesito<br>que el sékito me banque esta vez.',
                              boton: 'HABLÁ CON POCHI' },
@@ -5756,18 +5771,31 @@ reveal();
     }
   }
 
+  // faltan x días (sekito.ar/s7): se cuenta en días de Buenos Aires
+  if (propio.faltan){
+    const hoy = new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);
+    const d = Math.round((Date.parse('2026-11-14') - Date.parse(hoy)) / 864e5);
+    if (d >= 0){
+      const f = document.createElement('div');
+      f.className = 'cu-faltan';
+      f.innerHTML = d === 0 ? '<b>es hoy</b>' : (d === 1 ? 'falta' : 'faltan') + '<b>' + d + (d === 1 ? ' día' : ' días') + '</b>';
+      document.getElementById('cuFrase').after(f);
+    }
+  }
+
   // ¿el navegador ya tiene su llave?
   let llave = null;
+  const saludar = miembro => {
+    const hola = document.getElementById('cuHola');
+    const dice = (miembro.apodo || miembro.nombre_real || '').trim();
+    hola.textContent = (dice ? dice + ', ' : '') + (propio.hola ||
+      'venís de parte ' + (a.quien.startsWith('el ') ? 'del ' + a.quien.slice(3) : 'de ' + a.quien));
+    hola.hidden = false;
+  };
   const guardada = llaveGuardada();
   if (guardada){
     const { ok, miembro } = await consultarCodigo(guardada);
-    if (ok && miembro){
-      llave = guardada;
-      const hola = document.getElementById('cuHola');
-      const dice = (miembro.apodo || miembro.nombre_real || '').trim();
-      hola.textContent = (dice ? dice + ', ' : '') + 'venís de parte ' + (a.quien.startsWith('el ') ? 'del ' + a.quien.slice(3) : 'de ' + a.quien);
-      hola.hidden = false;
-    }
+    if (ok && miembro){ llave = guardada; saludar(miembro); }
   }
   if (campania){
     const hola = document.getElementById('cuHola');
@@ -5795,10 +5823,14 @@ reveal();
       return;
     }
     if (!a.abierto){
-      cuerpo.innerHTML = '<div class="pv-bloque"><div class="pv-nota">Este link ya cerró.<br>Las entradas siguen en el portal.</div>' +
-        '<a class="pv-btn" href="/s7" style="display:block;text-decoration:none;margin-top:22px">ver S7</a></div>';
+      cuerpo.innerHTML = propio.cerrado
+        ? '<div class="pv-bloque"><div class="pv-nota">' + propio.cerrado + '</div></div>'
+        : '<div class="pv-bloque"><div class="pv-nota">Este link ya cerró.<br>Las entradas siguen en el portal.</div>' +
+          '<a class="pv-btn" href="/s7" style="display:block;text-decoration:none;margin-top:22px">ver S7</a></div>';
       return;
     }
+    // sin llave, en sekito.ar/s7: primero la llave, después se transfiere
+    const falta = propio.conLlave && !llave;
     if (cuantas > tope()) cuantas = tope();
     const precio = elige === 'aporte' ? aporte : elige === 'remil' ? a.precio_remil : elige === 'bancar' ? a.precio_bancar : a.precio_cumple;
     const sinCupo = a.quedan < 1;
@@ -5830,13 +5862,23 @@ reveal();
       '<div class="pv-aviso' + (cuantas > 1 ? ' se-ve' : '') + '">' +
         'Las entradas son personales, las asignás una vez que ya las tengas.' +
       '</div>' +
-      (llave ? '' :
+      (falta ?
+        '<div class="cu-datos">' +
+          '<div class="bv-campo"><label for="cuLlave">tu llave del sékito</label>' +
+            '<div class="cu-llave"><input id="cuLlave" type="text" maxlength="24" placeholder="••••••••" enterkeyhint="go" ' +
+              'autocapitalize="characters" autocomplete="off" spellcheck="false">' +
+            '<button type="button" id="cuLlaveOk" aria-label="abrir">→</button></div></div>' +
+          '<div class="cu-dicho" id="cuDicho"></div>' +
+          '<a class="cu-sin-llave" href="/?pedir">no tengo mi llave</a>' +
+        '</div>' : '') +
+      (falta ? '' : llave ? '' :
         '<div class="cu-datos">' +
           '<div class="bv-campo"><label for="cuNombre">tu nombre</label>' +
             '<input id="cuNombre" type="text" maxlength="60" autocomplete="given-name" autocapitalize="words" value="' + esc(datos.nombre) + '"></div>' +
           '<div class="bv-campo"><label for="cuMail">tu mail · ahí te avisamos</label>' +
             '<input id="cuMail" type="email" maxlength="120" autocomplete="email" autocapitalize="off" spellcheck="false" value="' + esc(datos.mail) + '"></div>' +
         '</div>') +
+      (falta ? '' :
       '<div class="pv-rotulo" style="text-align:left;margin-top:26px">transferí</div>' +
       '<div class="pv-alias" id="cuAlias" role="button" tabindex="0">' +
         '<div class="pv-alias-dato">' + ALIAS + '</div>' +
@@ -5845,7 +5887,7 @@ reveal();
       '</div>' +
       '<button class="pv-btn" id="cuSubir">ya transferí, subo el comprobante</button>' +
       '<input type="file" id="cuArchivo" accept="image/*" hidden>' +
-      '<div class="cu-dicho" id="cuDicho"></div>' +
+      '<div class="cu-dicho" id="cuDicho"></div>') +
       // los botones de abajo (sekito.ar/tano): desaparecen cuando se llena su cupo
       (a.aportes && a.quedan_aporte > 0 ?
         '<div class="cu-cierre">' + (propio.cierre || '') + '</div>' +
@@ -5877,6 +5919,23 @@ reveal();
     ya_aportaste:       'ya tenés una entrada con esos precios',
   };
 
+  // sekito.ar/s7: la llave abre la transferencia, y queda guardada como en el portón
+  let probando = false;
+  async function abrirConLlave(){
+    const input = document.getElementById('cuLlave');
+    const cod = (input ? input.value : '').trim().toUpperCase();
+    if (!cod || probando) return;
+    probando = true; decir('');
+    const { ok, miembro } = await consultarCodigo(cod);
+    probando = false;
+    if (!ok){ decir('no hay conexión, probá de nuevo'); return; }
+    if (!miembro){ decir('esa llave no abre'); return; }
+    llave = cod; guardarLlave(cod); saludar(miembro); pintar();
+  }
+  cuerpo.addEventListener('keydown', e => {
+    if (e.target.id === 'cuLlave' && e.key === 'Enter'){ e.preventDefault(); abrirConLlave(); }
+  });
+
   cuerpo.addEventListener('input', e => {
     if (e.target.id === 'cuNombre') datos.nombre = e.target.value;
     if (e.target.id === 'cuMail')   datos.mail   = e.target.value;
@@ -5894,6 +5953,7 @@ reveal();
       if (tot) tot.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
+    if (t.closest('#cuLlaveOk')){ abrirConLlave(); return; }
     if (t.id === 'cuMas'  ){ cuantas++; pintar(); return; }
     if (t.id === 'cuMenos'){ cuantas--; pintar(); return; }
     if (t.closest('#cuAlias')){
