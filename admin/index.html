@@ -286,10 +286,8 @@ th[data-orden]:hover{color:var(--white)}
 th[data-orden].orden-sube::after{content:" ▲"; font-size:9px}
 th[data-orden].orden-baja::after{content:" ▼"; font-size:9px}
 .pendientes{margin-top:44px}
-.pedidos{margin:6px 0 30px; padding:14px 16px 6px; border:1px solid rgba(201,86,110,.45); background:rgba(128,0,32,.08)}
-.pedidos h3{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--gray); font-weight:400; margin:0 0 6px}
-.pedidos h3 strong{color:var(--white); font-weight:500}
-.pedidos tr.resuelto td{opacity:.45}
+#pedidos tr.resuelto td{opacity:.45}
+.pendientes .resumen strong{color:var(--white); font-weight:500}
 .pendientes h3{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--gray); font-weight:400; margin:26px 0 6px}
 .pendientes h3 strong{color:var(--white); font-weight:500}
 tbody tr:hover{background:rgba(147,168,172,.05)}
@@ -404,18 +402,6 @@ td.apretado{white-space:normal; min-width:150px}
     <div class="vista activa" id="v-miembros">
       <div class="numeros" id="numerosMiembros"></div>
 
-      <!-- los que pidieron su llave desde el portón (o desde /s7) -->
-      <div class="pedidos" id="pedidos" hidden>
-        <h3>pedidos de llave · <strong id="cuantosPedidos">0</strong> para mirar</h3>
-        <p class="tenue" style="margin-top:0">Miren su instagram. "Abrir la puerta" crea la llave, se la manda por mail y les deja el mensaje listo para mandarle por DM. "No" cierra el pedido sin avisarle nada.</p>
-        <div class="tabla-scroll">
-          <table>
-            <thead><tr><th>cuándo</th><th>quién</th><th>instagram</th><th>mail</th><th>cómo llegó</th><th></th></tr></thead>
-            <tbody id="filasPedidos"></tbody>
-          </table>
-        </div>
-      </div>
-
       <div class="barra">
         <input type="search" id="buscar" placeholder="buscar por apodo, nombre, código, llave o mail…">
         <button class="btn" id="btnCrear">+ llave nueva</button>
@@ -435,26 +421,48 @@ td.apretado{white-space:normal; min-width:150px}
         </table>
       </div>
 
-      <!-- lo que todavía no es nadie: llaves y links que andan dando vueltas -->
+      <!-- abajo, plegables: los pedidos de llave (desde el portón o /s7) y lo que
+           todavía no es nadie, llaves y links que andan dando vueltas -->
       <div class="pendientes">
-        <h3>llaves del panel sin usar · <strong id="cuantasSinUsar">0</strong></h3>
-        <p class="tenue" style="margin-top:0">Se entregaron y nadie las usó todavía. No vencen: se revocan a mano.</p>
-        <div class="tabla-scroll">
-          <table>
-            <thead><tr>
-              <th>llave</th><th>nota</th><th>quién lo trajo</th><th>creada</th><th>estado</th><th></th>
-            </tr></thead>
-            <tbody id="filasSinUsar"></tbody>
-          </table>
+        <div class="pliegue" data-pliegue="pedidos" id="pedidos" hidden>
+        <h3 class="titulo-tabla"><span class="flecha">▾</span>pedidos de llave <span class="resumen" id="resPedidos"></span></h3>
+        <div class="pliegue-cuerpo">
+          <p class="tenue" style="margin-top:0">Miren su instagram. "Abrir la puerta" crea la llave, se la manda por mail y les deja el mensaje listo para mandarle por DM. "No" cierra el pedido sin avisarle nada.</p>
+          <div class="tabla-scroll">
+            <table>
+              <thead><tr><th>cuándo</th><th>quién</th><th>instagram</th><th>mail</th><th>cómo llegó</th><th></th></tr></thead>
+              <tbody id="filasPedidos"></tbody>
+            </table>
+          </div>
+        </div>
         </div>
 
-        <h3>invitaciones dando vueltas · <strong id="cuantasInvitaciones">0</strong></h3>
-        <p class="tenue" style="margin-top:0">Los links que generaron los miembros y todavía nadie usó. Vencen solos.</p>
-        <div class="tabla-scroll">
-          <table>
-            <thead><tr><th>de</th><th>para</th><th>creada</th><th>le quedan</th></tr></thead>
-            <tbody id="filasInvitaciones"></tbody>
-          </table>
+        <div class="pliegue" data-pliegue="sin-usar">
+        <h3 class="titulo-tabla"><span class="flecha">▾</span>llaves del panel sin usar <span class="resumen"><strong id="cuantasSinUsar">0</strong></span></h3>
+        <div class="pliegue-cuerpo">
+          <p class="tenue" style="margin-top:0">Se entregaron y nadie las usó todavía. No vencen: se revocan a mano.</p>
+          <div class="tabla-scroll">
+            <table>
+              <thead><tr>
+                <th>llave</th><th>nota</th><th>quién lo trajo</th><th>creada</th><th>estado</th><th></th>
+              </tr></thead>
+              <tbody id="filasSinUsar"></tbody>
+            </table>
+          </div>
+        </div>
+        </div>
+
+        <div class="pliegue" data-pliegue="invitaciones">
+        <h3 class="titulo-tabla"><span class="flecha">▾</span>invitaciones dando vueltas <span class="resumen"><strong id="cuantasInvitaciones">0</strong></span></h3>
+        <div class="pliegue-cuerpo">
+          <p class="tenue" style="margin-top:0">Los links que generaron los miembros y todavía nadie usó. Vencen solos.</p>
+          <div class="tabla-scroll">
+            <table>
+              <thead><tr><th>de</th><th>para</th><th>creada</th><th>le quedan</th></tr></thead>
+              <tbody id="filasInvitaciones"></tbody>
+            </table>
+          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -2304,7 +2312,9 @@ async function cargarPedidos(){
   // los resueltos se ven un tiempo (los últimos 8), apagados
   const resueltos = PEDIDOS.filter(p => p.estado !== 'pendiente').slice(0, 8);
   $('#pedidos').hidden = !PEDIDOS.length;
-  $('#cuantosPedidos').textContent = pendientes.length;
+  const res = $('#resPedidos');
+  res.textContent = pendientes.length ? pendientes.length + ' para mirar' : 'nada para mirar';
+  res.classList.toggle('pide', pendientes.length > 0);
   const conta = $('#contaPedidos');
   conta.textContent = pendientes.length || '';
   conta.classList.toggle('hay', pendientes.length > 0);
