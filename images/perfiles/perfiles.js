@@ -52,4 +52,5 @@ window.PERFILES = {
   'FLN·249': { fotos: 1 },
   'PLM·071': { fotos: 1 },
   'FLV·398': { fotos: 1 },
+  'CMN·472': { fotos: 1 },
 };
