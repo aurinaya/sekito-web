@@ -319,7 +319,7 @@ $('#busca').addEventListener('input', () => {
     BUSCADOS = lista;
     caja.innerHTML = lista.length ? lista.map((e, i) =>
       '<div class="opcion" data-i="' + i + '"><div><b>' + esc(e.titulo) + '</b><br><span>' + esc(e.nombre || '') + '</span></div>' +
-      (e.adentro_en ? '<span class="ya">adentro ' + hora(e.adentro_en) + '</span>' : '<span>' + esc(e.tipo) + '</span>') + '</div>').join('')
+      (e.adentro_en ? '<span class="ya">adentro ' + hora(e.adentro_en) + '</span>' : '<span>' + esc(e.tipo === 'sekreta' ? 'hermética' : e.tipo) + '</span>') + '</div>').join('')
       : '<div class="nada">' + (r.ok ? 'nadie con eso' : 'sin conexión') + '</div>';
   }, 200);
 });
@@ -345,7 +345,8 @@ function mostrar(e){
   const ya = !!e.adentro_en;
   ficha.className = ya ? 'ya' : 'pasa';
   const foto = fotoDe(e.sektario);
-  const tipo = (e.tipo === 'staff' || e.tipo === 'free') ? e.tipo : 'tanda ' + e.tipo;
+  // la sekreta se dice hermética (06/11): la base no cambia
+  const tipo = (e.tipo === 'staff' || e.tipo === 'free') ? e.tipo : 'tanda ' + (e.tipo === 'sekreta' ? 'hermética' : e.tipo);
   $('#fichaCentro').innerHTML =
     '<div class="estado">' + (ya ? 'ya entró · ' + hora(e.adentro_en) + (e.adentro_por ? ' · ' + esc(e.adentro_por) : '') : 'tiene entrada') + '</div>' +
     (foto ? '<img class="foto" alt="" src="' + foto + '">' : '') +

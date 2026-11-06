@@ -127,7 +127,8 @@
     letras(x, L, y, e.sektario || 'de afuera', 400, 24, GRIS, 5, 'izq', ANCHO);
 
     // qué entrada es
-    const tipo = (e.tipo === 'staff' || e.tipo === 'free') ? e.tipo : 'tanda ' + e.tipo;
+    // la sekreta no se muestra más (06/11): sus entradas dicen hermética, la base no cambia
+    const tipo = (e.tipo === 'staff' || e.tipo === 'free') ? e.tipo : 'tanda ' + (e.tipo === 'sekreta' ? 'hermética' : e.tipo);
     letras(x, L, 790, tipo.toUpperCase(), 400, 21, BORDO_CLARO, 6, 'izq', ANCHO);
     letras(x, cx, 930, 'SEKITO.AR', 400, 18, 'rgba(147,168,172,.6)', 6);
 

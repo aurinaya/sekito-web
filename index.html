@@ -1118,6 +1118,11 @@
 
   /* las tres tandas: las mismas tarjetas de la placa del feed y del mail */
   .pv-tandas{ margin:56px 0 38px; }
+  /* los tres precios, antes de ir a /s7 */
+  .pv-opciones{ margin:14px 0 24px; text-align:left; }
+  .pv-opciones div{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:11px 0;
+                    border-bottom:1px solid rgba(var(--gray-rgb),.18); font-size:12px; letter-spacing:.06em; }
+  .pv-opciones b{ font-size:18px; font-weight:400; white-space:nowrap; }
   .pv-t{
     display:flex; justify-content:space-between; align-items:center;
     padding:13px 14px; margin-top:8px; text-align:left;
@@ -4509,6 +4514,7 @@ reveal();
 
   let volverA = null;
   let tanda   = null;   // {tanda_id, nombre, precio, tope}
+  let cargado = false;  // si ya llegaron los datos de la base al menos una vez
   let entradas = [];
   let compras  = [];
   let tandas   = [];     // las tres, con su estado: cerrada, activa, pendiente
@@ -4615,6 +4621,7 @@ reveal();
     const pedida = compras.find(x => x.estado === 'esperando_comprobante');
     pendiente = pedida ? { compra_id: pedida.compra_id, total: pedida.total } : null;
     if (cuantas > (tanda ? tanda.tope : 7)) cuantas = 1;
+    cargado = t.ok && e.ok;
     pintarPreview();
     entrarSiVienenDeAfuera();
   };
@@ -4673,6 +4680,21 @@ reveal();
       '</div>';
     }
 
+    // desde el 06/11 se compra en /s7, donde se elige 30, 40 o 50 (la llave ya
+    // está guardada). Los links de venta del panel siguen acá: todavía no
+    // dejaron su mail.
+    if (!enVenta){
+      return '<div class="pv-bloque">' +
+        '<div class="pv-rotulo">tu lugar</div>' +
+        '<div class="pv-opciones">' +
+          '<div><span>tanda hermética</span><b>$30.000</b></div>' +
+          '<div><span>bancás la fiesta</span><b>$40.000</b></div>' +
+          '<div><span>remil banco, hagan más jodas</span><b>$50.000</b></div>' +
+        '</div>' +
+        '<a class="pv-btn" href="/s7" style="display:block;text-align:center;text-decoration:none">quiero mi lugar</a>' +
+      '</div>';
+    }
+
     const total = tanda.precio * cuantas;
     return '<div class="pv-bloque">' +
       '<div class="pv-rotulo">tu lugar</div>' +
@@ -4692,27 +4714,6 @@ reveal();
         (cuantas === 1 ? 'quiero mi lugar' : 'quiero ' + cuantas + ' lugares') +
       '</button>' +
     '</div>';
-  }
-
-  /* las tres tandas, debajo de la compra: la que se fue apagada, la activa
-     encendida y las que vienen esperando. Con lo mismo que dicen la placa del
-     feed y el mail: cada una tiene su frase */
-  const FRASE = {
-    'sekreta':   { activa:'se está yendo', cerrada:'se fue' },
-    'hermética': { activa:'no dura nada',  cerrada:'no duró nada', pendiente:'no dura nada' },
-    'abierta':   { activa:'la única tanda real', pendiente:'la única tanda real' },
-  };
-  function bloqueTandas(){
-    if (tandas.length < 2) return '';
-    const filas = tandas.map(t => {
-      const frase = (FRASE[t.nombre] || {})[t.estado];
-      return '<div class="pv-t ' + esc(t.estado) + '">' +
-        '<div><div class="pv-t-nombre">tanda ' + esc(t.nombre) + '</div>' +
-        '<div class="pv-t-estado"><i></i>' + esc(t.estado) + (frase ? ' · ' + esc(frase) : '') + '</div></div>' +
-        '<div class="pv-t-precio">' + plata(t.precio) + '</div>' +
-      '</div>';
-    }).join('');
-    return '<div class="pv-tandas"><div class="seccion-titulo"><span>las tandas</span></div>' + filas + '</div>';
   }
 
   function bloqueCompras(){
@@ -4856,8 +4857,9 @@ reveal();
   function pintar(){
     // mientras transfiere, nada más: la lista de tandas le diría "cerrada" a
     // la sekreta que está pagando (las compras abiertas se respetan al cerrar)
-    cuerpo.innerHTML = bloqueTarjeta() + bloqueEntradas() + bloqueCompras() + bloqueComprar() +
-                       (pendiente ? '' : bloqueTandas());
+    // la lista de las tandas se fue el 06/11: la hermética volvió a $30.000
+    // y la sekreta no se muestra más
+    cuerpo.innerHTML = bloqueTarjeta() + bloqueEntradas() + bloqueCompras() + bloqueComprar();
     pintarTarjeta();
   }
 
@@ -5187,8 +5189,9 @@ reveal();
   });
 
   // --- entrar y salir --------------------------------------------------------
-  function abrir(desde){
+  async function abrir(desde){
     if (!miembroActual || !codigoActual) return;
+    if (!cargado) await window.__refrescarPreventa();   // sin datos no se abre vacía
     volverA = desde.closest('.member-screen');
     volverA.classList.remove('active');
     historiaScreen.classList.remove('active');
@@ -5210,8 +5213,11 @@ reveal();
     pintar();
   };
   // después de completar los datos: derecho a sus entradas
-  window.__verMisEntradas = function(){
+  // 06/11: antes abría a los 400 ms sin esperar los datos, y en un celu lento la
+  // pantalla quedaba vacía con "La preventa todavía no abrió." (le pasó a Pug)
+  window.__verMisEntradas = async function(){
     enVenta = false; salir.hidden = false;
+    await window.__refrescarPreventa();
     setTimeout(() => { const b = document.querySelector('.member-screen.active .s7-cartel'); if (b) b.click(); }, 400);
   };
 
@@ -5726,10 +5732,10 @@ reveal();
                           boton: 'MAU TE LO RESUELVE' },
                   // sekito.ar/s7 (04/11): la compra directa, pero con llave. Se sube
                   // a instagram: la sekta sigue sabiendo a quién le vende
-                  s7: { bancar: 'tu entrada<small>tanda abierta</small>',
+                  s7: { cumple: 'tu entrada<small>tanda hermética</small>', bancar: 'bancás la fiesta',
                         conLlave: true, hola: 'tu lugar te espera', faltan: true,
                         cerrado: 'Las entradas de S7 ya cerraron.' },
-                  lapochi: { bancar: 'voy,<br>banco la fiesta',
+                  lapochi: { bancar: 'bancás la fiesta',
                              cierre: 'Soy consciente del esfuerzo, pero necesito<br>que el sékito me banque esta vez.',
                              boton: 'HABLÁ CON POCHI' },
                   tano: { frase: '<span class="cu-nombres">El Tano<i>/</i>NAYA<i>/</i>Ramiro</span>' +
@@ -5838,7 +5844,7 @@ reveal();
       ? { cumple: 'venís al cumple<small>' + (sinCupo ? 'ya no quedan con este precio' : 'precio del cumple') + '</small>',
           bancar: sinCupo ? 'tu entrada<small>tanda abierta</small>' : 'bancás la fiesta<small>si podés, sumás</small>' }
       : campania ? { cumple: 'venís<small>precio de la hermética</small>', bancar: 'bancás la fiesta' }
-      : { cumple: propio.cumple || 'venís de compromiso', bancar: propio.bancar || 'bancás la fiesta' };
+      : { cumple: propio.cumple || 'tanda hermética', bancar: propio.bancar || 'bancás la fiesta' };
     cuerpo.innerHTML = '<div class="pv-bloque">' +
       '<div class="pv-rotulo" style="text-align:left">tu lugar</div>' +
       // sin cumple, cupo 0 quiere decir que este link no tiene ese precio (sekito.ar/flor)
