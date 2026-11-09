@@ -164,6 +164,24 @@ main{padding:20px; flex:1}
 }
 .filtro:hover{border-color:rgba(255,255,255,.35);color:var(--white)}
 .filtro[aria-pressed="true"]{border-color:rgba(255,255,255,.55);color:var(--white);background:rgba(255,255,255,.07)}
+/* quién falta: el ritmo de venta y a quién todavía se le puede vender */
+.ritmo{margin:0 0 20px}
+.ritmo-dice{font-size:13px;color:var(--gray);margin:0 0 10px;line-height:1.6}
+.ritmo-dice strong{color:var(--white);font-weight:400}
+.ritmo-barras{display:flex;align-items:flex-end;gap:3px;height:56px;max-width:560px}
+.ritmo-barras span{flex:1;background:rgba(255,255,255,.18);min-height:1px}
+.ritmo-barras span.semana{background:#D9A11E}
+.ritmo-pie{display:flex;justify-content:space-between;max-width:560px;font-size:10px;opacity:.45;margin-top:4px}
+.grupos-falta{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.grupo-falta{
+  background:none;border:1px solid rgba(255,255,255,.12);color:var(--gray);
+  padding:10px 16px;cursor:pointer;text-align:left;font:inherit;
+}
+.grupo-falta strong{display:block;font-size:20px;font-weight:400;color:var(--white)}
+.grupo-falta small{font-size:10px;letter-spacing:.1em;opacity:.7}
+.grupo-falta[aria-pressed="true"]{border-color:#D9A11E}
+.grupo-falta[aria-pressed="true"] strong{color:#D9A11E}
+.va{color:#D9A11E}
 tr.pendiente td:first-child{box-shadow:inset 3px 0 0 #E5843F}
 tr.pendiente{background:rgba(229,132,63,.06)}
 tr.pendiente [data-okcompra]{border-color:#E5843F;color:#E5843F}
@@ -492,6 +510,27 @@ td.apretado{white-space:normal; min-width:150px}
         <button class="btn btn-principal" id="btnEntradas">+ entradas</button>
         <button class="btn btn-principal" id="btnLinkVenta">+ link de venta</button>
         <button class="btn btn-principal" id="btnAnfitrion">+ link de anfitrión</button>
+      </div>
+
+      <div class="pliegue" data-pliegue="falta">
+      <h3 class="titulo-tabla"><span class="flecha">▾</span>quién falta <span class="resumen" id="resFalta"></span></h3>
+      <div class="pliegue-cuerpo">
+      <div class="ritmo" id="ritmo"></div>
+      <div class="grupos-falta" id="gruposFalta"></div>
+      <div class="barra">
+        <input type="search" id="buscarFalta" placeholder="buscar por nombre o mail…">
+        <div class="filtros" id="filtrosFalta"></div>
+        <button class="btn" id="btnMailsFalta" type="button">copiar mails</button>
+      </div>
+      <div class="tabla-scroll">
+        <table>
+          <thead><tr>
+            <th>quién</th><th>mail</th><th>último ingreso</th><th>lo trajo</th><th>qué pasa</th>
+          </tr></thead>
+          <tbody id="filasFalta"></tbody>
+        </table>
+      </div>
+      </div>
       </div>
 
       <div class="pliegue" data-pliegue="cumples" id="pliegueCumples" hidden>
@@ -1526,7 +1565,145 @@ function pintarEntradas(){
 
 function refrescarS7(){
   cargarResumenS7(); cargarTandas(); cargarCompras(); cargarEntradasS7(); cargarPuertas(); cargarCumples();
+  cargarQuienFalta();
 }
+
+/* --- quién falta (09/11): el ritmo de venta y a quién todavía se le puede
+   vender o recordar algo, para decidir los últimos mails. Solo mira. --- */
+let FALTAN = [], RITMO = [];
+let GRUPO_FALTA = 'portal';
+const VER_FALTA = new Set();
+const GRUPOS_FALTA = [
+  ['portal',      'del portal sin entrada'],
+  ['sin_asignar', 'con entradas sin asignar'],
+  ['base',        'base de mail sin comprar'],
+];
+const FIESTA = new Date('2026-11-14T23:00:00-03:00');
+const delDia = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const esta_semana = t => t && (Date.now() - new Date(t)) < 7 * 864e5;
+
+async function cargarQuienFalta(){
+  const [r, rr] = await Promise.all([
+    rpc('admin_quien_falta', { p_codigo: CODIGO }),
+    rpc('admin_ritmo_s7',    { p_codigo: CODIGO }),
+  ]);
+  if (!r.ok){
+    $('#filasFalta').innerHTML = '<tr><td colspan="5" class="vacio">' + esc(enCastellano(r.motivo)) + '</td></tr>';
+    return;
+  }
+  FALTAN = r.datos || [];
+  RITMO = rr.ok ? (rr.datos || []) : [];
+  pintarRitmo();
+  pintarQuienFalta();
+}
+
+function pintarRitmo(){
+  const caja = $('#ritmo');
+  if (!RITMO.length){ caja.innerHTML = ''; return; }
+  const por = {};
+  RITMO.forEach(x => { por[x.dia] = x.entradas; });
+  const total = RITMO.reduce((s, x) => s + x.entradas, 0);
+  // los últimos 21 días, con los que no se vendió nada en cero
+  const hoy = delDia(new Date()), dias = [];
+  for (let i = 20; i >= 0; i--){
+    const d = new Date(hoy); d.setDate(d.getDate() - i);
+    const clave = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    dias.push({ d, n: por[clave] || 0, semana: i < 7 });
+  }
+  const semana = dias.filter(x => x.semana).reduce((s, x) => s + x.n, 0);
+  const faltan = Math.round((delDia(FIESTA) - hoy) / 864e5);
+  const tope = Math.max(...dias.map(x => x.n), 1);
+  const dm = d => d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit' });
+  caja.innerHTML =
+    '<p class="ritmo-dice">' +
+      (faltan > 0 ? 'faltan <strong>' + faltan + ' días</strong> · ' : faltan === 0 ? '<strong>es hoy</strong> · ' : '') +
+      '<strong>' + total + '</strong> vendidas · <strong>' + semana + '</strong> en los últimos 7 días' +
+      (faltan > 0 ? ' · al ritmo de esta semana serían <strong>~' + Math.round(semana / 7 * faltan) + ' más</strong>' : '') +
+    '</p>' +
+    '<div class="ritmo-barras">' + dias.map(x =>
+      '<span' + (x.semana ? ' class="semana"' : '') + ' style="height:' + Math.round(x.n / tope * 100) + '%" title="' +
+        dm(x.d) + ' · ' + x.n + '"></span>').join('') + '</div>' +
+    '<div class="ritmo-pie"><span>' + dm(dias[0].d) + '</span><span>entradas por día</span><span>hoy</span></div>';
+}
+
+function listaFalta(){
+  const q = paraBuscar($('#buscarFalta').value.trim());
+  return FALTAN.filter(f => f.grupo === GRUPO_FALTA)
+    .filter(f => !q || [f.nombre, f.completo, f.sektario, f.mail, f.trajo].some(v => v && paraBuscar(v).includes(q)))
+    .filter(f => !VER_FALTA.has('semana') || esta_semana(f.ultima_visita))
+    .filter(f => !VER_FALTA.has('trajo_va') || f.trajo_va)
+    .sort((a, b) =>
+      GRUPO_FALTA === 'sin_asignar' ? (b.sin_asignar + b.en_link) - (a.sin_asignar + a.en_link)
+      : GRUPO_FALTA === 'base' ? String(a.mail).localeCompare(b.mail)
+      : String(b.ultima_visita || '').localeCompare(String(a.ultima_visita || '')));
+}
+
+function pintarQuienFalta(){
+  const n = g => FALTAN.filter(f => f.grupo === g).length;
+  const sinDuenio = FALTAN.filter(f => f.grupo === 'sin_asignar').reduce((s, f) => s + f.sin_asignar + f.en_link, 0);
+  $('#resFalta').textContent = '· ' + n('portal') + ' del portal · ' + sinDuenio + ' entradas sin dueño · ' + n('base') + ' de la base';
+
+  $('#gruposFalta').innerHTML = GRUPOS_FALTA.map(([g, dice]) =>
+    '<button type="button" class="grupo-falta" data-grupo-falta="' + g + '" aria-pressed="' + (g === GRUPO_FALTA) + '">' +
+      '<strong>' + (g === 'sin_asignar' ? n(g) + ' <small>· ' + sinDuenio + ' entradas</small>' : n(g)) + '</strong>' +
+      '<small>' + dice + '</small></button>').join('');
+
+  // los recortes que sirven para decidir a quién escribirle, solo en el portal
+  const delGrupo = FALTAN.filter(f => f.grupo === GRUPO_FALTA);
+  $('#filtrosFalta').innerHTML = GRUPO_FALTA !== 'portal' ? '' :
+    '<span class="rotulo">solo:</span>' +
+    [['semana', 'entró esta semana', delGrupo.filter(f => esta_semana(f.ultima_visita)).length],
+     ['trajo_va', 'lo trajo alguien que va', delGrupo.filter(f => f.trajo_va).length]].map(([k, dice, c]) =>
+      '<button type="button" class="filtro" data-ver-falta="' + k + '" aria-pressed="' + VER_FALTA.has(k) + '">' +
+        dice + ' (' + c + ')</button>').join('');
+
+  const lista = listaFalta();
+  const conMail = lista.filter(f => f.mail && f.acepta_mails);
+  $('#btnMailsFalta').textContent = 'copiar mails (' + conMail.length + ')';
+
+  const cuerpo = $('#filasFalta');
+  if (!lista.length){
+    cuerpo.innerHTML = '<tr><td colspan="5" class="vacio">nadie</td></tr>';
+    return;
+  }
+  cuerpo.innerHTML = lista.map(f => {
+    const quien = esc(f.nombre || '—') +
+      (f.completo && f.completo !== f.nombre ? ' <span class="tenue">· ' + esc(f.completo) + '</span>' : '') +
+      (f.sektario ? '<div class="tenue" style="font-size:11px">' + esc(f.sektario) + '</div>' : '');
+    const pasa = [];
+    if (f.grupo === 'sin_asignar'){
+      if (f.sin_asignar) pasa.push('<span class="est-pide">' + f.sin_asignar + ' sin asignar</span>');
+      if (f.en_link) pasa.push(f.en_link + ' en un link sin abrir');
+      pasa.push(f.tiene_la_suya ? 'tiene la suya' : '<span class="est-pide">no tiene la suya</span>');
+    }
+    if (f.falta_comprobante) pasa.push('<span class="est-pide">compró sin comprobante</span>');
+    if (f.mail_ronda1) pasa.push('le llegó la ronda 1');
+    if (f.mail && !f.acepta_mails) pasa.push('<span class="est-mal">no quiere mails</span>');
+    return '<tr>' +
+      '<td>' + quien + '</td>' +
+      '<td class="apretado tenue">' + (f.mail ? '<span class="copiable" data-copiar="' + esc(f.mail) + '">' + esc(f.mail) + '</span>' : '—') + '</td>' +
+      '<td class="tenue">' + (f.grupo === 'base' ? '<span class="tenue">no está en el portal</span>' : haceCuanto(f.ultima_visita)) + '</td>' +
+      '<td>' + (f.trajo ? esc(f.trajo) + (f.trajo_va ? ' <span class="va">· va</span>' : '') : '<span class="tenue">—</span>') + '</td>' +
+      '<td class="apretado tenue">' + (pasa.join('<br>') || '—') + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+$('#buscarFalta').addEventListener('input', pintarQuienFalta);
+$('#gruposFalta').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-grupo-falta]'); if (!b) return;
+  GRUPO_FALTA = b.dataset.grupoFalta; VER_FALTA.clear();
+  pintarQuienFalta();
+});
+$('#filtrosFalta').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-ver-falta]'); if (!b) return;
+  VER_FALTA.has(b.dataset.verFalta) ? VER_FALTA.delete(b.dataset.verFalta) : VER_FALTA.add(b.dataset.verFalta);
+  pintarQuienFalta();
+});
+$('#btnMailsFalta').addEventListener('click', ev => {
+  const mails = listaFalta().filter(f => f.mail && f.acepta_mails).map(f => f.mail);
+  if (mails.length) copiar(mails.join(', '), ev.currentTarget, 'copiar mails (' + mails.length + ')');
+});
 
 /* --- los cumples: cada link de anfitrión, con su cupo y quién compró --- */
 async function cargarCumples(){
