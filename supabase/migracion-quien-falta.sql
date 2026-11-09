@@ -22,7 +22,7 @@ returns table(
   ultima_visita timestamptz,
   registrado_en timestamptz,
   trajo        text,     -- quién lo trajo
-  trajo_va     boolean,  -- quien lo trajo ya tiene entrada
+  trajo_va     boolean,  -- quien lo trajo va (tiene entrada o es fundador)
   sin_asignar  integer,
   en_link      integer,
   tiene_la_suya boolean,
@@ -59,7 +59,8 @@ begin
          m.ultima_visita,
          m.registrado_en,
          public.como_le_dicen(r.apodo, coalesce(r.nombre_real, r.nombre_sektario)),
-         (r.id is not null and r.id in (select ce.m from con_entrada ce)),
+         -- los fundadores van siempre; LA SEKTA no es alguien (guarda entradas en links)
+         (r.es_fundador or (r.estado_codigo = 'activo' and r.id in (select ce.m from con_entrada ce))),
          0, 0, false,
          exists (select 1 from public.compras c where c.comprador = m.id and c.estado = 'esperando_comprobante'),
          lower(btrim(m.email)) in (select r1.mail from ronda1 r1)
