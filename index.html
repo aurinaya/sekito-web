@@ -1074,6 +1074,7 @@
   .cu-foto{ display:block; width:176px; aspect-ratio:4/5; object-fit:cover; margin:26px auto 0;
             border:1px solid rgba(var(--gray-rgb),.25); }
   .cu-foto[hidden]{ display:none; }
+  .cu-foto.cu-foto-h{ width:min(100%, 320px); aspect-ratio:3/2; }   /* sekito.ar/alita: la foto entera, horizontal */
   .cu-foto:not([hidden]) + .cu-frase{ margin-top:18px; }
   .cu-cierre{ font-size:12.5px; line-height:1.7; letter-spacing:.03em; color:var(--white); margin-top:24px; text-align:center; }
   .cu-free{ display:block; margin-top:14px; padding:14px; text-align:center; text-decoration:none; color:var(--white);
@@ -5740,7 +5741,7 @@ reveal();
                              boton: 'HABLÁ CON POCHI' },
                   // sekito.ar/alita (11/11): los tres precios, y abajo 2x1 y 3x2 (packs)
                   alita: { cierre: 'Si no estás pudiendo con estos valores,<br>el sékito no deja afuera a los suyos.',
-                           boton: 'HABLÁ CON ALITA' },
+                           boton: 'HABLÁ CON ALITA', horizontal: true },
                   tano: { frase: '<span class="cu-nombres">El Tano<i>/</i>NAYA<i>/</i>Ramiro</span>' +
                                  '<small>o como te dijo que se llama</small><b>festeja su cumple el 14 en la S7</b>',
                           memes: ['/images/tano/meme-escorpio.jpg', '/images/tano/meme-invito.jpg'],
@@ -5768,6 +5769,7 @@ reveal();
     const foto = document.getElementById('cuFoto');
     foto.src = '/images/perfiles/' + a.foto + '/1.jpg';
     foto.hidden = false;
+    if (propio.horizontal) foto.classList.add('cu-foto-h');
     if (propio.memes){
       const collage = document.createElement('div');
       collage.className = 'cu-collage';
