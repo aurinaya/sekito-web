@@ -5741,7 +5741,8 @@ reveal();
                              boton: 'HABLÁ CON POCHI' },
                   // sekito.ar/alita (11/11): los tres precios, y abajo 2x1 y 3x2 (packs)
                   alita: { cierre: 'Si no estás pudiendo con estos valores,<br>el sékito no deja afuera a los suyos.',
-                           boton: 'HABLÁ CON ALITA', horizontal: true },
+                           boton: 'HABLÁ CON ALITA', horizontal: true,
+                           promos: { 2: 'promo monogamia', 3: 'promo triejas' } },
                   tano: { frase: '<span class="cu-nombres">El Tano<i>/</i>NAYA<i>/</i>Ramiro</span>' +
                                  '<small>o como te dijo que se llama</small><b>festeja su cumple el 14 en la S7</b>',
                           memes: ['/images/tano/meme-escorpio.jpg', '/images/tano/meme-invito.jpg'],
@@ -5872,7 +5873,9 @@ reveal();
         '<div class="pv-rotulo" style="text-align:left;margin-top:22px">con los tuyos</div>' +
         a.packs.map(n =>
           '<button type="button" class="cu-op' + (elige === 'pack' + n ? ' si' : '') + '" data-elige="pack' + n + '">' +
-            '<span class="cu-op-que">' + n + 'x' + (n - 1) + '<small>' + (CUANTAS[n] || n) + ' entradas</small></span>' +
+            '<span class="cu-op-que">' + ((propio.promos || {})[n]   // sekito.ar/alita: la promo arriba, el 2x1 abajo
+              ? propio.promos[n] + '<small>' + n + 'x' + (n - 1) + '</small>'
+              : n + 'x' + (n - 1) + '<small>' + (CUANTAS[n] || n) + ' entradas</small>') + '</span>' +
             '<span class="cu-op-precio">' + plata(a.precio_pack * n) + '</span></button>').join('') : '') +
       (pack() ? '' :
       '<div class="pv-cantidad">' +
