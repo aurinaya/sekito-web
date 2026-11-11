@@ -5738,6 +5738,9 @@ reveal();
                   lapochi: { bancar: 'bancás la fiesta',
                              cierre: 'Soy consciente del esfuerzo, pero necesito<br>que el sékito me banque esta vez.',
                              boton: 'HABLÁ CON POCHI' },
+                  // sekito.ar/alita (11/11): los tres precios, y abajo 2x1 y 3x2 (packs)
+                  alita: { cierre: 'Si no estás pudiendo con estos valores,<br>el sékito no deja afuera a los suyos.',
+                           boton: 'HABLÁ CON ALITA' },
                   tano: { frase: '<span class="cu-nombres">El Tano<i>/</i>NAYA<i>/</i>Ramiro</span>' +
                                  '<small>o como te dijo que se llama</small><b>festeja su cumple el 14 en la S7</b>',
                           memes: ['/images/tano/meme-escorpio.jpg', '/images/tano/meme-invito.jpg'],
@@ -5749,6 +5752,7 @@ reveal();
   const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const plata = n => '$' + Number(n).toLocaleString('es-AR');
+  const CUANTAS = { 2: 'dos', 3: 'tres', 4: 'cuatro', 5: 'cinco' };
   const pantalla = document.getElementById('cumple-screen');
   const cuerpo   = document.getElementById('cuCuerpo');
 
@@ -5809,11 +5813,13 @@ reveal();
     hola.hidden = false;
   }
 
-  let elige   = a.quedan < 1 ? 'bancar' : 'cumple';   // cumple, bancar, remil o aporte
+  let elige   = a.quedan < 1 ? 'bancar' : 'cumple';   // cumple, bancar, remil, aporte, pack2 o pack3
   let aporte  = null;                                 // lo que puede, si eligió de abajo
   let cuantas = 1;
   let listo   = null;    // el mail al que le escribimos, o '' si compró con su llave
-  const tope = () => elige === 'aporte' ? 1 : elige === 'cumple' ? Math.min(7, a.quedan) : 7;
+  // 2x1 / 3x2 (sekito.ar/alita): la cantidad la fija el pack
+  const pack = () => elige.startsWith('pack') ? Number(elige.slice(4)) : 0;
+  const tope = () => pack() || (elige === 'aporte' ? 1 : elige === 'cumple' ? Math.min(7, a.quedan) : 7);
 
   function pintar(){
     if (listo !== null){
@@ -5838,7 +5844,8 @@ reveal();
     // sin llave, en sekito.ar/s7: primero la llave, después se transfiere
     const falta = propio.conLlave && !llave;
     if (cuantas > tope()) cuantas = tope();
-    const precio = elige === 'aporte' ? aporte : elige === 'remil' ? a.precio_remil : elige === 'bancar' ? a.precio_bancar : a.precio_cumple;
+    if (pack()) cuantas = pack();
+    const precio = pack() ? a.precio_pack : elige === 'aporte' ? aporte : elige === 'remil' ? a.precio_remil : elige === 'bancar' ? a.precio_bancar : a.precio_cumple;
     const sinCupo = a.quedan < 1;
     const dicen = a.es_cumple
       ? { cumple: 'venís al cumple<small>' + (sinCupo ? 'ya no quedan con este precio' : 'precio del cumple') + '</small>',
@@ -5859,12 +5866,19 @@ reveal();
         '<button type="button" class="cu-op' + (elige === 'remil' ? ' si' : '') + '" data-elige="remil">' +
           '<span class="cu-op-que">remil banco,<br>hagan más jodas</span>' +
           '<span class="cu-op-precio">' + plata(a.precio_remil) + '</span></button>' : '') +
+      (a.packs && a.precio_pack && !sinCupo ?
+        '<div class="pv-rotulo" style="text-align:left;margin-top:22px">con los tuyos</div>' +
+        a.packs.map(n =>
+          '<button type="button" class="cu-op' + (elige === 'pack' + n ? ' si' : '') + '" data-elige="pack' + n + '">' +
+            '<span class="cu-op-que">' + n + 'x' + (n - 1) + '<small>' + (CUANTAS[n] || n) + ' entradas</small></span>' +
+            '<span class="cu-op-precio">' + plata(a.precio_pack * n) + '</span></button>').join('') : '') +
+      (pack() ? '' :
       '<div class="pv-cantidad">' +
         '<button type="button" id="cuMenos"' + (cuantas <= 1 ? ' disabled' : '') + '>−</button>' +
         '<div class="pv-cuantas">' + cuantas + '</div>' +
         '<button type="button" id="cuMas"' + (cuantas >= tope() ? ' disabled' : '') + '>+</button>' +
-      '</div>' +
-      '<div class="pv-total">' + cuantas + ' × ' + plata(precio) + ' = ' + plata(precio * cuantas) + '</div>' +
+      '</div>') +
+      '<div class="pv-total"' + (pack() ? ' style="margin-top:22px"' : '') + '>' + cuantas + ' × ' + plata(precio) + ' = ' + plata(precio * cuantas) + '</div>' +
       '<div class="pv-aviso' + (cuantas > 1 ? ' se-ve' : '') + '">' +
         'Las entradas son personales, las asignás una vez que ya las tengas.' +
       '</div>' +
@@ -5991,6 +6005,7 @@ reveal();
       p_palabra: palabra, p_codigo: llave, p_nombre: datos.nombre, p_email: datos.mail,
       p_cantidad: cuantas, p_banca: elige !== 'cumple', p_remil: elige === 'remil', p_base64: base64, p_tipo: 'image/jpeg',
       ...(elige === 'aporte' ? { p_aporte: aporte } : {}),
+      ...(pack() ? { p_pack: true } : {}),
     });
     if (r.ok){ listo = llave ? '' : datos.mail.trim().toLowerCase(); pintar(); scrollToTop(); return; }
 
@@ -6000,7 +6015,7 @@ reveal();
       const n = await llamarRPC('anfitrion_publico', { p_palabra: palabra });
       const nuevo = n.ok && n.datos && n.datos[0];
       if (nuevo) Object.assign(a, nuevo);
-      if (elige === 'cumple' && a.quedan < 1) elige = 'bancar';
+      if ((elige === 'cumple' || pack()) && a.quedan < 1) elige = 'bancar';
       if (elige === 'aporte' && !(a.quedan_aporte > 0)){ elige = a.quedan < 1 ? 'bancar' : 'cumple'; aporte = null; }
       pintar();
     }
