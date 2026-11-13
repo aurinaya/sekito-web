@@ -1773,8 +1773,8 @@ $('#anBuscar').addEventListener('input', () => {
     const r = await rpc('admin_buscar_persona', { p_codigo: CODIGO, p_query: q });
     const gente = (r.ok && r.datos) || [];
     caja.innerHTML = gente.length
-      ? gente.map(g => '<div class="dar-op" data-persona="' + g.id + '" data-nombre="' + esc(g.nombre || g.sektario) + '">' +
-          esc(g.nombre || g.sektario) + '<span class="tenue">' + esc(g.sektario || '') + '</span></div>').join('')
+      ? gente.map(g => '<div class="dar-op" data-persona="' + g.id + '" data-nombre="' + esc(nombreCompleto(g)) + '">' +
+          opPersona(g) + '</div>').join('')
       : '<div class="tenue">nadie con eso</div>';
   }, 220);
 });
@@ -1998,8 +1998,8 @@ function abrirEntradas(modo, entrada){
   $('#enConfirmar').textContent = modo === 'asignar' ? 'asignar' : 'generar';
   $('#enTipo').innerHTML = TIPOS.map(t => '<option value="' + t + '">' +
     ((t === 'staff' || t === 'free') ? t : 'tanda ' + t) + '</option>').join('');
-  const activa = TANDAS.find(t => t.activa);
-  $('#enTipo').value = activa ? activa.nombre : 'sekreta';
+  // 13/11: arranca en free, que es lo que más se manda desde acá (antes, la tanda activa)
+  $('#enTipo').value = 'free';
   $('#enPrecio').value = precioDe($('#enTipo').value);
   $('#enCuantas').value = 1;
   ['#enBuscar', '#enNombre', '#enApellido', '#enApodo', '#enContacto', '#enNota', '#enLinkPara'].forEach(id => $(id).value = '');
@@ -2039,12 +2039,8 @@ $('#enBuscar').addEventListener('input', () => {
     const gente = (r.ok && r.datos) || [];
     if (!gente.length){ caja.innerHTML = '<div class="tenue">nadie con eso</div>'; return; }
     caja.innerHTML = gente.map(g =>
-      '<div class="dar-op" data-persona="' + g.id + '" data-nombre="' + esc(g.nombre || g.sektario) + '"' +
-        ' data-tiene="' + (g.ya_tiene ? 1 : 0) + '">' +
-        esc(g.nombre || g.sektario) +
-        (g.ya_tiene ? '<span class="ya-tiene">ya tiene</span>'
-                    : '<span class="tenue">' + esc(g.sektario || '') + '</span>') +
-      '</div>').join('');
+      '<div class="dar-op" data-persona="' + g.id + '" data-nombre="' + esc(nombreCompleto(g)) + '"' +
+        ' data-tiene="' + (g.ya_tiene ? 1 : 0) + '">' + opPersona(g, true) + '</div>').join('');
   }, 220);
 });
 
@@ -2358,6 +2354,20 @@ document.addEventListener('click', async e => {
    buscar. Lo elegido queda en un input oculto con el mismo id que tenía el
    select, así el resto del panel lo lee igual que antes. Busca en la lista
    que el panel ya tiene: no va a la base por cada letra. */
+/* 13/11: en "+ entradas", "asignar" y el anfitrión el resultado mostraba solo
+   el nombre de pila, y con tantos nombres parecidos costaba encontrar a la
+   gente. Ahora va nombre y apellido, apodo y código, como en "quién lo trajo".
+   admin_buscar_persona trae el id; el resto sale de la lista del panel. */
+function nombreCompleto(g){
+  const m = MIEMBROS.find(x => x.id === g.id);
+  return (m && [m.nombre_real, m.apellido].filter(Boolean).join(' ')) || g.nombre || g.sektario || '—';
+}
+function opPersona(g, conYaTiene){
+  const m = MIEMBROS.find(x => x.id === g.id);
+  return '<span>' + (m ? etiquetaPersona(m) : esc(g.nombre || g.sektario || '—')) + '</span>' +
+         '<span class="tenue" style="white-space:nowrap">' + esc(g.sektario || '') +
+           (conYaTiene && g.ya_tiene ? ' <span class="ya-tiene">· ya tiene</span>' : '') + '</span>';
+}
 function etiquetaPersona(m){
   const nombre = [m.nombre_real, m.apellido].filter(Boolean).join(' ');
   return esc(nombre || m.nombre_sektario || '—') +
