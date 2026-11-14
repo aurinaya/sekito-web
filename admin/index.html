@@ -1855,21 +1855,40 @@ $('#btnLista').addEventListener('click', async () => {
   const v = window.open('', '_blank');
   if (!v){ alert('el navegador bloqueó la ventana: permití las ventanas emergentes'); return; }
   v.document.write('<p style="font-family:monospace">armando la lista...</p>');
-  const r = await rpc('admin_lista_puerta', { p_codigo: CODIGO });
+  const [r, rs] = await Promise.all([
+    rpc('admin_lista_puerta', { p_codigo: CODIGO }),
+    rpc('admin_lista_puerta_sin_nombre', { p_codigo: CODIGO })
+  ]);
   if (!r.ok){ v.document.body.innerHTML = '<p>' + esc(enCastellano(r.motivo)) + '</p>'; return; }
   const filas = (r.datos || []).map(e => '<tr><td class="caja"></td><td><b>' + esc(e.titulo) + '</b></td><td>' +
     esc(e.nombre || '') + '</td><td>' + esc(e.sektario || 'de afuera') + '</td><td class="cod">' + esc(e.codigo) +
     '</td><td>' + esc(e.tipo) + '</td></tr>').join('');
+  // las sin asignar no tienen código: van aparte, bajo quien las tiene,
+  // con una cajita por entrada para ir tachando a medida que entran
+  const sueltas = (rs.ok && rs.datos) || [];
+  const totalSueltas = sueltas.reduce((t, s) => t + s.cuantas, 0);
+  const filasSueltas = sueltas.map(s => '<tr><td><b>' + esc(s.titulo) + '</b></td><td>' + esc(s.nombre || '') +
+    '</td><td>' + esc(s.sektario || '') + '</td><td>' + esc(s.tipos) + '</td><td class="cajas">' +
+    '<span class="caja"></span>'.repeat(s.cuantas) + '</td></tr>').join('');
+  const parteSueltas = !rs.ok
+    ? '<h2>SIN NOMBRE</h2><p>no se pudieron traer las entradas sin asignar: volvé a armar la lista</p>'
+    : !sueltas.length ? '' :
+      '<h2>SIN NOMBRE · ' + totalSueltas + ' ENTRADAS SIN ASIGNAR</h2>' +
+      '<p>no tienen QR: entran quienes vengan de parte de quien las tiene. una cajita por entrada.</p>' +
+      '<table><thead><tr><th>quién las tiene</th><th>nombre</th><th>código sektario</th><th>cuántas</th><th></th></tr></thead><tbody>' +
+      filasSueltas + '</tbody></table>';
   v.document.open();
   v.document.write('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>SEKI 7 · lista de puerta</title>' +
     '<style>body{font:12px/1.35 ui-monospace,Menlo,monospace;margin:24px;color:#000}h1{font-size:15px;letter-spacing:.2em;margin:0 0 4px}' +
     'p{margin:0 0 14px;color:#555}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #bbb;padding:6px 8px;text-align:left}' +
     'th{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#555}.caja{width:18px}.caja::before{content:"";display:inline-block;width:12px;height:12px;border:1px solid #000}' +
-    '.cod{letter-spacing:.1em}@media print{body{margin:10mm}tr{break-inside:avoid}}</style></head><body>' +
-    '<h1>SEKI 7 · LISTA DE PUERTA</h1><p>' + (r.datos || []).length + ' entradas · armada el ' + new Date().toLocaleString('es-AR') +
-    ' · en orden por como se le dice a cada uno</p>' +
+    '.cod{letter-spacing:.1em}.cajas .caja{margin-right:6px}h2{font-size:13px;letter-spacing:.2em;margin:28px 0 4px;break-before:page}' +
+    '@media print{body{margin:10mm}tr{break-inside:avoid}}</style></head><body>' +
+    '<h1>SEKI 7 · LISTA DE PUERTA</h1><p>' + (r.datos || []).length + ' entradas con QR' +
+    (sueltas.length ? ' + ' + totalSueltas + ' sin nombre (al final)' : '') +
+    ' · armada el ' + new Date().toLocaleString('es-AR') + ' · en orden por como se le dice a cada uno</p>' +
     '<table><thead><tr><th></th><th>apodo</th><th>nombre</th><th>código sektario</th><th>código</th><th>tipo</th></tr></thead><tbody>' +
-    filas + '</tbody></table><script>window.print()<\/script></body></html>');
+    filas + '</tbody></table>' + parteSueltas + '<script>window.print()<\/script></body></html>');
   v.document.close();
 });
 
