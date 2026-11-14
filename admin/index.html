@@ -741,7 +741,7 @@ td.apretado{white-space:normal; min-width:150px}
         <div class="campo"><label for="anCupo">cupo con el precio del cumple</label>
           <input id="anCupo" type="number" min="0" max="500" value="25"></div>
         <div class="campo"><label for="anHasta">funciona hasta</label>
-          <input id="anHasta" type="datetime-local" value="2026-11-14T20:00"></div>
+          <input id="anHasta" type="datetime-local" value="2026-11-14T23:50"></div>
       </div>
       <p class="tenue" style="font-size:12.5px; margin-top:0">
         Dos precios: <strong>venís al cumple</strong> (el de la hermética, cuenta como hermética) mientras
@@ -1759,7 +1759,7 @@ let anQuien = null, anDebounce = null;
 $('#btnAnfitrion').addEventListener('click', () => {
   anQuien = null;
   ['#anBuscar', '#anPalabra', '#anFrase'].forEach(id => { $(id).value = ''; });
-  $('#anCupo').value = 25; $('#anHasta').value = '2026-11-14T20:00';
+  $('#anCupo').value = 25; $('#anHasta').value = '2026-11-14T23:50';
   $('#anElegido').hidden = true; $('#anResultados').innerHTML = ''; $('#anAviso').textContent = '';
   $('#anPaso1').hidden = false; $('#anPaso2').hidden = true; $('#anCrear').disabled = false;
   abrir('#modalAnfitrion'); $('#anBuscar').focus();

@@ -348,13 +348,13 @@ function mostrar(e){
   // la sekreta se dice hermética (06/11): la base no cambia
   const tipo = (e.tipo === 'staff' || e.tipo === 'free') ? e.tipo : 'tanda ' + (e.tipo === 'sekreta' ? 'hermética' : e.tipo);
   $('#fichaCentro').innerHTML =
-    '<div class="estado">' + (ya ? 'ya entró · ' + hora(e.adentro_en) + (e.adentro_por ? ' · ' + esc(e.adentro_por) : '') : 'tiene entrada') + '</div>' +
+    '<div class="estado">' + (ya ? 'ya entró · ' + hora(e.adentro_en) + (e.adentro_por ? ' · ' + esc(e.adentro_por) : '') : (e.codigo ? 'tiene entrada' : 'entrada sin nombre')) + '</div>' +
     (foto ? '<img class="foto" alt="" src="' + foto + '">' : '') +
     '<div class="titulo">' + esc(e.titulo || '') + '</div>' +
     (e.nombre ? '<div class="nombre">' + esc(e.nombre) + '</div>' : '') +
     (e.sektario ? '<div class="sektario">' + esc(e.sektario) + '</div>' : (e.de_afuera ? '<div class="sektario">de afuera</div>' : '')) +
     '<div class="sello ' + esc(e.tipo) + '">' + esc(tipo) + '</div>' +
-    '<div class="codigo">' + esc(e.codigo) + '</div>';
+    (e.codigo ? '<div class="codigo">' + esc(e.codigo) + '</div>' : '');
   $('#fichaBotones').innerHTML = ya
     ? '<button class="btn" type="button" data-volver>volver</button>' +
       '<button class="btn" type="button" data-sacar style="opacity:.6">fue un error: sacarla de adentro</button>'
