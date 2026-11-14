@@ -2586,6 +2586,9 @@
 </div>
 
 <script>
+// 14/11 20:10: cerró la venta online de S7. Lo dicen el portal y todos los links.
+const VENTA_CERRADA = 'La venta online para S7 ya cerró.<br>Hay remanente en la puerta.<br><br>' +
+                      '<span style="color:#F2F2F2">Dorrego 1735, Palermo</span>';
 /* =====================================================================
    Los códigos ya no viven acá: los valida Supabase.
 
@@ -4641,7 +4644,8 @@ reveal();
   // --- lo que se dibuja ------------------------------------------------------
   function bloqueComprar(){
     if (!tanda){
-      return '<div class="pv-bloque"><div class="pv-nota">La preventa todavía no abrió.</div></div>';
+      // 14/11 20:10: se cerró la venta online; lo que queda, en la puerta
+      return '<div class="pv-bloque"><div class="pv-nota">' + VENTA_CERRADA + '</div></div>';
     }
 
     if (pendiente){
@@ -5838,10 +5842,8 @@ reveal();
       return;
     }
     if (!a.abierto){
-      cuerpo.innerHTML = propio.cerrado
-        ? '<div class="pv-bloque"><div class="pv-nota">' + propio.cerrado + '</div></div>'
-        : '<div class="pv-bloque"><div class="pv-nota">Este link ya cerró.<br>Las entradas siguen en el portal.</div>' +
-          '<a class="pv-btn" href="/s7" style="display:block;text-decoration:none;margin-top:22px">ver S7</a></div>';
+      // 14/11: cerró la venta online de S7; todos los links dicen lo mismo
+      cuerpo.innerHTML = '<div class="pv-bloque"><div class="pv-nota">' + VENTA_CERRADA + '</div></div>';
       return;
     }
     // sin llave, en sekito.ar/s7: primero la llave, después se transfiere
