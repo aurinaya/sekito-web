@@ -182,6 +182,15 @@ main{padding:20px; flex:1}
 .ln-horas small{font-size:9px;opacity:.45;margin-top:4px;white-space:nowrap}
 .ln-pie{font-size:12px;color:var(--gray);margin-top:10px}
 .pliegue.archivo{margin-top:34px}
+.la-palabra{margin:26px 0 0}
+.la-palabra h4{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:400;opacity:.8;margin:0 0 12px}
+.lp-lista{display:flex;flex-wrap:wrap;gap:8px}
+.lp-p{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--linea);padding:5px 6px 5px 11px;font-size:13px}
+.lp-p .n{font-size:11px;color:var(--gray)}
+.lp-p.oculta{opacity:.45}
+.lp-p.oculta .w{text-decoration:line-through}
+.lp-p button{background:none;border:1px solid rgba(255,255,255,.16);color:var(--gray);font:inherit;font-size:10.5px;padding:2px 8px;cursor:pointer}
+.lp-p button:hover{color:var(--white);border-color:rgba(255,255,255,.4)}
 body.s7-foto #btnEntradas, body.s7-foto #btnLinkVenta, body.s7-foto #btnAnfitrion, body.s7-foto #btnPuertaNueva,
 body.s7-foto [data-okcompra], body.s7-foto [data-nocompra], body.s7-foto [data-link-venta],
 body.s7-foto [data-asignar], body.s7-foto [data-ver-link], body.s7-foto [data-tarjeta], body.s7-foto [data-soltar],
@@ -494,6 +503,27 @@ td.apretado{white-space:normal; min-width:150px}
         </div>
         </div>
 
+        <!-- lo próximo (16/11): quiénes tocaron "quiero saber" en el perfil. A ellos
+             se les avisa primero cuando se anuncie -->
+        <div class="pliegue" data-pliegue="quieren-saber">
+        <h3 class="titulo-tabla"><span class="flecha">▾</span>quieren saber <span class="resumen"><strong id="cuantosQuieren">0</strong></span></h3>
+        <div class="pliegue-cuerpo">
+          <p class="tenue" style="margin-top:0">Tocaron "me quiero enterar" en lo próximo. Se les prometió que se enteran antes que nadie.</p>
+          <div class="la-palabra" id="laManija" style="margin:0 0 18px">
+            <h4>de qué están manija <span class="tenue" id="resManija"></span></h4>
+            <div class="lp-lista" id="mjLista"></div>
+            <div id="mjPropuestas"></div>
+          </div>
+          <div class="barra"><button class="btn" id="btnMailsQuieren" type="button">copiar mails</button></div>
+          <div class="tabla-scroll">
+            <table>
+              <thead><tr><th>sektario</th><th>quién</th><th>mail</th><th>cuándo</th><th>S7</th></tr></thead>
+              <tbody id="filasQuieren"></tbody>
+            </table>
+          </div>
+        </div>
+        </div>
+
         <div class="pliegue" data-pliegue="invitaciones">
         <h3 class="titulo-tabla"><span class="flecha">▾</span>invitaciones dando vueltas <span class="resumen"><strong id="cuantasInvitaciones">0</strong></span></h3>
         <div class="pliegue-cuerpo">
@@ -531,6 +561,20 @@ td.apretado{white-space:normal; min-width:150px}
       <div class="s7-fue">SEKI 7 · sábado 14 de noviembre · Dorrego 1735</div>
       <div class="numeros" id="numerosS7"></div>
       <div class="la-noche" id="laNoche"></div>
+
+      <!-- la palabra (16/11): lo que dejaron en el portal quienes estuvieron. Sin
+           nombres. Se puede ocultar una, sin borrarla -->
+      <div class="la-palabra" id="laPalabra" hidden>
+        <h4>la palabra <span class="tenue" id="resPalabra"></span></h4>
+        <div class="lp-lista" id="lpLista"></div>
+      </div>
+
+      <!-- los siete pecados (18/11): cuántas cartas se ofrendaron. Solo números:
+           quién le dio a quién no se muestra, ni acá -->
+      <div class="la-palabra" id="losPecados" hidden>
+        <h4>los siete pecados <span class="tenue" id="resPecados"></span></h4>
+        <div class="lp-lista" id="pcLista"></div>
+      </div>
 
       <div class="pliegue cerrado archivo" data-pliegue="archivo-s7">
       <h3 class="titulo-tabla"><span class="flecha">▾</span>la venta y la puerta <span class="resumen">· archivo</span></h3>
@@ -1062,6 +1106,7 @@ async function cargarTodo(){
   cargarPedidos();
   pintarSinUsar();
   cargarInvitaciones();
+  cargarQuieren();
   cargarLinaje();
   cargarValidaciones();
   cargarRegistro();
@@ -1203,6 +1248,9 @@ let NUMEROS = null;
 async function cargarNumerosMiembros(){
   const r = await rpc('admin_numeros_miembros', { p_codigo: CODIGO });
   NUMEROS = (r.ok && r.datos && r.datos[0]) || null;
+  // lo próximo (16/11): cuántos tocaron "quiero saber"
+  const lp = await rpc('admin_lo_proximo', { p_codigo: CODIGO });
+  if (NUMEROS && lp.ok && lp.datos && lp.datos[0]) NUMEROS.quieren_saber = lp.datos[0].quieren_saber;
   pintarConteo();
 }
 function pintarConteo(){
@@ -1222,6 +1270,7 @@ function pintarConteo(){
            uno(n.fundadores, 'fundadores') + '<span class="signo">=</span>' : '') +
       uno(miembros, 'miembros', true) +
       (n ? '<span class="signo"></span>' + uno(n.susurros, 'susurros') : '') +
+      (n && n.quieren_saber != null ? uno(n.quieren_saber, 'quieren saber') : '') +
     '</div>' +
     (fuera ? '<div class="tenue" style="font-size:12px">' + fuera + ' dados de baja</div>' : '');
 }
@@ -1260,6 +1309,42 @@ const hace = f => { const d = Math.floor((Date.now() - new Date(f)) / 86400000);
                    return d === 0 ? 'hoy' : d === 1 ? '1 día' : d + ' días'; };
 
 // los links de invitación que andan dando vueltas, con los días que les quedan
+/* --- quieren saber (16/11): la lista de quienes tocaron "quiero saber" --- */
+let QUIEREN = [];
+async function cargarQuieren(){
+  cargarManija();
+  const r = await rpc('admin_quieren_saber', { p_codigo: CODIGO });
+  QUIEREN = (r.ok && r.datos) || [];
+  $('#cuantosQuieren').textContent = QUIEREN.length;
+  const conMail = QUIEREN.filter(q => q.email);
+  $('#btnMailsQuieren').textContent = 'copiar mails (' + conMail.length + ')';
+  $('#filasQuieren').innerHTML = QUIEREN.length ? QUIEREN.map(q =>
+    '<tr><td class="mono-codigo">' + esc(q.sektario || '—') + '</td>' +
+    '<td>' + esc(q.apodo ? q.apodo + ' · ' + q.nombre : q.nombre) + '</td>' +
+    '<td class="tenue">' + (q.email ? '<span class="copiable" data-copiar="' + esc(q.email) + '">' + esc(q.email) + '</span>' : '—') + '</td>' +
+    '<td class="tenue">' + new Date(q.cuando).toLocaleString('es-AR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false }) + '</td>' +
+    '<td class="tenue">' + (q.estuvo_en_s7 ? 'estuvo' : '—') + '</td></tr>').join('')
+    : '<tr><td colspan="5" class="vacio">todavía nadie</td></tr>';
+}
+// de qué están manija (18/11): cuántos eligieron cada una, y las propuestas con quién
+async function cargarManija(){
+  const r = await rpc('admin_manija', { p_codigo: CODIGO });
+  if (!r.ok || !r.datos) return;
+  const o = r.datos.por_opcion || {}, pr = r.datos.propuestas || [];
+  const total = Object.values(o).reduce((a, n) => a + n, 0);
+  $('#resManija').textContent = total ? '· ' + total + ' eligieron' : '· todavía nadie';
+  $('#mjLista').innerHTML = [['seki','SEKI'],['colapso','COLAPSO'],['tiny','TINY SEKTA'],['otro','tienen una propuesta']]
+    .map(([k, n]) => '<span class="lp-p" style="padding-right:11px"><span class="w">' + n + '</span> <span class="n">' + (o[k] || 0) + '</span></span>').join('');
+  $('#mjPropuestas').innerHTML = pr.length ? '<div class="tabla-scroll" style="margin-top:12px"><table><thead><tr><th>sektario</th><th>quién</th><th>la propuesta</th><th>cuándo</th></tr></thead><tbody>' +
+    pr.map(x => '<tr><td class="mono-codigo">' + esc(x.sektario) + '</td><td>' + esc(x.nombre) + '</td><td>' + esc(x.idea) + '</td><td class="tenue">' +
+      new Date(x.cuando).toLocaleString('es-AR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false }) + '</td></tr>').join('') +
+    '</tbody></table></div>' : '';
+}
+$('#btnMailsQuieren').addEventListener('click', ev => {
+  const mails = QUIEREN.filter(q => q.email).map(q => q.email);
+  if (mails.length) copiar(mails.join(', '), ev.currentTarget, 'copiar mails (' + mails.length + ')');
+});
+
 async function cargarInvitaciones(){
   const cuerpo = $('#filasInvitaciones');
   const r = await rpc('admin_invitaciones_vigentes', { p_codigo: CODIGO });
@@ -1675,7 +1760,52 @@ function pintarEntradas(){
 
 function refrescarS7(){
   cargarResumenS7(); cargarTandas(); cargarCompras(); cargarEntradasS7(); cargarPuertas(); cargarCumples();
-  cargarQuienFalta();
+  cargarQuienFalta(); cargarPalabras(); cargarPecados();
+}
+
+/* --- la palabra de S7 (16/11): cada palabra con cuántas veces se dijo, sin
+   nombres. "ocultar" la saca de la nube del portal (todas las veces que se
+   dijo) y "mostrar" la devuelve. Esto sí se toca: es de después de la fiesta. */
+async function cargarPalabras(){
+  const r = await rpc('admin_palabras_s7', { p_codigo: CODIGO });
+  const caja = $('#laPalabra');
+  if (!r.ok){ caja.hidden = true; return; }
+  const lista = r.datos || [];
+  caja.hidden = false;
+  // las sembradas no cuentan como gente que dejó la suya
+  const total = lista.filter(p => !p.sembrada).reduce((a, p) => a + p.cuantas, 0);
+  $('#resPalabra').textContent = total ? '· ' + total + (total === 1 ? ' dejó la suya' : ' dejaron la suya') : '· todavía nadie dejó la suya';
+  $('#lpLista').innerHTML = lista.map(p =>
+    '<span class="lp-p' + (p.oculta ? ' oculta' : '') + '"><span class="w">' + esc(p.palabra) + '</span>' +
+      (p.cuantas > 1 ? ' <span class="n">×' + p.cuantas + '</span>' : '') +
+      (p.sembrada ? ' <span class="n">sembrada</span>' : '') +
+      '<button type="button" data-palabra="' + esc(p.palabra) + '" data-oculta="' + (p.oculta ? 0 : 1) + '">' +
+        (p.oculta ? 'mostrar' : 'ocultar') + '</button></span>').join('');
+}
+$('#lpLista').addEventListener('click', async e => {
+  const b = e.target.closest('[data-palabra]');
+  if (!b) return;
+  const ocultar = b.dataset.oculta === '1';
+  if (ocultar && !confirm('Ocultar "' + b.dataset.palabra + '" de la nube del portal? No se borra: se puede volver a mostrar.')) return;
+  b.disabled = true;
+  const r = await rpc('admin_ocultar_palabra_s7', { p_codigo: CODIGO, p_palabra: b.dataset.palabra, p_oculta: ocultar });
+  if (!r.ok){ b.disabled = false; alert(enCastellano(r.motivo)); return; }
+  cargarPalabras();
+});
+
+/* --- los siete pecados (18/11): solo cuántas, nunca quién a quién --- */
+async function cargarPecados(){
+  const r = await rpc('admin_pecados', { p_codigo: CODIGO });
+  const caja = $('#losPecados');
+  if (!r.ok || !r.datos){ caja.hidden = true; return; }
+  const d = r.datos;
+  caja.hidden = false;
+  $('#resPecados').textContent = d.ofrendas
+    ? '· ' + d.ofrendas + (d.ofrendas === 1 ? ' ofrendada' : ' ofrendadas') + ' · ' + d.dieron + ' dieron (' + d.las_siete + ' las siete) · ' +
+      d.recibieron + ' recibieron · ' + d.preguntas + (d.preguntas === 1 ? ' preguntó' : ' preguntaron') + ' quién'
+    : '· todavía nadie ofrendó';
+  const P = ['soberbia','avaricia','lujuria','ira','gula','envidia','pereza'];
+  $('#pcLista').innerHTML = P.map(k => '<span class="lp-p" style="padding-right:11px"><span class="w">' + k + '</span> <span class="n">' + ((d.por_pecado || {})[k] || 0) + '</span></span>').join('');
 }
 
 /* --- quién falta (09/11): el ritmo de venta y a quién todavía se le puede
