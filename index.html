@@ -2282,6 +2282,8 @@
   .px-idea{ margin:16px 0 0; }
   .px-idea[hidden]{ display:none; }
   .px-idea input{ width:200px; text-transform:none; font-size:14px; }
+  .px-opciones.votado .px-op{ cursor:default; }
+  .px-opciones.votado .px-op:not(.sel){ opacity:.3; }
   .px-anotado{ font-size:11px; color:var(--gray); min-height:16px; margin-top:12px; }
   .px-anotado b{ color:var(--white); font-weight:500; }
   /* ---------- 18/11: la placa de S7 y los siete pecados ---------- */
@@ -6547,20 +6549,26 @@ reveal();
   const input = document.getElementById('pxIdeaInput'), anotado = document.getElementById('pxAnotado');
   const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
   let yo = { manija: null, idea: null };
+  // el voto es uno solo y no se cambia: una vez elegido, queda marcado y quieto
   function pintarManija(){
-    opciones.querySelectorAll('.px-op').forEach(b => b.classList.toggle('sel', b.dataset.op === yo.manija));
-    anotado.innerHTML = yo.manija === 'otro' && yo.idea ? 'tu propuesta: <b>' + esc(yo.idea) + '</b>' : yo.manija ? 'anotado.' : '';
-    if (yo.manija !== 'otro') form.hidden = true;
+    const ya = !!yo.manija;
+    opciones.classList.toggle('votado', ya);
+    opciones.querySelectorAll('.px-op').forEach(b => { b.classList.toggle('sel', b.dataset.op === yo.manija); b.disabled = ya; });
+    anotado.innerHTML = yo.manija === 'otro' && yo.idea ? 'tu propuesta: <b>' + esc(yo.idea) + '</b>' : ya ? 'anotado.' : '';
+    if (ya) form.hidden = true;
   }
   async function elegir(op, idea){
     const antes = { ...yo };
     yo = { manija: op, idea: idea || null };
     pintarManija();
     const r = await llamarRPC('elegir_manija', { p_codigo: codigoActual, p_opcion: op, p_idea: idea || null });
-    if (!r.ok){ yo = antes; pintarManija(); anotado.textContent = 'no se pudo.. probá de nuevo'; }
+    if (!r.ok){
+      if (/ya_elegiste/.test(r.motivo)) return window.__refrescarProximo();
+      yo = antes; pintarManija(); anotado.textContent = 'no se pudo.. probá de nuevo';
+    }
   }
   opciones.addEventListener('click', e => {
-    const b = e.target.closest('.px-op'); if (!b) return;
+    const b = e.target.closest('.px-op'); if (!b || yo.manija) return;
     if (b.dataset.op === 'otro'){
       opciones.querySelectorAll('.px-op').forEach(x => x.classList.toggle('sel', x === b));
       form.hidden = false; anotado.textContent = '';

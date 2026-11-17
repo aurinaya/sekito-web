@@ -14,7 +14,8 @@
 --    carta: avisa, el portal cuenta. Publicar esto no manda ningún mail: solo
 --    salen cuando alguien ofrenda.
 -- 3. Lo próximo: de qué estás manija (SEKI, COLAPSO, TINY SEKTA o una
---    propuesta). Una sola, se puede cambiar. El resultado lo ve el panel.
+--    propuesta). Una sola vez: el voto no se cambia (19/11). El resultado lo
+--    ve el panel.
 -- 4. La placa de S7 en devotxs y en la ficha: buscar_en_el_sekito y
 --    ficha_del_sekito devuelven estuvo_s7.
 --
@@ -261,7 +262,8 @@ begin
   if p_opcion = 'otro' and v_idea is null then raise exception 'falta_la_propuesta'; end if;
   if p_opcion <> 'otro' then v_idea := null; end if;
   insert into public.manija (miembro_id, opcion, idea) values (v_yo, p_opcion, left(v_idea, 60))
-  on conflict (miembro_id) do update set opcion = excluded.opcion, idea = excluded.idea, cambiado_en = now();
+  on conflict (miembro_id) do nothing;
+  if not found then raise exception 'ya_elegiste'; end if;
   return query select true;
 end;
 $$;
