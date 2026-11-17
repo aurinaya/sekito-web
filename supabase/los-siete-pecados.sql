@@ -145,7 +145,8 @@ begin
 end;
 $$;
 
--- a quién: cualquiera del sékito menos vos y LA SEKTA
+-- a quién: cualquiera del sékito menos vos y LA SEKTA. Sin escribir nada, la
+-- lista entera de quienes estuvieron en S7 (19/11); escribiendo, busca en todos
 create or replace function public.buscar_para_ofrendar(p_codigo text, p_query text)
 returns table(sektario text, titulo text, estuvo_s7 boolean, ya_le_di boolean)
 language plpgsql stable security definer set search_path = public as $$
@@ -153,7 +154,16 @@ declare
   v_yo uuid := public.miembro_de(p_codigo);
   v_q  text := btrim(coalesce(p_query, ''));
 begin
-  if length(v_q) < 2 then return; end if;
+  if v_q = '' then
+    return query
+      select m.nombre_sektario, public.como_le_dicen(m.apodo, m.nombre_real), true,
+             exists (select 1 from public.ofrendas o where o.de = v_yo and o.para = m.id)
+        from public.miembros m
+       where m.estado_codigo = 'activo' and m.nombre_sektario is not null and m.nombre_real is not null
+         and m.id <> v_yo and public.estuvo_en_s7(m.id)
+       order by lower(public.como_le_dicen(m.apodo, m.nombre_real));
+    return;
+  end if;
   return query
     select m.nombre_sektario, public.como_le_dicen(m.apodo, m.nombre_real), public.estuvo_en_s7(m.id),
            exists (select 1 from public.ofrendas o where o.de = v_yo and o.para = m.id)
@@ -164,7 +174,7 @@ begin
        and m.id <> v_yo
        and public.coincide(v_q, m.nombre_sektario, m.nombre_real, public.inicial_apellido(m.apellido), m.apodo)
      order by public.empieza(v_q, m.nombre_sektario, m.nombre_real, m.apodo) desc, m.nombre_real
-     limit 8;
+     limit 20;
 end;
 $$;
 
