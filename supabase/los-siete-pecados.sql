@@ -147,39 +147,33 @@ $$;
 
 -- a quién: cualquiera del sékito menos vos y LA SEKTA. Sin escribir nada, la
 -- lista entera: primero quienes estuvieron en S7 y abajo el resto (19/11);
--- escribiendo, busca en todos
-create or replace function public.buscar_para_ofrendar(p_codigo text, p_query text)
-returns table(sektario text, titulo text, estuvo_s7 boolean, ya_le_di boolean)
+-- escribiendo, busca en todos, también por apellido completo (no se muestra:
+-- se ve el nombre con la inicial, "Camila R.")
+drop function if exists public.buscar_para_ofrendar(text, text);
+create function public.buscar_para_ofrendar(p_codigo text, p_query text)
+returns table(sektario text, titulo text, nombre text, estuvo_s7 boolean, ya_le_di boolean)
 language plpgsql stable security definer set search_path = public as $$
 declare
   v_yo uuid := public.miembro_de(p_codigo);
   v_q  text := btrim(coalesce(p_query, ''));
 begin
-  if v_q = '' then
-    return query
-      select x.sektario, x.titulo, x.s7, x.ya
-        from (select m.nombre_sektario as sektario, public.como_le_dicen(m.apodo, m.nombre_real) as titulo,
-                     public.estuvo_en_s7(m.id) as s7,
-                     exists (select 1 from public.ofrendas o where o.de = v_yo and o.para = m.id) as ya
-                from public.miembros m
-               where m.estado_codigo = 'activo' and m.nombre_sektario is not null and m.nombre_real is not null
-                 and m.id <> v_yo) x
-       order by x.s7 desc, lower(x.titulo);
-    return;
-  end if;
   return query
-    select m.nombre_sektario, public.como_le_dicen(m.apodo, m.nombre_real), public.estuvo_en_s7(m.id),
-           exists (select 1 from public.ofrendas o where o.de = v_yo and o.para = m.id)
-      from public.miembros m
-     where m.estado_codigo = 'activo'
-       and m.nombre_sektario is not null
-       and m.nombre_real is not null
-       and m.id <> v_yo
-       and public.coincide(v_q, m.nombre_sektario, m.nombre_real, public.inicial_apellido(m.apellido), m.apodo)
-     order by public.empieza(v_q, m.nombre_sektario, m.nombre_real, m.apodo) desc, m.nombre_real
-     limit 20;
+    select x.sektario, x.titulo, x.nombre, x.s7, x.ya
+      from (select m.nombre_sektario as sektario, public.como_le_dicen(m.apodo, m.nombre_real) as titulo,
+                   public.nombre_con_inicial(m.nombre_real, m.apellido) as nombre,
+                   public.estuvo_en_s7(m.id) as s7,
+                   exists (select 1 from public.ofrendas o where o.de = v_yo and o.para = m.id) as ya,
+                   case when v_q = '' then false
+                        else public.empieza(v_q, m.nombre_sektario, m.nombre_real, m.apodo) end as primero
+              from public.miembros m
+             where m.estado_codigo = 'activo' and m.nombre_sektario is not null and m.nombre_real is not null
+               and m.id <> v_yo
+               and (v_q = '' or public.coincide(v_q, m.nombre_sektario, m.nombre_real, m.apellido, m.apodo))) x
+     order by x.primero desc, x.s7 desc, lower(x.titulo)
+     limit case when v_q = '' then null else 20 end;
 end;
 $$;
+grant execute on function public.buscar_para_ofrendar(text, text) to anon, authenticated;
 
 create or replace function public.ofrendar_pecado(p_codigo text, p_pecado text, p_sektario text)
 returns table(ok boolean)
@@ -305,7 +299,7 @@ begin
       from public.miembros m
      where m.estado_codigo in ('activo', 'simbolico')
        and m.nombre_sektario is not null
-       and public.coincide(v_q, m.nombre_sektario, m.nombre_real, public.inicial_apellido(m.apellido), m.apodo)
+       and public.coincide(v_q, m.nombre_sektario, m.nombre_real, m.apellido, m.apodo)
      order by
        public.empieza(v_q, m.nombre_sektario, m.nombre_real, m.apodo) desc,
        m.nombre_real nulls last

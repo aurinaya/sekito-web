@@ -2378,6 +2378,7 @@
                     color:var(--white); font-family:inherit; font-size:13px; letter-spacing:.08em; padding:10px 6px; cursor:pointer; text-align:left; }
   .pc-lista button{ gap:12px; }
   .pc-quien{ display:inline-flex; align-items:center; min-width:0; }
+  .pc-nom{ color:var(--gray); font-size:11px; letter-spacing:.04em; margin-left:8px; white-space:nowrap; }
   .pc-lista button .cod{ margin-left:auto; padding-left:10px; color:var(--gray); font-size:10px; letter-spacing:.12em; white-space:nowrap; }
   .pc-lista button.sel{ background:rgba(var(--bordo-rgb),.25); }
   .pc-lista button:disabled{ opacity:.35; cursor:default; }
@@ -6743,7 +6744,9 @@ reveal();
         const foto = fotoPrincipal(f.sektario);
         return '<button type="button" data-a="' + esc(f.sektario) + '"' + (f.ya_le_di ? ' disabled' : '') + (elegido && elegido.sektario === f.sektario ? ' class="sel"' : '') + '>' +
           '<span class="po-cara' + (foto ? '' : ' sin-foto') + '"' + (foto ? ' style="background-image:url(\'' + foto + '\')"' : '') + '></span>' +
-          '<span class="pc-quien">' + esc(f.titulo) + (f.estuvo_s7 ? placa(true) : '') + '</span>' +
+          '<span class="pc-quien">' + esc(f.titulo) +
+            (f.nombre && f.nombre.toLowerCase() !== String(f.titulo).toLowerCase() ? '<span class="pc-nom">' + esc(f.nombre) + '</span>' : '') +
+            (f.estuvo_s7 ? placa(true) : '') + '</span>' +
           '<span class="cod">' + esc(f.sektario) + (f.ya_le_di ? ' · ya le diste una' : '') + '</span></button>';
       }).join('')
         : (busca.value.trim() ? '<div class="nadie">nadie con ese nombre</div>' : '');
