@@ -182,6 +182,8 @@ main{padding:20px; flex:1}
 .ln-horas small{font-size:9px;opacity:.45;margin-top:4px;white-space:nowrap}
 .ln-pie{font-size:12px;color:var(--gray);margin-top:10px}
 .pliegue.archivo{margin-top:34px}
+.sub-pliegue{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:400;opacity:.8;margin:22px 0 10px}
+#laManija .sub-pliegue{margin-top:6px}
 .la-palabra{margin:26px 0 0}
 .la-palabra h4{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:400;opacity:.8;margin:0 0 12px}
 .lp-lista{display:flex;flex-wrap:wrap;gap:8px}
@@ -453,6 +455,10 @@ td.apretado{white-space:normal; min-width:150px}
     <div class="vista activa" id="v-miembros">
       <div class="numeros" id="numerosMiembros"></div>
 
+      <!-- 19/11: la lista de miembros se pliega; enseguida lo próximo y abajo el resto -->
+      <div class="pliegue cerrado" data-pliegue="miembros">
+      <h3 class="titulo-tabla"><span class="flecha">▾</span>miembros <span class="resumen"><strong id="cuantosMiembros">0</strong></span></h3>
+      <div class="pliegue-cuerpo">
       <div class="barra">
         <input type="search" id="buscar" placeholder="buscar por apodo, nombre, código, llave o mail…">
         <button class="btn" id="btnCrear">+ llave nueva</button>
@@ -471,6 +477,31 @@ td.apretado{white-space:normal; min-width:150px}
           <tbody id="filasMiembros"></tbody>
         </table>
       </div>
+      </div>
+      </div>
+
+      <!-- lo próximo: de qué están manija (con las propuestas) y quiénes tocaron
+           "me quiero enterar", a quienes se les avisa primero -->
+      <div class="pliegue" data-pliegue="quieren-saber">
+      <h3 class="titulo-tabla"><span class="flecha">▾</span>lo próximo <span class="resumen"><strong id="cuantosVotaron">0</strong> votaron · <strong id="cuantosQuieren">0</strong> se quieren enterar</span></h3>
+      <div class="pliegue-cuerpo">
+        <div class="la-palabra" id="laManija" style="margin:0 0 18px">
+          <h4 class="sub-pliegue">de qué están manija <span class="tenue" id="resManija"></span></h4>
+          <div class="lp-lista" id="mjLista"></div>
+          <div id="mjPropuestas"></div>
+        </div>
+        <h4 class="sub-pliegue">se quieren enterar</h4>
+        <p class="tenue" style="margin-top:0">Tocaron "me quiero enterar". Se les prometió que se enteran antes que nadie.</p>
+        <div class="barra"><button class="btn" id="btnMailsQuieren" type="button">copiar mails</button></div>
+        <div class="tabla-scroll">
+          <table>
+            <thead><tr><th>sektario</th><th>quién</th><th>mail</th><th>cuándo</th><th>S7</th></tr></thead>
+            <tbody id="filasQuieren"></tbody>
+          </table>
+        </div>
+      </div>
+      </div>
+
 
       <!-- abajo, plegables: los pedidos de llave (desde el portón o /s7) y lo que
            todavía no es nadie, llaves y links que andan dando vueltas -->
@@ -498,27 +529,6 @@ td.apretado{white-space:normal; min-width:150px}
                 <th>llave</th><th>nota</th><th>quién lo trajo</th><th>creada</th><th>estado</th><th></th>
               </tr></thead>
               <tbody id="filasSinUsar"></tbody>
-            </table>
-          </div>
-        </div>
-        </div>
-
-        <!-- lo próximo (16/11): quiénes tocaron "quiero saber" en el perfil. A ellos
-             se les avisa primero cuando se anuncie -->
-        <div class="pliegue" data-pliegue="quieren-saber">
-        <h3 class="titulo-tabla"><span class="flecha">▾</span>quieren saber <span class="resumen"><strong id="cuantosQuieren">0</strong></span></h3>
-        <div class="pliegue-cuerpo">
-          <p class="tenue" style="margin-top:0">Tocaron "me quiero enterar" en lo próximo. Se les prometió que se enteran antes que nadie.</p>
-          <div class="la-palabra" id="laManija" style="margin:0 0 18px">
-            <h4>de qué están manija <span class="tenue" id="resManija"></span></h4>
-            <div class="lp-lista" id="mjLista"></div>
-            <div id="mjPropuestas"></div>
-          </div>
-          <div class="barra"><button class="btn" id="btnMailsQuieren" type="button">copiar mails</button></div>
-          <div class="tabla-scroll">
-            <table>
-              <thead><tr><th>sektario</th><th>quién</th><th>mail</th><th>cuándo</th><th>S7</th></tr></thead>
-              <tbody id="filasQuieren"></tbody>
             </table>
           </div>
         </div>
@@ -1195,6 +1205,7 @@ function pintarMiembros(){
   const lista = ordenar(filtrados());
   marcarOrden();
   const cuerpo = $('#filasMiembros');
+  $('#cuantosMiembros').textContent = lista.length;
 
   if (!lista.length){
     cuerpo.innerHTML = '<tr><td colspan="11" class="vacio">no hay nadie con eso</td></tr>';
@@ -1270,7 +1281,7 @@ function pintarConteo(){
            uno(n.fundadores, 'fundadores') + '<span class="signo">=</span>' : '') +
       uno(miembros, 'miembros', true) +
       (n ? '<span class="signo"></span>' + uno(n.susurros, 'susurros') : '') +
-      (n && n.quieren_saber != null ? uno(n.quieren_saber, 'quieren saber') : '') +
+      (n && n.quieren_saber != null ? uno(n.quieren_saber, 'se quieren enterar') : '') +
     '</div>' +
     (fuera ? '<div class="tenue" style="font-size:12px">' + fuera + ' dados de baja</div>' : '');
 }
@@ -1333,6 +1344,7 @@ async function cargarManija(){
   const o = r.datos.por_opcion || {}, pr = r.datos.propuestas || [];
   const total = Object.values(o).reduce((a, n) => a + n, 0);
   $('#resManija').textContent = total ? '· ' + total + ' eligieron' : '· todavía nadie';
+  $('#cuantosVotaron').textContent = total;
   $('#mjLista').innerHTML = [['seki','SEKI'],['colapso','COLAPSO'],['tiny','TINY SEKTA'],['otro','tienen una propuesta']]
     .map(([k, n]) => '<span class="lp-p" style="padding-right:11px"><span class="w">' + n + '</span> <span class="n">' + (o[k] || 0) + '</span></span>').join('');
   $('#mjPropuestas').innerHTML = pr.length ? '<div class="tabla-scroll" style="margin-top:12px"><table><thead><tr><th>sektario</th><th>quién</th><th>la propuesta</th><th>cuándo</th></tr></thead><tbody>' +
