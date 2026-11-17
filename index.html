@@ -2209,6 +2209,9 @@
   .s7-linea, .px-dice{ font-size:13px; letter-spacing:.06em; line-height:1.7; }
   .s7-linea.gris, .px-dice{ color:var(--gray); }
   .pl-ley{ font-size:12.5px; line-height:1.6; color:rgba(var(--white-rgb),.85); margin:0 0 18px; }
+  /* el título de la nube, en bordo encendido */
+  .pl-titulo{ font-size:13px; font-weight:500; letter-spacing:.08em; color:var(--bordo-claro); margin:0 0 20px;
+              text-shadow:0 0 10px rgba(var(--bordo-rgb),.9), 0 0 22px rgba(var(--bordo-rgb),.7); }
   .pl-form{ display:flex; gap:8px; justify-content:center; margin:0 0 26px; }
   .pl-form input{
     background:none; border:none; border-bottom:1px solid rgba(201,86,110,.75); border-radius:0;
@@ -2222,8 +2225,6 @@
   .pl-form button{ font-size:12px; letter-spacing:.12em; padding:8px 14px; }
   .pl-form button:disabled{ opacity:.5; cursor:default; }
   .pl-aviso{ font-size:11px; color:var(--bordo-claro); min-height:16px; margin:-16px 0 10px; }
-  .pl-tuya{ font-size:11px; color:var(--gray); margin:0 0 18px; }
-  .pl-tuya b{ color:var(--white); font-weight:500; }
   .pl-nube{ display:flex; flex-wrap:wrap; justify-content:center; align-items:baseline;
             gap:4px 14px; line-height:1.25; padding:0 4px; }
   .pl-nube span{ color:rgba(var(--white-rgb),.8); }
@@ -2241,16 +2242,15 @@
 
 
   /* ---------- 18/11: la entrada a lo que dejó S7 (lo más destacado del perfil) ---------- */
-  .s7-entrada{ position:relative; overflow:hidden; cursor:pointer; padding:26px 18px 22px;
-               border:1px solid rgba(201,86,110,.55); background:linear-gradient(180deg, rgba(var(--bordo-rgb),.2), rgba(13,13,13,.4));
-               box-shadow:0 0 18px rgba(var(--bordo-rgb),.55), inset 0 0 22px rgba(var(--bordo-rgb),.3); transition:box-shadow .3s; }
-  .s7-entrada:hover, .s7-entrada:focus-visible{ outline:none; box-shadow:0 0 28px rgba(var(--bordo-rgb),.85), inset 0 0 22px rgba(var(--bordo-rgb),.4); }
-  /* quien estuvo: la caja brilla, como la placa */
-  .s7-entrada.estuvo{ border-color:rgba(201,86,110,.85); animation:seLate 4s ease-in-out infinite; }
-  .s7-entrada.estuvo::after{ content:""; position:absolute; top:-50%; bottom:-50%; width:22%; left:-40%; pointer-events:none;
-                             background:linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
-                             transform:skewX(-20deg); animation:placaBarrido 4.2s ease-in-out infinite; }
-  @keyframes seLate{ 50%{ box-shadow:0 0 30px rgba(var(--bordo-rgb),.95), inset 0 0 26px rgba(var(--bordo-rgb),.45); } }
+  /* 17/11: sin caja. Un halo bordo difuso, ovalado y sin borde, que late atrás */
+  .s7-entrada{ position:relative; cursor:pointer; padding:34px 30px 30px; outline:none; }
+  .s7-entrada::before{ content:""; position:absolute; inset:4px 4%; border-radius:50%; z-index:0; pointer-events:none;
+                       background:rgba(var(--bordo-rgb),.35); filter:blur(20px); transition:background .3s; }
+  .s7-entrada > *{ position:relative; }
+  .s7-entrada:hover::before, .s7-entrada:focus-visible::before{ background:rgba(160,0,40,.75); }
+  /* quien estuvo: el halo late */
+  .s7-entrada.estuvo::before{ background:rgba(160,0,40,.62); animation:seHalo 4s ease-in-out infinite; }
+  @keyframes seHalo{ 50%{ opacity:.6; transform:scale(.95); } }
   .se-fecha{ font-size:13px; letter-spacing:.06em; }
   .s7-entrada.estuvo .se-fecha{ background:linear-gradient(105deg, #93A8AC 0%, #F2F2F2 38%, #fff 50%, #F2F2F2 62%, #93A8AC 100%);
               background-size:250% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:none;
@@ -2263,7 +2263,7 @@
   @keyframes seLlama{ 50%{ border-color:rgba(201,86,110,1); box-shadow:0 0 14px rgba(var(--bordo-rgb),.8); } }
   .se-entrar{ display:inline-block; margin-top:20px; font-size:10px; letter-spacing:.24em; margin-right:-.24em; text-transform:uppercase;
               border-bottom:1px solid rgba(201,86,110,.75); padding:4px 2px; }
-  @media (prefers-reduced-motion: reduce){ .s7-entrada.estuvo, .s7-entrada.estuvo::after, .se-llama{ animation:none; } }
+  @media (prefers-reduced-motion: reduce){ .s7-entrada.estuvo::before, .se-llama{ animation:none; } }
 
   /* la pantalla de S7: como la de mis ritos */
   #s7-screen{ width:100%; max-width:380px; padding:56px 24px 120px; margin:0 auto; text-align:center; position:relative; z-index:1; }
@@ -6446,7 +6446,7 @@ reveal();
         { hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'America/Argentina/Buenos_Aires' }) : '';
       fue.innerHTML = '<div class="s7-linea">S7 · 14/nov</div><div class="s7-linea gris">estuviste.' + hora + '</div>';
       if (yo.mi_palabra){
-        caja.innerHTML = '<p class="pl-tuya">la tuya: <b>' + esc(yo.mi_palabra) + '</b></p>' + pintarNube(yo.mi_palabra, false);
+        caja.innerHTML = '<p class="pl-titulo">S7 en una palabra</p>' + pintarNube(yo.mi_palabra, false);
       } else {
         caja.innerHTML = '<p class="pl-ley">S7 en una palabra: dejá la tuya y mirá las de lxs demás.</p>' +
           '<form class="pl-form" id="plForm" novalidate><input id="plInput" type="text" maxlength="20" autocomplete="off" ' +
@@ -6458,7 +6458,7 @@ reveal();
     } else {
       fue.innerHTML = '<div class="s7-linea">S7 · 14/nov</div><div class="s7-linea gris">te lo perdiste..</div>' +
                       '<div class="s7-linea gris">quizás la sekta te dé otra oportunidad</div>';
-      caja.innerHTML = pintarNube(null, false);
+      caja.innerHTML = '<p class="pl-titulo">S7 en una palabra</p>' + pintarNube(null, false);
     }
   }
 
