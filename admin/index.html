@@ -164,6 +164,24 @@ main{padding:20px; flex:1}
 }
 .filtro:hover{border-color:rgba(255,255,255,.35);color:var(--white)}
 .filtro[aria-pressed="true"]{border-color:rgba(255,255,255,.55);color:var(--white);background:rgba(255,255,255,.07)}
+/* S7 ya fue: lo que dejó, arriba; la venta, archivada abajo */
+.s7-fue{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin:0 0 14px}
+.la-noche{display:flex;gap:34px;flex-wrap:wrap;margin:0 0 10px}
+.la-noche h4{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:400;opacity:.5;margin:0 0 10px}
+.ln-tipos{border-collapse:collapse;font-size:13px;width:auto;min-width:0}
+.ln-tipos td{padding:4px 18px 4px 0;border:0}
+.ln-tipos td.n{text-align:right;font-variant-numeric:tabular-nums}
+.ln-tipos tr.suma-tipos td{border-top:1px solid var(--linea);color:var(--white)}
+.ln-barra{display:inline-block;width:90px;height:6px;background:rgba(255,255,255,.1);vertical-align:middle}
+.ln-barra i{display:block;height:100%;background:#D9A11E}
+.ln-horas{display:flex;align-items:flex-end;gap:4px;height:80px}
+.ln-horas div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;width:30px}
+.ln-horas span{width:100%;background:rgba(255,255,255,.22);min-height:1px}
+.ln-horas span.pico{background:#D9A11E}
+.ln-horas b{font-weight:400;font-size:10px;opacity:.6;margin-bottom:3px}
+.ln-horas small{font-size:9px;opacity:.45;margin-top:4px;white-space:nowrap}
+.ln-pie{font-size:12px;color:var(--gray);margin-top:10px}
+.pliegue.archivo{margin-top:34px}
 /* quién falta: el ritmo de venta y a quién todavía se le puede vender */
 .ritmo{margin:0 0 20px}
 .ritmo-dice{font-size:13px;color:var(--gray);margin:0 0 10px;line-height:1.6}
@@ -410,7 +428,7 @@ td.apretado{white-space:normal; min-width:150px}
 
   <nav role="tablist">
     <button role="tab" data-vista="miembros" aria-selected="true">miembros<span id="contaPedidos"></span></button>
-    <button role="tab" data-vista="s7" aria-selected="false">entradas s7<span id="contaS7"></span></button>
+    <button role="tab" data-vista="s7" aria-selected="false">S7<span id="contaS7"></span></button>
     <button role="tab" data-vista="validaciones" aria-selected="false">validaciones<span id="contaVal"></span></button>
     <button role="tab" data-vista="linaje" aria-selected="false">linaje</button>
     <button role="tab" data-vista="registro" aria-selected="false">registro</button>
@@ -502,7 +520,16 @@ td.apretado{white-space:normal; min-width:150px}
     </div>
 
     <div class="vista" id="v-s7">
+      <!-- 16/11: S7 ya fue. Arriba, lo que dejó; todo lo de la venta y la
+           puerta queda guardado abajo, en un solo plegable cerrado -->
+      <div class="s7-fue">SEKI 7 · sábado 14 de noviembre · Dorrego 1735</div>
       <div class="numeros" id="numerosS7"></div>
+      <div class="la-noche" id="laNoche"></div>
+
+      <div class="pliegue cerrado archivo" data-pliegue="archivo-s7">
+      <h3 class="titulo-tabla"><span class="flecha">▾</span>la venta y la puerta <span class="resumen">· archivo</span></h3>
+      <div class="pliegue-cuerpo">
+      <p class="tenue">Todo lo de la venta de S7, guardado como quedó. No se borró nada.</p>
 
       <div class="tandas" id="tandas"></div>
 
@@ -592,6 +619,9 @@ td.apretado{white-space:normal; min-width:150px}
           <tbody id="filasPuertas"></tbody>
         </table>
       </div>
+      </div>
+      </div>
+
       </div>
       </div>
     </div>
@@ -1334,11 +1364,13 @@ async function cargarResumenS7(){
       '<span class="signo">=</span>' +
       uno(n.total, 'total', false, true) +
     '</div>' +
+    // 16/11: S7 ya fue. Lo que dejó: cuántos entraron y lo recaudado.
+    // "a confirmar" solo si quedó alguna transferencia por mirar
     '<div class="suma">' +
+      uno(n.adentro, 'entraron') +
+      uno((n.total ? Math.round(n.adentro * 100 / n.total) : 0) + '%', 'de las entradas') +
       uno(plata(n.recaudado), 'recaudado') +
-      uno(n.a_confirmar, 'a confirmar', true) +
-      uno(n.sin_asignar, 'sin asignar', true) +
-      uno(n.adentro, 'adentro') +
+      (n.a_confirmar ? uno(n.a_confirmar, 'a confirmar', true) : '') +
     '</div>';
 
   // lo que espera a alguien del panel: los comprobantes por mirar
@@ -1494,6 +1526,59 @@ async function cargarEntradasS7(){
   }
   ENTRADAS = r.datos || [];
   pintarEntradas();
+  pintarLaNoche();
+}
+
+/* --- lo que dejó S7 (16/11): quién entró por tipo y a qué hora. Sale de las
+   mismas entradas de abajo, sin las anuladas. --- */
+function pintarLaNoche(){
+  const caja = $('#laNoche');
+  const vivas = ENTRADAS.filter(e => e.estado !== 'anulada');
+  const adentro = vivas.filter(e => e.adentro_en);
+  if (!adentro.length){ caja.innerHTML = ''; return; }
+
+  const fila = (rotulo, de, entraron, clase) =>
+    '<tr' + (clase ? ' class="' + clase + '"' : '') + '><td>' + rotulo + '</td>' +
+    '<td class="n">' + entraron + ' de ' + de + '</td>' +
+    '<td><span class="ln-barra"><i style="width:' + (de ? Math.round(entraron * 100 / de) : 0) + '%"></i></span></td>' +
+    '<td class="n tenue">' + (de ? Math.round(entraron * 100 / de) : 0) + '%</td></tr>';
+  const tipos = TIPOS.map(t => {
+    const de = vivas.filter(e => e.tipo === t);
+    return de.length ? fila(t, de.length, de.filter(e => e.adentro_en).length) : '';
+  }).join('');
+  const pagas = vivas.filter(e => ['sekreta', 'hermética', 'abierta'].includes(e.tipo));
+
+  // de a media hora, en hora argentina
+  const media = e => {
+    const d = new Date(new Date(e.adentro_en).toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+    return d.getHours() * 60 + (d.getMinutes() < 30 ? 0 : 30);
+  };
+  const cuenta = {};
+  adentro.forEach(e => { const k = media(e); cuenta[k] = (cuenta[k] || 0) + 1; });
+  // la noche cruza las 0: lo de antes del mediodía va después
+  const orden = k => k < 720 ? k + 1440 : k;
+  const claves = Object.keys(cuenta).map(Number).sort((a, b) => orden(a) - orden(b));
+  const desde = orden(claves[0]), hasta = orden(claves[claves.length - 1]);
+  const max = Math.max(...Object.values(cuenta));
+  const hh = k => String(Math.floor(k / 60) % 24).padStart(2, '0') + ':' + String(k % 60).padStart(2, '0');
+  let barras = '', pico = null;
+  for (let k = desde; k <= hasta; k += 30){
+    const n = cuenta[k % 1440] || 0;
+    if (n === max && !pico) pico = k;
+    barras += '<div><b>' + (n || '') + '</b><span' + (n === max ? ' class="pico"' : '') +
+              ' style="height:' + Math.round(n * 60 / max) + 'px"></span><small>' + hh(k) + '</small></div>';
+  }
+  const primera = adentro.reduce((a, e) => !a || e.adentro_en < a ? e.adentro_en : a, null);
+  const ultima  = adentro.reduce((a, e) => !a || e.adentro_en > a ? e.adentro_en : a, null);
+  const hora = t => new Date(t).toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit', hour12:false });
+
+  caja.innerHTML =
+    '<div><h4>quién entró</h4><table class="ln-tipos">' + tipos +
+      fila('pagas', pagas.length, pagas.filter(e => e.adentro_en).length, 'suma-tipos') +
+    '</table></div>' +
+    '<div><h4>a qué hora</h4><div class="ln-horas">' + barras + '</div>' +
+      '<div class="ln-pie">la primera a las ' + hora(primera) + ', la última a las ' + hora(ultima) +
+      ' · el pico, de ' + hh(pico) + ' a ' + hh(pico + 30) + ' (' + max + ')</div></div>';
 }
 
 function pintarEntradas(){
