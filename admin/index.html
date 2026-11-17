@@ -182,6 +182,12 @@ main{padding:20px; flex:1}
 .ln-horas small{font-size:9px;opacity:.45;margin-top:4px;white-space:nowrap}
 .ln-pie{font-size:12px;color:var(--gray);margin-top:10px}
 .pliegue.archivo{margin-top:34px}
+body.s7-foto #btnEntradas, body.s7-foto #btnLinkVenta, body.s7-foto #btnAnfitrion, body.s7-foto #btnPuertaNueva,
+body.s7-foto [data-okcompra], body.s7-foto [data-nocompra], body.s7-foto [data-link-venta],
+body.s7-foto [data-asignar], body.s7-foto [data-ver-link], body.s7-foto [data-tarjeta], body.s7-foto [data-soltar],
+body.s7-foto [data-anular], body.s7-foto [data-copiar-cumple], body.s7-foto [data-pausar],
+body.s7-foto [data-msj-puerta], body.s7-foto [data-revocar-puerta]{display:none !important}
+body.s7-foto .tanda{cursor:default;pointer-events:none}
 /* quién falta: el ritmo de venta y a quién todavía se le puede vender */
 .ritmo{margin:0 0 20px}
 .ritmo-dice{font-size:13px;color:var(--gray);margin:0 0 10px;line-height:1.6}
@@ -529,7 +535,7 @@ td.apretado{white-space:normal; min-width:150px}
       <div class="pliegue cerrado archivo" data-pliegue="archivo-s7">
       <h3 class="titulo-tabla"><span class="flecha">▾</span>la venta y la puerta <span class="resumen">· archivo</span></h3>
       <div class="pliegue-cuerpo">
-      <p class="tenue">Todo lo de la venta de S7, guardado como quedó. No se borró nada.</p>
+      <p class="tenue">Todo lo de la venta de S7, guardado como quedó. Se puede mirar y buscar, no se puede cambiar nada.</p>
 
       <div class="tandas" id="tandas"></div>
 
@@ -542,7 +548,7 @@ td.apretado{white-space:normal; min-width:150px}
       <div class="pliegue" data-pliegue="transferencias">
       <h3 class="titulo-tabla"><span class="flecha">▾</span>las transferencias <span class="resumen" id="resCompras"></span></h3>
       <div class="pliegue-cuerpo">
-      <p class="tenue">Abrí el comprobante y, si está bien, confirmá: nacen las entradas y le llega el mail.</p>
+      <p class="tenue">Cada compra con su comprobante, como quedó.</p>
       <div class="barra">
         <input type="search" id="buscarCompras" placeholder="buscar por nombre, apellido, código o mail…">
         <div class="filtros" id="filtrosCompras"></div>
@@ -1021,6 +1027,25 @@ document.querySelectorAll('nav button').forEach(b => {
       v.classList.toggle('activa', v.id === 'v-' + b.dataset.vista));
   });
 });
+
+/* ---------- S7 es una foto (16/11) ----------
+   La fiesta ya fue: la pestaña S7 se mira, no se toca. Ni tandas, ni links,
+   ni confirmar, asignar, soltar, anular, pausar o llaves de puerta. Se puede
+   buscar, filtrar, copiar un dato, ver un comprobante y la lista para imprimir.
+   Los botones no se dibujan y, si alguno quedara, el clic no llega. */
+const S7_FOTO = true;
+const S7_NO_SE_TOCA = [
+  '#btnEntradas', '#btnLinkVenta', '#btnAnfitrion', '#btnPuertaNueva',
+  '[data-tanda]', '[data-okcompra]', '[data-nocompra]', '[data-link-venta]',
+  '[data-asignar]', '[data-ver-link]', '[data-tarjeta]', '[data-soltar]', '[data-anular]',
+  '[data-copiar-cumple]', '[data-pausar]', '[data-msj-puerta]', '[data-revocar-puerta]',
+].join(',');
+if (S7_FOTO){
+  document.body.classList.add('s7-foto');
+  document.addEventListener('click', e => {
+    if (e.target.closest(S7_NO_SE_TOCA)){ e.stopImmediatePropagation(); e.preventDefault(); }
+  }, true);
+}
 
 // ---------------------------------------------------------------- datos
 async function cargarTodo(){
