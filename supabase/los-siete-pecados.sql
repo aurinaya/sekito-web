@@ -2,8 +2,9 @@
 --
 -- Va DESPUÉS de lo-que-dejo-s7.sql (usa estuvo_en_s7).
 --
--- 1. Los siete pecados. Las estampitas de S7, en el portal: cada uno tiene las
---    siete para ofrendar, una a cada quien (a cualquiera del sékito). El pecado
+-- 1. Los siete pecados. Las cartas de S7, en el portal: quien estuvo en S7
+--    tiene las siete para ofrendar, una a cada quien (a cualquiera del sékito;
+--    recibir, recibe cualquiera).  [19/11: solo ofrenda quien estuvo] El pecado
 --    es de quien la da y quien la recibe es la causa; los textos viven en el
 --    portal, acá solo el pecado. Siempre anónimas: quien recibe ve una pista
 --    (se arma al ofrendar y no cambia). Cuando ofrendaste las siete, podés
@@ -137,7 +138,8 @@ begin
                'quien_s7',       case when o.id = v_rev then public.estuvo_en_s7(m.id) end) order by o.creada_en)
         from public.ofrendas o join public.miembros m on m.id = o.de
        where o.para = v_yo), '[]'::jsonb),
-    'revelada', v_rev
+    'revelada', v_rev,
+    'puedo_ofrendar', public.estuvo_en_s7(v_yo)
   );
 end;
 $$;
@@ -174,6 +176,7 @@ declare
   v_id    uuid;
   v_quien record;
 begin
+  if not public.estuvo_en_s7(v_yo) then raise exception 'no_estuviste'; end if;
   if p_pecado not in ('soberbia','avaricia','lujuria','ira','gula','envidia','pereza') then
     raise exception 'pecado_invalido';
   end if;

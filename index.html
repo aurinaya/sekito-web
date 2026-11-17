@@ -6632,7 +6632,9 @@ reveal();
 
   function pintar(){
     if (!E){ seccion.hidden = altarSeccion.hidden = true; return; }
-    seccion.hidden = altarSeccion.hidden = false;
+    // las siete para ofrendar son de quien estuvo en S7; recibir, recibe cualquiera
+    seccion.hidden = !E.puedo_ofrendar;
+    altarSeccion.hidden = false;
     mazo.innerHTML = PECADOS.map(p => {
       const d = dadaDe(p.k);
       return '<button type="button" class="c' + (d ? ' dada' : '') + '" data-dar="' + p.k + '"' +
@@ -6659,7 +6661,7 @@ reveal();
     if (rev){
       aviso.hidden = false;
       aviso.innerHTML = 'ya preguntaste. la de <b>' + DE(rev.pecado).n + '</b> te la ofrendó <b>' + esc(rev.quien) + '</b>' + (rev.quien_s7 ? placa(true) : '') + '.';
-    } else if (n === 7 && rs.length){
+    } else if (E.puedo_ofrendar && n === 7 && rs.length){
       aviso.hidden = false;
       aviso.innerHTML = 'ofrendaste tus siete. ahora podés elegir una carta de tu altar y la sekta te dice quién te la dio.<br><span class="gris">una sola vez.</span>';
     } else aviso.hidden = true;
@@ -6753,6 +6755,7 @@ reveal();
         error.textContent = /ya_le_diste/.test(r.motivo) ? 'a esa persona ya le diste una'
                           : /ya_ofrendada/.test(r.motivo) ? 'esa carta ya la ofrendaste'
                           : /a_vos_no/.test(r.motivo) ? 'a vos no te la podés dar'
+                          : /no_estuviste/.test(r.motivo) ? 'las cartas son de quienes estuvieron en S7'
                           : 'no se pudo ofrendar.. probá de nuevo';
         return;
       }
@@ -6777,7 +6780,7 @@ reveal();
       ? '<div class="pc-revela">te la ofrendó<br><b>' + esc(r.quien) + '</b>' + (r.quien_s7 ? placa(true) : '') + '</div>'
       : E.revelada ? '<div class="pc-nota">ya usaste tu única pregunta.</div>'
       : puede ? '<button type="button" class="pc-btn" id="pcQuien">quién me la dio</button><div class="pc-nota">podés preguntarlo una sola vez, por una sola carta.</div>'
-      : '<div class="pc-nota">cuando ofrendes tus siete,<br>vas a poder saber quién te dio una.</div>';
+      : E.puedo_ofrendar ? '<div class="pc-nota">cuando ofrendes tus siete,<br>vas a poder saber quién te dio una.</div>' : '';
     hoja.innerHTML =
       '<button type="button" class="pc-cerrar" data-cerrar>cerrar ✕</button>' +
       cartaHTML(p, 'OFRENDADA EL ' + cuando(r.cuando) + (r.pista ? '<i>pista: ' + esc(r.pista) + '</i>' : '')) +
@@ -6826,7 +6829,7 @@ reveal();
     const av = [];
     const nuevas = recibidas().filter(r => r.nueva).length;
     if (nuevas) av.push('<span class="se-llama">' + (nuevas === 1 ? 'un pecado nuevo en tu altar' : nuevas + ' pecados nuevos en tu altar') + '</span>');
-    if (E && dadas().length < 7) av.push('<span>te quedan ' + (7 - dadas().length) + ' pecados para ofrendar</span>');
+    if (E && E.puedo_ofrendar && dadas().length < 7) av.push('<span>te quedan ' + (7 - dadas().length) + ' pecados para ofrendar</span>');
     if (yo.estuvo && !yo.mi_palabra) av.push('<span>falta tu palabra</span>');
     document.getElementById('seAvisos').innerHTML = av.join('');
   }
