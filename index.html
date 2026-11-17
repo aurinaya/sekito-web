@@ -2289,23 +2289,26 @@
      brillo que lo recorre cada tanto */
   .placa-caja{ margin:14px 0 4px; text-align:center; align-self:center; }
   .placa-caja[hidden]{ display:none; }
-  .placa{ display:inline-flex; align-items:baseline; gap:8px; padding:7px 14px 6px; position:relative; overflow:hidden;
-          border:1px solid rgba(201,86,110,.7); box-shadow:0 0 14px rgba(var(--bordo-rgb),.8), inset 0 0 12px rgba(var(--bordo-rgb),.45);
-          background:linear-gradient(180deg, rgba(var(--bordo-rgb),.28), rgba(13,13,13,.6)); text-shadow:none; vertical-align:middle; }
-  .placa .s7{ font-family:'Cleopatra', serif; font-size:22px; line-height:1;
+  /* sin caja: el S7 plateado, con un brillo que lo recorre y un resplandor bordo atrás */
+  .placa{ display:inline-flex; align-items:baseline; gap:10px; padding:4px 10px; position:relative; isolation:isolate;
+          text-shadow:none; vertical-align:middle; }
+  .placa::before{ content:""; position:absolute; inset:-60% -30%; z-index:-1; pointer-events:none;
+                  background:radial-gradient(closest-side, rgba(var(--bordo-rgb),.95), rgba(var(--bordo-rgb),.35) 55%, transparent);
+                  filter:blur(4px); animation:placaLate 3.6s ease-in-out infinite; }
+  @keyframes placaLate{ 50%{ opacity:.6; transform:scale(.92); } }
+  .placa .s7{ font-family:'Cleopatra', serif; font-size:24px; line-height:1;
               background:linear-gradient(105deg, #93A8AC 0%, #F2F2F2 38%, #fff 50%, #F2F2F2 62%, #93A8AC 100%);
               background-size:250% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
               -webkit-text-stroke:.012em rgba(242,242,242,.35); animation:placaBrillo 3.6s ease-in-out infinite;
-              filter:drop-shadow(0 0 6px rgba(255,255,255,.35)); }
+              filter:drop-shadow(0 0 6px rgba(255,255,255,.45)); }
   .placa .f{ font-size:10px; letter-spacing:.22em; color:var(--gray); }
-  .placa::after{ content:""; position:absolute; top:-50%; bottom:-50%; width:28%; left:-40%;
-                 background:linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
-                 transform:skewX(-20deg); animation:placaBarrido 3.6s ease-in-out infinite; }
   @keyframes placaBrillo{ 0%,100%{ background-position:100% 0 } 50%{ background-position:0 0 } }
   @keyframes placaBarrido{ 0%{ left:-40% } 45%,100%{ left:130% } }
-  .placa.chica{ padding:2px 6px 1px; margin-left:8px; gap:0; box-shadow:0 0 8px rgba(var(--bordo-rgb),.8); }
-  .placa.chica .s7{ font-size:12px; }
+  .placa.chica{ padding:1px 6px; margin-left:8px; gap:0; }
+  .placa.chica::before{ inset:-45% -20%; }
+  .placa.chica .s7{ font-size:14px; }
   .placa.chica .f{ display:none; }
+  @media (prefers-reduced-motion: reduce){ .placa::before, .placa .s7{ animation:none; } }
 
   .pc-ley{ font-size:13px; letter-spacing:.06em; line-height:1.7; }
   .pc-ley.gris{ color:var(--gray); }
@@ -2371,6 +2374,8 @@
   .pc-lista{ margin-top:6px; max-height:240px; overflow-y:auto; text-align:left; }
   .pc-lista button{ display:flex; align-items:center; width:100%; background:none; border:none; border-bottom:1px solid rgba(147,168,172,.1);
                     color:var(--white); font-family:inherit; font-size:13px; letter-spacing:.08em; padding:10px 6px; cursor:pointer; text-align:left; }
+  .pc-lista button{ gap:12px; }
+  .pc-quien{ display:inline-flex; align-items:center; min-width:0; }
   .pc-lista button .cod{ margin-left:auto; padding-left:10px; color:var(--gray); font-size:10px; letter-spacing:.12em; white-space:nowrap; }
   .pc-lista button.sel{ background:rgba(var(--bordo-rgb),.25); }
   .pc-lista button:disabled{ opacity:.35; cursor:default; }
@@ -6726,9 +6731,13 @@ reveal();
     const btn = document.getElementById('pcOfrendar'), error = document.getElementById('pcError');
     let filas = [];
     const pintarLista = () => {
-      lista.innerHTML = filas.length ? filas.map(f =>
-        '<button type="button" data-a="' + esc(f.sektario) + '"' + (f.ya_le_di ? ' disabled' : '') + (elegido && elegido.sektario === f.sektario ? ' class="sel"' : '') + '>' +
-        esc(f.titulo) + (f.estuvo_s7 ? placa(true) : '') + '<span class="cod">' + esc(f.sektario) + (f.ya_le_di ? ' · ya le diste una' : '') + '</span></button>').join('')
+      lista.innerHTML = filas.length ? filas.map(f => {
+        const foto = fotoPrincipal(f.sektario);
+        return '<button type="button" data-a="' + esc(f.sektario) + '"' + (f.ya_le_di ? ' disabled' : '') + (elegido && elegido.sektario === f.sektario ? ' class="sel"' : '') + '>' +
+          '<span class="po-cara' + (foto ? '' : ' sin-foto') + '"' + (foto ? ' style="background-image:url(\'' + foto + '\')"' : '') + '></span>' +
+          '<span class="pc-quien">' + esc(f.titulo) + (f.estuvo_s7 ? placa(true) : '') + '</span>' +
+          '<span class="cod">' + esc(f.sektario) + (f.ya_le_di ? ' · ya le diste una' : '') + '</span></button>';
+      }).join('')
         : (busca.value.trim().length >= 2 ? '<div class="nadie">nadie con ese nombre</div>' : '');
     };
     busca.addEventListener('input', () => {
