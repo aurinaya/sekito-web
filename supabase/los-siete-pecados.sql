@@ -146,7 +146,8 @@ end;
 $$;
 
 -- a quién: cualquiera del sékito menos vos y LA SEKTA. Sin escribir nada, la
--- lista entera de quienes estuvieron en S7 (19/11); escribiendo, busca en todos
+-- lista entera: primero quienes estuvieron en S7 y abajo el resto (19/11);
+-- escribiendo, busca en todos
 create or replace function public.buscar_para_ofrendar(p_codigo text, p_query text)
 returns table(sektario text, titulo text, estuvo_s7 boolean, ya_le_di boolean)
 language plpgsql stable security definer set search_path = public as $$
@@ -156,12 +157,14 @@ declare
 begin
   if v_q = '' then
     return query
-      select m.nombre_sektario, public.como_le_dicen(m.apodo, m.nombre_real), true,
-             exists (select 1 from public.ofrendas o where o.de = v_yo and o.para = m.id)
-        from public.miembros m
-       where m.estado_codigo = 'activo' and m.nombre_sektario is not null and m.nombre_real is not null
-         and m.id <> v_yo and public.estuvo_en_s7(m.id)
-       order by lower(public.como_le_dicen(m.apodo, m.nombre_real));
+      select x.sektario, x.titulo, x.s7, x.ya
+        from (select m.nombre_sektario as sektario, public.como_le_dicen(m.apodo, m.nombre_real) as titulo,
+                     public.estuvo_en_s7(m.id) as s7,
+                     exists (select 1 from public.ofrendas o where o.de = v_yo and o.para = m.id) as ya
+                from public.miembros m
+               where m.estado_codigo = 'activo' and m.nombre_sektario is not null and m.nombre_real is not null
+                 and m.id <> v_yo) x
+       order by x.s7 desc, lower(x.titulo);
     return;
   end if;
   return query

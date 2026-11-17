@@ -2381,7 +2381,6 @@
   .pc-lista button .cod{ margin-left:auto; padding-left:10px; color:var(--gray); font-size:10px; letter-spacing:.12em; white-space:nowrap; }
   .pc-lista button.sel{ background:rgba(var(--bordo-rgb),.25); }
   .pc-lista button:disabled{ opacity:.35; cursor:default; }
-  .pc-lista-tit{ font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--gray); padding:10px 6px 6px; position:sticky; top:0; background:rgba(5,4,4,.96); z-index:1; }
   .pc-lista .nadie{ font-size:11px; color:var(--gray); text-align:center; padding:12px 0; }
   .pc-btn{ background:rgba(var(--bordo-rgb),.18); border:1px solid rgba(201,86,110,.85); color:var(--white); font-family:inherit;
            font-size:12.5px; letter-spacing:.08em; padding:11px 20px; box-shadow:0 0 18px rgba(var(--bordo-rgb),.55); cursor:pointer; }
@@ -6738,22 +6737,20 @@ reveal();
     girable();
     const busca = document.getElementById('pcBusca'), lista = document.getElementById('pcLista');
     const btn = document.getElementById('pcOfrendar'), error = document.getElementById('pcError');
-    let filas = [], todos = false;
+    let filas = [];
     const pintarLista = () => {
       lista.innerHTML = filas.length ? filas.map(f => {
         const foto = fotoPrincipal(f.sektario);
         return '<button type="button" data-a="' + esc(f.sektario) + '"' + (f.ya_le_di ? ' disabled' : '') + (elegido && elegido.sektario === f.sektario ? ' class="sel"' : '') + '>' +
           '<span class="po-cara' + (foto ? '' : ' sin-foto') + '"' + (foto ? ' style="background-image:url(\'' + foto + '\')"' : '') + '></span>' +
-          '<span class="pc-quien">' + esc(f.titulo) + (f.estuvo_s7 && !todos ? placa(true) : '') + '</span>' +
+          '<span class="pc-quien">' + esc(f.titulo) + (f.estuvo_s7 ? placa(true) : '') + '</span>' +
           '<span class="cod">' + esc(f.sektario) + (f.ya_le_di ? ' · ya le diste una' : '') + '</span></button>';
       }).join('')
         : (busca.value.trim() ? '<div class="nadie">nadie con ese nombre</div>' : '');
-      if (todos && filas.length) lista.insertAdjacentHTML('afterbegin', '<div class="pc-lista-tit">estuvieron en S7</div>');
     };
-    // sin escribir nada: la lista entera de quienes estuvieron en S7; escribiendo, filtra en todos
+    // sin escribir nada: la lista entera (primero quienes estuvieron en S7); escribiendo, filtra
     const buscar = () => {
       const q = busca.value.trim(), yo = ++buscando;
-      todos = !q;
       setTimeout(async () => {
         if (yo !== buscando) return;
         const r = await llamarRPC('buscar_para_ofrendar', { p_codigo: codigoActual, p_query: q });
